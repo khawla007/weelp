@@ -10,7 +10,11 @@ use App\Http\Controllers\ActivityTagController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\CountryLocationDetailController;
 use App\Http\Controllers\CountryTravelInfoController;
-
+use App\Http\Controllers\CountryEventController;
+use App\Http\Controllers\CountrySeasonController;
+use App\Http\Controllers\CountryAdditionalInfoController;
+use App\Http\Controllers\CountryFaqController;
+use App\Http\Controllers\CountrySeoController;
 
 // for future use Public product routes
 // Route::prefix('products')->group(function () {
@@ -65,6 +69,24 @@ Route::middleware(['auth:api', 'admin'])->group(function () {
         Route::get('/', [CountryTravelInfoController::class, 'show']); 
         Route::put('/', [CountryTravelInfoController::class, 'update']);
         Route::delete('/', [CountryTravelInfoController::class, 'destroy']);
+    });
+    // Admin Side Destination Countries Season and Event Routes
+    Route::prefix('countries/{id}')->group(function () {
+        Route::apiResource('country-seasons', CountrySeasonController::class);
+        Route::apiResource('country-events', CountryEventController::class);
+    });
+    // Admin Side Destination Countries additional info Routes
+    Route::prefix('countries/{id}')->group(function () {
+        Route::apiResource('country-additional-info', CountryAdditionalInfoController::class);
+    });
+    // Admin Side Destination Countries faq Routes
+    Route::prefix('countries/{id}')->group(function () {
+        Route::apiResource('country-faqs', CountryFaqController::class);
+    });
+    // Admin Side Destination Countries SEO data Routes
+    Route::prefix('countries/{id}')->group(function () {
+        Route::get('country-seo', [CountrySeoController::class, 'show']);
+        Route::post('country-seo', [CountrySeoController::class, 'store']);
     });
 
     // Product Routes old Approach

@@ -25,4 +25,24 @@ class Country extends Model
     public function travelInfo() {
         return $this->hasOne(CountryTravelInfo::class);
     }
+
+    public function seasons() {
+        return $this->hasMany(CountrySeason::class);
+    }
+    
+    public function events() {
+        return $this->hasMany(CountryEvent::class);
+    }
+
+    public function additionalInfo() {
+        return $this->hasMany(CountryAdditionalInfo::class);
+    }
+    
+    public function faqs() {
+        return $this->hasMany(CountryFaq::class);
+    }
+    
+    public function seo() {
+        return $this->hasOne(CountrySeo::class);
+    }
 }
