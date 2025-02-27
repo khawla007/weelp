@@ -7,6 +7,9 @@ use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ActivityCategoryController;
 use App\Http\Controllers\ActivityTagController;
+use App\Http\Controllers\CountryController;
+use App\Http\Controllers\CountryLocationDetailController;
+use App\Http\Controllers\CountryTravelInfoController;
 
 
 // for future use Public product routes
@@ -47,8 +50,24 @@ Route::middleware(['auth:api', 'admin'])->group(function () {
     Route::apiResource('activity-tags', ActivityTagController::class);
     // Admin Side Acitivty Attribute Routes
     Route::apiResource('activity-attributes', ActivityAttributeController::class);
+    // Admin Side Destination Countriwa Routes
+    Route::apiResource('countries', CountryController::class);
+    // Admin Side Destination Countries Location & Details Routes
+    Route::prefix('countries/{id}/country-location-details')->group(function () {
+        Route::post('/', [CountryLocationDetailController::class, 'store']); 
+        Route::get('/', [CountryLocationDetailController::class, 'show']); 
+        Route::put('/', [CountryLocationDetailController::class, 'update']);
+        Route::delete('/', [CountryLocationDetailController::class, 'destroy']);
+    });
+    // Admin Side Destination Countries Travel Info Routes
+    Route::prefix('countries/{id}/country-travel-info')->group(function () {
+        Route::post('/', [CountryTravelInfoController::class, 'store']); 
+        Route::get('/', [CountryTravelInfoController::class, 'show']); 
+        Route::put('/', [CountryTravelInfoController::class, 'update']);
+        Route::delete('/', [CountryTravelInfoController::class, 'destroy']);
+    });
 
-    // Product Routes New Approach
+    // Product Routes old Approach
     Route::prefix('products')->group(function () {
         Route::get('/', [ProductController::class, 'index']);
         Route::post('/', [ProductController::class, 'store']);

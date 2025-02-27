@@ -74,29 +74,57 @@ class UserProfileController extends Controller
 
         $userMeta->save();  
                   
-        if (isset($validated['urls'])) {
+        // if (isset($validated['urls'])) {
             
-            $existingUrls = $profile->urls()->orderBy('id')->get();
+        //     $existingUrls = $profile->urls()->orderBy('id')->get();
         
+        //     $incomingUrls = $validated['urls'];
+        //     $existingCount = $existingUrls->count();
+        //     $incomingCount = count($incomingUrls);
+        
+        //     foreach ($incomingUrls as $index => $urlData) {
+        //         if ($index < $existingCount) {
+        //             $existingUrl = $existingUrls[$index];
+        //             $existingUrl->update($urlData);
+        //         } else {
+        //             $profile->urls()->create($urlData);
+        //         }
+        //     }
+        
+        //     if ($existingCount > $incomingCount) {
+        //         for ($i = $incomingCount; $i < $existingCount; $i++) {
+        //             $existingUrls[$i]->delete();
+        //         }
+        //     }
+        // }        
+        if ($request->has('urls')) {
             $incomingUrls = $validated['urls'];
+            $existingUrls = $profile->urls()->orderBy('id')->get();
+            
             $existingCount = $existingUrls->count();
             $incomingCount = count($incomingUrls);
         
             foreach ($incomingUrls as $index => $urlData) {
                 if ($index < $existingCount) {
-                    $existingUrl = $existingUrls[$index];
-                    $existingUrl->update($urlData);
+                    // Update existing URL
+                    $existingUrls[$index]->update([
+                        'label' => $urlData['label'] ?? $existingUrls[$index]->label,
+                        'url' => $urlData['url'] ?? $existingUrls[$index]->url
+                    ]);
                 } else {
+                    // Create new URL entry
                     $profile->urls()->create($urlData);
                 }
             }
         
+            // If there are extra existing URLs beyond the incoming data, delete them
             if ($existingCount > $incomingCount) {
                 for ($i = $incomingCount; $i < $existingCount; $i++) {
                     $existingUrls[$i]->delete();
                 }
             }
-        }        
+        }
+        
         
         return response()->json([
             'success' => true,
