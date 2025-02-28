@@ -5,14 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class CountrySeo extends Model
+class StateSeo extends Model
 {
     use HasFactory;
 
-    protected $table = 'country_seo';
-    
     protected $fillable = [
-        'country_id',
+        'state_id',
         'meta_title',
         'meta_description',
         'keywords',
@@ -23,8 +21,9 @@ class CountrySeo extends Model
     ];
 
     // protected $casts = [
-    //     'schema_data' => 'array' // Automatically convert JSON string to array
+    //     'schema_data' => 'array',
     // ];
+
 
     // Store JSON as raw JSON (Not as escaped string)
     public function setSchemaDataAttribute($value)
@@ -38,8 +37,8 @@ class CountrySeo extends Model
         return json_decode($value, true);
     }
 
-    public function country() {
-        return $this->belongsTo(Country::class);
+    public function state()
+    {
+        return $this->belongsTo(State::class);
     }
-
 }

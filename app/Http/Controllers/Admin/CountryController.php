@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Country;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -48,7 +49,22 @@ class CountryController extends Controller
      */
     public function show(string $id)
     {
-        return response()->json(Country::findOrFail($id));
+        // return response()->json(Country::findOrFail($id));
+        $country = Country::with([
+            'locationDetails',
+            'travelInfo',
+            'seasons',
+            'events',
+            'additionalInfo',
+            'faqs',
+            'seo'
+        ])->find($id);
+    
+        if (!$country) {
+            return response()->json(['message' => 'Country not found'], 404);
+        }
+    
+        return response()->json($country);
     }
 
     /**

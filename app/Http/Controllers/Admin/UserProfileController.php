@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UserProfile;
 use App\Models\UserMeta;  // Import UserMeta model
@@ -73,30 +74,7 @@ class UserProfileController extends Controller
         }
 
         $userMeta->save();  
-                  
-        // if (isset($validated['urls'])) {
-            
-        //     $existingUrls = $profile->urls()->orderBy('id')->get();
-        
-        //     $incomingUrls = $validated['urls'];
-        //     $existingCount = $existingUrls->count();
-        //     $incomingCount = count($incomingUrls);
-        
-        //     foreach ($incomingUrls as $index => $urlData) {
-        //         if ($index < $existingCount) {
-        //             $existingUrl = $existingUrls[$index];
-        //             $existingUrl->update($urlData);
-        //         } else {
-        //             $profile->urls()->create($urlData);
-        //         }
-        //     }
-        
-        //     if ($existingCount > $incomingCount) {
-        //         for ($i = $incomingCount; $i < $existingCount; $i++) {
-        //             $existingUrls[$i]->delete();
-        //         }
-        //     }
-        // }        
+                        
         if ($request->has('urls')) {
             $incomingUrls = $validated['urls'];
             $existingUrls = $profile->urls()->orderBy('id')->get();

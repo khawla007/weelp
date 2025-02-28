@@ -1,19 +1,20 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
-use App\Models\ActivityTag;
+use App\Http\Controllers\Controller;
+use App\Models\ActivityCategory;
 use Illuminate\Http\Request;
 
-class ActivityTagController extends Controller
+class ActivityCategoryController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $tags = ActivityTag::all();
-        return response()->json($tags);
+        $categories = ActivityCategory::all();
+        return response()->json($categories);
     }
 
     /**
@@ -24,15 +25,16 @@ class ActivityTagController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'parent_id' => 'nullable|exists:activity_categories,id',
         ]);
 
         $validated['slug'] = str_replace(' ', '_', strtolower($validated['name']));
-        $validated['taxonomy'] = 'activity_tag';
+        $validated['taxonomy'] = 'activity_cat';
         $validated['post_type'] = 'activity';
 
-        $tag = ActivityTag::create($validated);
+        $category = ActivityCategory::create($validated);
 
-        return response()->json($tag, 201);
+        return response()->json($category, 201);
     }
 
     /**
@@ -40,8 +42,8 @@ class ActivityTagController extends Controller
      */
     public function show(string $id)
     {
-        $tag = ActivityTag::findOrFail($id);
-        return response()->json($tag);
+        $category = ActivityCategory::findOrFail($id);
+        return response()->json($category);
     }
 
     /**
@@ -49,20 +51,21 @@ class ActivityTagController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $tag = ActivityTag::findOrFail($id);
+        $category = ActivityCategory::findOrFail($id);
 
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
+            'parent_id' => 'nullable|exists:activity_categories,id',
         ]);
 
         if (isset($validated['name'])) {
             $validated['slug'] = str_replace(' ', '_', strtolower($validated['name']));
         }
 
-        $tag->update($validated);
+        $category->update($validated);
 
-        return response()->json($tag);
+        return response()->json($category);
     }
 
     /**
@@ -70,9 +73,9 @@ class ActivityTagController extends Controller
      */
     public function destroy(string $id)
     {
-        $tag = ActivityTag::findOrFail($id);
-        $tag->delete();
+        $category = ActivityCategory::findOrFail($id);
+        $category->delete();
 
-        return response()->json(['message' => 'Tag deleted successfully']);
+        return response()->json(['message' => 'Category deleted successfully']);
     }
 }

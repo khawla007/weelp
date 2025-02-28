@@ -45,4 +45,8 @@ class Country extends Model
     public function seo() {
         return $this->hasOne(CountrySeo::class);
     }
+
+    public function states() {
+        return $this->hasMany(State::class);
+    }
 }

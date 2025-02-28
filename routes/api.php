@@ -1,20 +1,25 @@
 <?php
 
+// Admin
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\UserProfileController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\ActivityCategoryController;
-use App\Http\Controllers\ActivityTagController;
-use App\Http\Controllers\CountryController;
-use App\Http\Controllers\CountryLocationDetailController;
-use App\Http\Controllers\CountryTravelInfoController;
-use App\Http\Controllers\CountryEventController;
-use App\Http\Controllers\CountrySeasonController;
-use App\Http\Controllers\CountryAdditionalInfoController;
-use App\Http\Controllers\CountryFaqController;
-use App\Http\Controllers\CountrySeoController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\UserProfileController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ActivityCategoryController;
+use App\Http\Controllers\Admin\ActivityTagController;
+use App\Http\Controllers\Admin\CountryController;
+use App\Http\Controllers\Admin\CountryLocationDetailController;
+use App\Http\Controllers\Admin\CountryTravelInfoController;
+use App\Http\Controllers\Admin\CountryEventController;
+use App\Http\Controllers\Admin\CountrySeasonController;
+use App\Http\Controllers\Admin\CountryAdditionalInfoController;
+use App\Http\Controllers\Admin\CountryFaqController;
+use App\Http\Controllers\Admin\CountrySeoController;
+
+// Public
+use App\Http\Controllers\Public\PublicCountryController;
+use App\Http\Controllers\Public\PublicStateController;
 
 // for future use Public product routes
 // Route::prefix('products')->group(function () {
@@ -54,7 +59,7 @@ Route::middleware(['auth:api', 'admin'])->group(function () {
     Route::apiResource('activity-tags', ActivityTagController::class);
     // Admin Side Acitivty Attribute Routes
     Route::apiResource('activity-attributes', ActivityAttributeController::class);
-    // Admin Side Destination Countriwa Routes
+    // Admin Side Destination Countries Routes
     Route::apiResource('countries', CountryController::class);
     // Admin Side Destination Countries Location & Details Routes
     Route::prefix('countries/{id}/country-location-details')->group(function () {
@@ -99,3 +104,8 @@ Route::middleware(['auth:api', 'admin'])->group(function () {
     });
 });
 
+
+// Public API
+
+Route::get('/countries', [CountryController::class, 'getCountries']);
+Route::get('/states', [StateController::class, 'getStates']);
