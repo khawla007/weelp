@@ -5,26 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class StateSeo extends Model
+class CitySeo extends Model
 {
     use HasFactory;
 
-    protected $table = 'state_seo';
+    protected $table = 'city_seo';
     protected $fillable = [
-        'state_id',
-        'meta_title',
-        'meta_description',
-        'keywords',
-        'og_image_url',
-        'canonical_url',
-        'schema_type',
-        'schema_data',
+        'city_id', 'meta_title', 'meta_description', 'keywords', 
+        'og_image_url', 'canonical_url', 'schema_type', 'schema_data'
     ];
 
     // protected $casts = [
-    //     'schema_data' => 'array',
+    //     'schema_data' => 'json'
     // ];
-
 
     // Store JSON as raw JSON (Not as escaped string)
     public function setSchemaDataAttribute($value)
@@ -38,8 +31,8 @@ class StateSeo extends Model
         return json_decode($value, true);
     }
 
-    public function state()
+    public function city()
     {
-        return $this->belongsTo(State::class);
+        return $this->belongsTo(City::class);
     }
 }

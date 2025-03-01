@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Country;
-use App\Models\CountryDetail;
+use App\Models\CountryLocationDetail;
 use App\Models\CountryTravelInfo;
 use App\Models\CountrySeason;
 use App\Models\CountryEvent;
@@ -40,7 +40,7 @@ class CountrySeeder extends Seeder
             $country = Country::create($data);
 
             // 2️⃣ Insert Country Details
-            CountryDetail::create([
+            CountryLocationDetail::create([
                 'country_id' => $country->id,
                 'latitude' => '20.5937',
                 'longitude' => '78.9629',

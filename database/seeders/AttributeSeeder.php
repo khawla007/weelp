@@ -47,20 +47,13 @@ class AttributeSeeder extends Seeder
 
         // 2️⃣ Insert Attributes
         foreach ($attributes as $data) {
-            $attribute = Attribute::create([
+            ActivityAttribute::create([
                 'name' => $data['name'],
                 'type' => $data['type'],
                 'description' => $data['description'],
                 'default_value' => $data['default_value'],
+                'values' => in_array($data['type'], ['single_select', 'multi_select']) ? json_encode($data['values']) : null
             ]);
-
-            // 3️⃣ Insert Attribute Values
-            foreach ($data['values'] as $value) {
-                AttributeValue::create([
-                    'attribute_id' => $attribute->id,
-                    'value' => $value
-                ]);
-            }
         }
     }
 }

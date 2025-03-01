@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\CountrySeoController;
 // Public
 use App\Http\Controllers\Public\PublicCountryController;
 use App\Http\Controllers\Public\PublicStateController;
+use App\Http\Controllers\Public\CitiesController;
 
 // for future use Public product routes
 // Route::prefix('products')->group(function () {
@@ -109,3 +110,4 @@ Route::middleware(['auth:api', 'admin'])->group(function () {
 
 Route::get('/countries', [CountryController::class, 'getCountries']);
 Route::get('/states', [StateController::class, 'getStates']);
+Route::get('/cities', [CitiesController::class, 'index']);

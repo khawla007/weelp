@@ -9,6 +9,7 @@ class StateTravelInfo extends Model
 {
     use HasFactory;
 
+    protected $table = 'state_travel_info';
     protected $fillable = [
         'state_id',
         'airport',

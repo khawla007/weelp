@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->decimal('longitude', 10, 6)->nullable();
             $table->string('capital_city')->nullable();
             $table->bigInteger('population')->nullable();
+            $table->string('currency')->nullable();
             $table->string('timezone')->nullable();
             $table->string('language')->nullable();
             $table->text('local_cuisine')->nullable();

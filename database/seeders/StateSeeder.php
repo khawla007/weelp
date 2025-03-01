@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use App\Models\State;
-use App\Models\StateDetail;
+use App\Models\StateLocationDetail;
 use App\Models\StateTravelInfo;
 use App\Models\StateSeason;
 use App\Models\StateEvent;
@@ -41,7 +41,7 @@ class StateSeeder extends Seeder
             $state = State::create($data);
 
             // 2️⃣ Insert State Details
-            StateDetail::create([
+            StateLocationDetail::create([
                 'state_id' => $state->id,
                 'latitude' => '26.9124',
                 'longitude' => '75.7873',
