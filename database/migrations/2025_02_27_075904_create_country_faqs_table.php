@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('country_id')->constrained('countries')->onDelete('cascade');
             // $table->integer('question_number')->autoIncrement(false);
-            $table->integer('question_number')->default(1);
+            // $table->integer('question_number')->default(1);
+            $table->integer('question_number')->nullable(); // Default NULL
             $table->text('question');
             $table->text('answer');
             $table->timestamps();
