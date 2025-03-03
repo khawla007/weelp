@@ -3,26 +3,25 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\State;
+use App\Models\Country;
 
 class PublicStateController extends Controller
 {
-    public function getStates()
+    public function getStatesByCountry($country_slug)
     {
-        $states = State::with([
-            'details',
-            'travelInfo',
-            'seasons',
-            'events',
-            'additionalInfo',
-            'faqs',
-            'seo'
-        ])->get();
+        $country = Country::where('slug', $country_slug)->first();
+
+        if (!$country) {
+            return response()->json(['success' => false, 'message' => 'Country not found'], 404);
+        }
+
+        $states = State::where('country_id', $country->id)->get();
 
         return response()->json([
-            'status' => 'success',
+            'success' => true,
             'data' => $states
-        ], 200);
+        ]);
     }
 }
+

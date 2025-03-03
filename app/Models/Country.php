@@ -18,6 +18,16 @@ class Country extends Model
         'featured_destination'
     ];
 
+    public function regions()
+    {
+        return $this->belongsToMany(Region::class, 'region_country');
+    }
+    
+    // public function cities(): HasMany
+    // {
+    //     return $this->hasMany(City::class);
+    // }
+
     public function locationDetails() {
         return $this->hasOne(CountryLocationDetail::class);
     }

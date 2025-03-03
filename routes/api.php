@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\UserProfileController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ActivityCategoryController;
 use App\Http\Controllers\Admin\ActivityTagController;
+use App\Http\Controllers\Admin\ActivityAttributeController;
 use App\Http\Controllers\Admin\CountryController;
 use App\Http\Controllers\Admin\CountryLocationDetailController;
 use App\Http\Controllers\Admin\CountryTravelInfoController;
@@ -16,11 +17,14 @@ use App\Http\Controllers\Admin\CountrySeasonController;
 use App\Http\Controllers\Admin\CountryAdditionalInfoController;
 use App\Http\Controllers\Admin\CountryFaqController;
 use App\Http\Controllers\Admin\CountrySeoController;
+use App\Http\Controllers\Admin\CountryImportController;
 
 // Public
+use App\Http\Controllers\Public\PublicRegionController;
 use App\Http\Controllers\Public\PublicCountryController;
 use App\Http\Controllers\Public\PublicStateController;
-use App\Http\Controllers\Public\CitiesController;
+use App\Http\Controllers\Public\PublicCitiesController;
+use App\Http\Controllers\Public\PublicPlaceController;
 
 // for future use Public product routes
 // Route::prefix('products')->group(function () {
@@ -103,11 +107,20 @@ Route::middleware(['auth:api', 'admin'])->group(function () {
         Route::put('{id}', [ProductController::class, 'update']);
         Route::delete('{id}', [ProductController::class, 'destroy']);
     });
+    Route::post('/import-countries', [CountryImportController::class, 'import']);
 });
-
 
 // Public API
 
-Route::get('/countries', [CountryController::class, 'getCountries']);
-Route::get('/states', [StateController::class, 'getStates']);
-Route::get('/cities', [CitiesController::class, 'index']);
+// Route::prefix('api')->group(function () {
+    Route::get('/{region_slug}', [PublicRegionController::class, 'getCitiesByRegion']);
+    Route::get('/{region_slug}/{city_slug}', [PublicRegionController::class, 'getPlacesByCity']);
+    // Route::get('/{region_slug}/country-{country_slug}', [PublicRegionController::class, 'getStatesByCountry']);
+    // Route::get('/{region_slug}/country-{country_slug}/{state_slug}', [PublicRegionController::class, 'getCitiesByState']);
+    // Route::get('/{region_slug}/{country_slug}/{state_slug}/{city_slug}', [PublicRegionController::class, 'getPlacesInCity']);
+// });
+
+// Route::get('/countries', [PublicCountryController::class, 'getCountries']);
+// Route::get('/{country_slug}', [PublicStateController::class, 'getStatesByCountry']);
+// Route::get('/{country_slug}/{state_slug}', [PublicCitiesController::class, 'getCitiesByState']);
+// Route::get('/{country_slug}/{state_slug}/{city_slug}', [PublicPlaceController::class, 'getPlacesByCity']);

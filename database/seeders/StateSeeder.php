@@ -113,13 +113,20 @@ class StateSeeder extends Seeder
                 'og_image_url' => 'https://example.com/og-rajasthan.jpg',
                 'canonical_url' => 'https://example.com/rajasthan',
                 'schema_type' => 'TravelDestination',
-                'schema_data' => json_encode([
+                // 'schema_data' => json_encode([
+                //     "@context" => "https://schema.org",
+                //     "@type" => "TravelDestination",
+                //     "name" => "Rajasthan",
+                //     "description" => "The land of kings and royal heritage.",
+                //     "image" => "https://example.com/rajasthan.jpg"
+                // ], JSON_UNESCAPED_UNICODE)
+                'schema_data' => [
                     "@context" => "https://schema.org",
                     "@type" => "TravelDestination",
                     "name" => "Rajasthan",
                     "description" => "The land of kings and royal heritage.",
                     "image" => "https://example.com/rajasthan.jpg"
-                ], JSON_UNESCAPED_UNICODE)
+                ],
             ]);
         }
     }

@@ -35,9 +35,9 @@ class CountrySeoController extends Controller
         $validatedData['country_id'] = $id;
         
         // ✅ JSON Encode to store as string (Brackets ke saath)
-        if ($request->has('schema_data')) {
-            $validatedData['schema_data'] = json_encode($request->schema_data, JSON_UNESCAPED_SLASHES);
-        }
+        // if ($request->has('schema_data')) {
+        //     $validatedData['schema_data'] = json_encode($request->schema_data, JSON_UNESCAPED_SLASHES);
+        // }
 
         $seo = CountrySeo::updateOrCreate(
             ['country_id' => $id],

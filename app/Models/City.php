@@ -14,6 +14,11 @@ class City extends Model
         'feature_image', 'featured_city'
     ];
 
+    // public function country(): BelongsTo
+    // {
+    //     return $this->belongsTo(Country::class);
+    // }
+
     public function state()
     {
         return $this->belongsTo(State::class);
@@ -52,5 +57,9 @@ class City extends Model
     public function seo()
     {
         return $this->hasOne(CitySeo::class);
+    }
+
+    public function places() {
+        return $this->hasMany(Place::class);
     }
 }

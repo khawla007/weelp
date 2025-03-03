@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('country_faqs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('country_id')->constrained('countries')->onDelete('cascade');
-            $table->integer('question_number')->autoIncrement(false);
+            // $table->integer('question_number')->autoIncrement(false);
+            $table->integer('question_number')->default(1);
             $table->text('question');
             $table->text('answer');
             $table->timestamps();

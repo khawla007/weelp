@@ -1,15 +1,16 @@
 <?php
-
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
-use App\Models\City;
-use App\Models\State;
 use App\Models\Country;
+use App\Models\State;
+use App\Models\City;
+use App\Models\Place;
+use Illuminate\Http\Request;
 
-class PublicCitiesController extends Controller
+class PublicPlaceController extends Controller
 {
-    public function getCitiesByState($country_slug, $state_slug)
+    public function getPlacesByCity($country_slug, $state_slug, $city_slug)
     {
         $country = Country::where('slug', $country_slug)->first();
         if (!$country) {
@@ -21,12 +22,16 @@ class PublicCitiesController extends Controller
             return response()->json(['success' => false, 'message' => 'State not found'], 404);
         }
 
-        $cities = City::where('state_id', $state->id)->get();
+        $city = City::where('slug', $city_slug)->where('state_id', $state->id)->first();
+        if (!$city) {
+            return response()->json(['success' => false, 'message' => 'City not found'], 404);
+        }
+
+        $places = Place::where('city_id', $city->id)->get();
 
         return response()->json([
             'success' => true,
-            'data' => $cities
-        ]);
+            'data' => $places
+        ], 200);
     }
 }
-

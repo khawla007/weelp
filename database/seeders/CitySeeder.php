@@ -111,13 +111,20 @@ class CitySeeder extends Seeder
                 'og_image_url' => 'https://example.com/og-jaipur.jpg',
                 'canonical_url' => 'https://example.com/jaipur',
                 'schema_type' => 'TravelDestination',
-                'schema_data' => json_encode([
+                // 'schema_data' => json_encode([
+                //     "@context" => "https://schema.org",
+                //     "@type" => "TravelDestination",
+                //     "name" => "Jaipur",
+                //     "description" => "The capital of Rajasthan, known for its royal heritage.",
+                //     "image" => "https://example.com/jaipur.jpg"
+                // ], JSON_UNESCAPED_UNICODE)
+                'schema_data' => [
                     "@context" => "https://schema.org",
                     "@type" => "TravelDestination",
                     "name" => "Jaipur",
                     "description" => "The capital of Rajasthan, known for its royal heritage.",
                     "image" => "https://example.com/jaipur.jpg"
-                ], JSON_UNESCAPED_UNICODE)
+                ],
             ]);
         }
     }

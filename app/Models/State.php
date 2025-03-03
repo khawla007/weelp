@@ -51,4 +51,8 @@ class State extends Model
     {
         return $this->hasOne(StateSeo::class);
     }
+
+    public function cities() {
+        return $this->hasMany(City::class);
+    }
 }

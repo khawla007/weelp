@@ -20,19 +20,51 @@ class CountrySeeder extends Seeder
         $countries = [
             [
                 'name' => 'India',
-                'country_code' => '+91',
+                'country_code' => 'IN',
                 'slug' => 'india',
+                'description' => 'USA details',
+                'feature_image' => 'https://example.com/usa.jpg',
+                'featured_destination' => false,
+            ],
+            [
+                'name' => 'China',
+                'country_code' => 'CH',
+                'slug' => 'china',
                 'description' => 'A beautiful country',
                 'feature_image' => 'https://example.com/india.jpg',
                 'featured_destination' => true,
             ],
             [
-                'name' => 'United States',
-                'country_code' => '+1',
-                'slug' => 'united-states',
+                'name' => 'Japan',
+                'country_code' => 'JP',
+                'slug' => 'japan',
                 'description' => 'USA details',
                 'feature_image' => 'https://example.com/usa.jpg',
                 'featured_destination' => false,
+            ],
+            [
+                'name' => 'France',
+                'country_code' => 'FR',
+                'slug' => 'france',
+                'description' => 'A beautiful country',
+                'feature_image' => 'https://example.com/india.jpg',
+                'featured_destination' => true,
+            ],
+            [
+                'name' => 'Germany',
+                'country_code' => 'GR',
+                'slug' => 'germany',
+                'description' => 'USA details',
+                'feature_image' => 'https://example.com/usa.jpg',
+                'featured_destination' => false,
+            ],
+            [
+                'name' => 'Spain',
+                'country_code' => 'SPN',
+                'slug' => 'spain',
+                'description' => 'A beautiful country',
+                'feature_image' => 'https://example.com/india.jpg',
+                'featured_destination' => true,
             ],
         ];
 
@@ -112,13 +144,20 @@ class CountrySeeder extends Seeder
                 'og_image_url' => 'https://example.com/og-india.jpg',
                 'canonical_url' => 'https://example.com/india',
                 'schema_type' => 'TravelDestination',
-                'schema_data' => json_encode([
+                // 'schema_data' => json_encode([
+                //     "@context" => "https://schema.org",
+                //     "@type" => "TravelDestination",
+                //     "name" => "India",
+                //     "description" => "A beautiful country with rich heritage.",
+                //     "image" => "https://example.com/india.jpg"
+                // ], JSON_UNESCAPED_UNICODE)
+                'schema_data' => [
                     "@context" => "https://schema.org",
                     "@type" => "TravelDestination",
                     "name" => "India",
                     "description" => "A beautiful country with rich heritage.",
                     "image" => "https://example.com/india.jpg"
-                ], JSON_UNESCAPED_UNICODE)
+                ],
             ]);
         }
     }
