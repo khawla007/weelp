@@ -9,6 +9,7 @@ return new class extends Migration {
         Schema::create('places', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('place_code');
             $table->string('slug')->unique();
 
             $table->foreignId('city_id')->constrained('cities')->onDelete('cascade');

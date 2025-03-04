@@ -10,7 +10,7 @@ class State extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'slug', 'country_id', 'description', 'feature_image', 'featured_destination'
+        'name', 'state_code', 'slug', 'country_id', 'description', 'feature_image', 'featured_destination'
     ];
 
     public function country() {

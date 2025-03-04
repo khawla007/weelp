@@ -127,13 +127,37 @@ class CountrySeeder extends Seeder
                 'content' => 'Taj Mahal, Jaipur, Kerala Backwaters'
             ]);
 
-            // 7️⃣ Insert FAQs
-            CountryFaq::create([
-                'country_id' => $country->id,
-                'question_number' => 1,
-                'question' => 'Do I need a visa to visit India?',
-                'answer' => 'Yes, but Visa on arrival is available for many countries.'
-            ]);
+            $countryId = $country->id;
+
+            // Fetch last question number for the country
+            $lastQuestion = CountryFaq::where('country_id', $countryId)
+                ->orderBy('question_number', 'desc')
+                ->first();
+            
+            $questionNumber = ($lastQuestion && $lastQuestion->question_number) 
+                ? $lastQuestion->question_number + 1 
+                : 1;
+
+            $faqs = [
+                [
+                    'question' => 'Do I need a visa to visit India?',
+                    'answer' => 'Yes, but Visa on arrival is available for many countries.'
+                ],
+                [
+                    'question' => 'What is the currency in India?',
+                    'answer' => 'The Indian Rupee (INR) is the official currency.'
+                ]
+            ];
+            
+            foreach ($faqs as $faq) {
+                CountryFaq::create([
+                    'country_id' => $country->id,
+                    'question_number' => $questionNumber,
+                    'question' => $faq['question'],
+                    'answer' => $faq['answer']
+                ]);
+                $questionNumber++;
+            }
 
             // 8️⃣ Insert SEO Data
             CountrySeo::create([

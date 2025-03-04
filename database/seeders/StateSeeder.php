@@ -22,6 +22,7 @@ class StateSeeder extends Seeder
             [
                 'country_id' => 1, // India
                 'name' => 'Rajasthan',
+                'state_code' => 'RJ',
                 'slug' => 'rajasthan',
                 'description' => 'The land of kings and palaces.',
                 'feature_image' => 'https://example.com/rajasthan.jpg',
@@ -30,6 +31,7 @@ class StateSeeder extends Seeder
             [
                 'country_id' => 1,
                 'name' => 'Goa',
+                'state_code' => 'GA',
                 'slug' => 'goa',
                 'description' => 'The party capital of India.',
                 'feature_image' => 'https://example.com/goa.jpg',
@@ -96,13 +98,34 @@ class StateSeeder extends Seeder
                 'content' => 'Jaipur, Udaipur, Jaisalmer, Mount Abu'
             ]);
 
-            // 7️⃣ Insert FAQs
-            StateFaq::create([
-                'state_id' => $state->id,
-                'question_number' => 1,
-                'question' => 'What is the best time to visit Rajasthan?',
-                'answer' => 'October to March is the best time for pleasant weather.'
-            ]);
+            $stateId = $state->id;
+
+            $lastQuestion = StateFaq::where('state_id', $stateId)
+            ->orderBy('question_number', 'desc')
+            ->first();
+
+            $questionNumber = $lastQuestion ? $lastQuestion->question_number + 1 : 1;
+
+            $faqs = [
+                [
+                    'question' => 'Do I need a visa to visit India?',
+                    'answer' => 'Yes, but Visa on arrival is available for many countries.'
+                ],
+                [
+                    'question' => 'What is the currency in India?',
+                    'answer' => 'The Indian Rupee (INR) is the official currency.'
+                ]
+            ];
+            
+            foreach ($faqs as $faq) {
+                StateFaq::create([
+                    'state_id' => $state->id,
+                    'question_number' => $questionNumber,
+                    'question' => $faq['question'],
+                    'answer' => $faq['answer']
+                ]);
+                $questionNumber++;
+            }
 
             // 8️⃣ Insert SEO Data
             StateSeo::create([

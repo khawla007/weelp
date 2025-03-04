@@ -21,6 +21,7 @@ class CitySeeder extends Seeder
             [
                 'state_id' => 1, // Rajasthan
                 'name' => 'Jaipur',
+                'city_code' => 'JA',
                 'slug' => 'jaipur',
                 'description' => 'The Pink City of India.',
                 'feature_image' => 'https://example.com/jaipur.jpg',
@@ -29,6 +30,7 @@ class CitySeeder extends Seeder
             [
                 'state_id' => 1,
                 'name' => 'Udaipur',
+                'city_code' => 'UD',
                 'slug' => 'udaipur',
                 'description' => 'The City of Lakes.',
                 'feature_image' => 'https://example.com/udaipur.jpg',
@@ -94,13 +96,34 @@ class CitySeeder extends Seeder
                 'content' => 'Hawa Mahal, City Palace, Amer Fort, Jal Mahal'
             ]);
 
-            // 7️⃣ Insert FAQs
-            CityFaq::create([
-                'city_id' => $city->id,
-                'question_number' => 1,
-                'question' => 'What is the best time to visit Jaipur?',
-                'answer' => 'October to March is the best time due to pleasant weather.'
-            ]);
+            $cityId = $city->id;
+
+            $lastQuestion = CityFaq::where('city_id', $cityId)
+            ->orderBy('question_number', 'desc')
+            ->first();
+
+            $questionNumber = $lastQuestion ? $lastQuestion->question_number + 1 : 1;
+
+            $faqs = [
+                [
+                    'question' => 'Do I need a visa to visit India?',
+                    'answer' => 'Yes, but Visa on arrival is available for many countries.'
+                ],
+                [
+                    'question' => 'What is the currency in India?',
+                    'answer' => 'The Indian Rupee (INR) is the official currency.'
+                ]
+            ];
+            
+            foreach ($faqs as $faq) {
+                CityFaq::create([
+                    'city_id' => $city->id,
+                    'question_number' => $questionNumber,
+                    'question' => $faq['question'],
+                    'answer' => $faq['answer']
+                ]);
+                $questionNumber++;
+            }
 
             // 8️⃣ Insert SEO Data
             CitySeo::create([

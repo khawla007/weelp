@@ -21,6 +21,7 @@ class PlaceSeeder extends Seeder
             [
                 'city_id' => 1, // Jaipur
                 'name' => 'Amber Fort',
+                'place_code' => 'AF',
                 'slug' => 'amber-fort',
                 'description' => 'A magnificent fort known for its artistic Hindu style elements.',
                 'feature_image' => 'https://example.com/amber-fort.jpg',
@@ -29,6 +30,7 @@ class PlaceSeeder extends Seeder
             [
                 'city_id' => 1,
                 'name' => 'Hawa Mahal',
+                'place_code' => 'HM',
                 'slug' => 'hawa-mahal',
                 'description' => 'A palace made of red and pink sandstone, also called the Palace of Winds.',
                 'feature_image' => 'https://example.com/hawa-mahal.jpg',
@@ -94,13 +96,35 @@ class PlaceSeeder extends Seeder
                 'content' => 'Amber Fort was built in 1592 and is a UNESCO World Heritage Site.'
             ]);
 
-            // 7️⃣ Insert FAQs
-            PlaceFaq::create([
-                'place_id' => $place->id,
-                'question_number' => 1,
-                'question' => 'What is the best time to visit Amber Fort?',
-                'answer' => 'October to March is the best time due to pleasant weather.'
-            ]);
+
+            $placeId = $place->id;
+
+            $lastQuestion = PlaceFaq::where('place_id', $placeId)
+            ->orderBy('question_number', 'desc')
+            ->first();
+
+            $questionNumber = $lastQuestion ? $lastQuestion->question_number + 1 : 1;
+
+            $faqs = [
+                [
+                    'question' => 'Do I need a visa to visit India?',
+                    'answer' => 'Yes, but Visa on arrival is available for many countries.'
+                ],
+                [
+                    'question' => 'What is the currency in India?',
+                    'answer' => 'The Indian Rupee (INR) is the official currency.'
+                ]
+            ];
+            
+            foreach ($faqs as $faq) {
+                PlaceFaq::create([
+                    'place_id' => $place->id,
+                    'question_number' => $questionNumber,
+                    'question' => $faq['question'],
+                    'answer' => $faq['answer']
+                ]);
+                $questionNumber++;
+            }
 
             // 8️⃣ Insert SEO Data
             PlaceSeo::create([

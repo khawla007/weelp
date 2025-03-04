@@ -10,7 +10,8 @@ return new class extends Migration {
         Schema::create('state_faqs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('state_id')->constrained()->onDelete('cascade');
-            $table->integer('question_number')->autoIncrement(false);
+            // $table->integer('question_number')->autoIncrement(false);
+            $table->integer('question_number')->nullable();
             $table->text('question');
             $table->text('answer');
             $table->timestamps();

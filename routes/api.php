@@ -18,6 +18,9 @@ use App\Http\Controllers\Admin\CountryAdditionalInfoController;
 use App\Http\Controllers\Admin\CountryFaqController;
 use App\Http\Controllers\Admin\CountrySeoController;
 use App\Http\Controllers\Admin\CountryImportController;
+use App\Http\Controllers\Admin\StateImportController;
+use App\Http\Controllers\Admin\CityImportController;
+use App\Http\Controllers\Admin\PlaceImportController;
 
 // Public
 use App\Http\Controllers\Public\PublicRegionController;
@@ -108,6 +111,9 @@ Route::middleware(['auth:api', 'admin'])->group(function () {
         Route::delete('{id}', [ProductController::class, 'destroy']);
     });
     Route::post('/import-countries', [CountryImportController::class, 'import']);
+    Route::post('/import-states', [StateImportController::class, 'import']);
+    Route::post('/import-cities', [CityImportController::class, 'import']);
+    Route::post('/import-places', [PlaceImportController::class, 'import']);
 });
 
 // Public API
