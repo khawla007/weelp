@@ -11,16 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('activity_attributes', function (Blueprint $table) {
+        Schema::create('categories', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
+            $table->string('name');
             $table->string('slug')->unique();
-            $table->enum('type', ['single_select', 'multi_select', 'text', 'number', 'yes_no']);
             $table->text('description')->nullable();
-            $table->json('values')->nullable(); 
-            $table->string('default_value')->nullable();
-            $table->string('taxonomy')->unique();
-            $table->string('post_type')->default('activity');
+            $table->string('taxonomy')->default('cat');
+            $table->foreignId('parent_id')->nullable()->constrained('categories')->onDelete('cascade'); // For nested categories
             $table->timestamps();
         });
     }
@@ -30,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('activity_attributes');
+        Schema::dropIfExists('categories');
     }
 };

@@ -11,12 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('activity_tags', function (Blueprint $table) {
+        Schema::create('attributes', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name')->unique();
             $table->string('slug')->unique();
-            $table->string('taxonomy')->default('activity_tag');
-            $table->string('post_type')->default('activity');
+            $table->enum('type', ['single_select', 'multi_select', 'text', 'number', 'yes_no']);
+            $table->text('description')->nullable();
+            $table->json('values')->nullable(); 
+            $table->string('default_value')->nullable();
+            $table->string('taxonomy')->unique();
             $table->timestamps();
         });
     }
@@ -26,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('activity_tags');
+        Schema::dropIfExists('attributes');
     }
 };

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('country_seo', function (Blueprint $table) {
             $table->id();
             $table->foreignId('country_id')->constrained('countries')->onDelete('cascade');
-            $table->string('meta_title');
+            $table->string('meta_title')->nullable();
             $table->text('meta_description')->nullable();
             $table->text('keywords')->nullable();
             $table->string('og_image_url')->nullable();

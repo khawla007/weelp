@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::create('city_seo', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('city_id')->unsigned();
-            $table->string('meta_title'); // SEO meta title
-            $table->text('meta_description'); // SEO meta description
-            $table->text('keywords')->nullable(); // Comma-separated keywords
-            $table->string('og_image_url')->nullable(); // Open Graph image URL
-            $table->string('canonical_url')->nullable(); // Canonical URL
-            $table->string('schema_type')->nullable(); // Schema type
-            $table->json('schema_data')->nullable(); // JSON-LD schema markup
+            $table->string('meta_title')->nullable();
+            $table->text('meta_description')->nullable();
+            $table->text('keywords')->nullable();
+            $table->string('og_image_url')->nullable();
+            $table->string('canonical_url')->nullable();
+            $table->string('schema_type')->nullable();
+            $table->json('schema_data')->nullable();
             $table->timestamps();
 
             // Foreign Key Constraint

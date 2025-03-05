@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('activity_categories', function (Blueprint $table) {
+        Schema::create('tags', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('slug')->unique();
-            $table->string('taxonomy')->default('activity_cat');  // To specify the taxonomy type
-            $table->string('post_type')->default('activity');     // To specify it's for activities
-            $table->foreignId('parent_id')->nullable()->constrained('activity_categories')->onDelete('cascade'); // For nested categories
+            $table->text('description')->nullable();
+            $table->string('taxonomy')->default('tag');
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('activity_categories');
+        Schema::dropIfExists('tags');
     }
 };

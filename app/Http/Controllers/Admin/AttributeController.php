@@ -3,18 +3,18 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\ActivityAttribute;
+use App\Models\Attribute;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
-class ActivityAttributeController extends Controller
+class AttributeController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return response()->json(ActivityAttribute::all());
+        return response()->json(Attribute::all());
     }
 
     /**
@@ -23,7 +23,7 @@ class ActivityAttributeController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|unique:activity_attributes,name',
+            'name' => 'required|unique:attributes,name',
             'type' => 'required|in:single_select,multi_select,text,number,yes_no',
             'description' => 'nullable|string',
             'values' => 'nullable|array',
@@ -33,7 +33,7 @@ class ActivityAttributeController extends Controller
         $slug = Str::slug($request->name, '-');
         $taxonomy = 'act_' . $slug;
 
-        $attribute = ActivityAttribute::create([
+        $attribute = Attribute::create([
             'name' => $request->name,
             'slug' => $slug,
             'type' => $request->type,
@@ -51,7 +51,7 @@ class ActivityAttributeController extends Controller
      */
     public function show(string $id)
     {
-        return response()->json(ActivityAttribute::findOrFail($id));
+        return response()->json(Attribute::findOrFail($id));
     }
 
     /**
@@ -59,10 +59,10 @@ class ActivityAttributeController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $attribute = ActivityAttribute::findOrFail($id);
+        $attribute = Attribute::findOrFail($id);
 
         $request->validate([
-            'name' => 'required|unique:activity_attributes,name,' . $id,
+            'name' => 'required|unique:attributes,name,' . $id,
             'type' => 'required|in:single_select,multi_select,text,number,yes_no',
             'description' => 'nullable|string',
             'values' => 'nullable|array',
@@ -90,7 +90,7 @@ class ActivityAttributeController extends Controller
      */
     public function destroy(string $id)
     {
-        ActivityAttribute::findOrFail($id)->delete();
+        Attribute::findOrFail($id)->delete();
         return response()->json(['message' => 'Attribute deleted successfully']);
     }
 }

@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\ActivityAttribute;
+use App\Models\Attribute;
 
 class AttributeSeeder extends Seeder
 {
@@ -18,14 +18,14 @@ class AttributeSeeder extends Seeder
             [
                 'name' => 'Duration',
                 'type' => 'single_select',
-                'description' => 'How long the activity lasts',
+                'description' => 'How long the lasts',
                 'values' => ['1 Hour', '2 Hours', 'Half Day', 'Full Day'],
                 'default_value' => '2 Hours'
             ],
             [
                 'name' => 'Difficulty Level',
                 'type' => 'single_select',
-                'description' => 'Activity difficulty level',
+                'description' => 'difficulty level',
                 'values' => ['Easy', 'Medium', 'Hard'],
                 'default_value' => 'Medium'
             ],
@@ -39,7 +39,7 @@ class AttributeSeeder extends Seeder
             [
                 'name' => 'Age Restriction',
                 'type' => 'single_select',
-                'description' => 'Minimum age required for the activity',
+                'description' => 'Minimum age required for the',
                 'values' => ['All Ages', '12+', '18+'],
                 'default_value' => '12+'
             ]
@@ -47,7 +47,7 @@ class AttributeSeeder extends Seeder
 
         // 2️⃣ Insert Attributes
         foreach ($attributes as $data) {
-            ActivityAttribute::create([
+            Attribute::create([
                 'name' => $data['name'],
                 'type' => $data['type'],
                 'description' => $data['description'],

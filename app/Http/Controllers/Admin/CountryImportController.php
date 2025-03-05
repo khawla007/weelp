@@ -304,7 +304,7 @@ class CountryImportController extends Controller
             );
 
             // Insert into the `country_details` table
-            CountryLocationDetail::updateOrCreate(
+            CountryLocationDetail::firstOrCreate(
                 ['country_id' => $country->id],
                 [
                     'latitude' => $this->sanitizeInput($row[6]),
@@ -318,8 +318,39 @@ class CountryImportController extends Controller
                 ]
             );
 
+            // if (!in_array($country->id, $processedCountries)) {
+            //     $latitude       = $this->sanitizeInput($row[6]);
+            //     $longitude       = $this->sanitizeInput($row[7]);
+            //     $capital_city   = $this->sanitizeInput($row[8]);
+            //     $population     = $this->sanitizeInput($row[9]);
+            //     $currency       = $this->sanitizeInput($row[10]);
+            //     $timezone       = $this->sanitizeInput($row[11]);
+            //     $language       = $this->sanitizeInput($row[12]);
+            //     $local_cuisine  = $this->sanitizeInput($row[13]);
+
+            //     // Only insert/update SEO data if required fields are not null
+            //     if ($latitude && $longitude) {
+            //         CountrySeo::updateOrCreate(
+            //             ['country_id' => $country->id], // Unique key to ensure single entry
+            //             [
+            //                 'latitude' => $latitude,
+            //                 'longitude' => $logitude,
+            //                 'capital_city' => $capital_city,
+            //                 'population' => $population ,
+            //                 'currency' => $currency,
+            //                 'timezone' => $timezone,
+            //                 'language' => $language,
+            //                 'local_cuisine' => $local_cuisine,
+            //             ]
+            //         );
+
+            //         // Mark this country as processed for SEO
+            //         $processedCountries[] = $country->id;
+            //     }
+            // }
+
             // Insert into the `country_travel_info` table
-            CountryTravelInfo::updateOrCreate(
+            CountryTravelInfo::firstOrCreate(
                 ['country_id' => $country->id],
                 [
                     'airport' => $this->sanitizeInput($row[14]),
@@ -336,6 +367,45 @@ class CountryImportController extends Controller
                     'safety_information' => $this->sanitizeInput($row[25]),
                 ]
             );
+
+            // if (!in_array($country->id, $processedCountries)) {
+            //     $airport                = $this->sanitizeInput($row[14]);
+            //     $public_transportation  = $this->sanitizeInput($row[15]);
+            //     $taxi_available         = filter_var($this->sanitizeInput($row[16]), FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
+            //     $rental_cars_available  = filter_var($this->sanitizeInput($row[17]), FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
+            //     $hotels                 = filter_var($this->sanitizeInput($row[18]), FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
+            //     $hostels                = filter_var($this->sanitizeInput($row[19]), FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
+            //     $apartments             = filter_var($this->sanitizeInput($row[20]), FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
+            //     $resorts                = filter_var($this->sanitizeInput($row[21]), FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
+            //     $visa_requirements      = $this->sanitizeInput($row[22]);
+            //     $best_time_to_visit     = $this->sanitizeInput($row[23]);
+            //     $travel_tips            = $this->sanitizeInput($row[24]);
+            //     $safety_information     = $this->sanitizeInput($row[25]);
+
+            //     // Only insert/update SEO data if required fields are not null
+            //     if ($airport && $public_transportation) {
+            //         CountrySeo::updateOrCreate(
+            //             ['country_id' => $country->id], // Unique key to ensure single entry
+            //             [
+            //                 'airport'               => $airport,
+            //                 'public_transportation' => $public_transportation,
+            //                 'taxi_available'        => $taxi_available,
+            //                 'rental_cars_available' => $rental_cars_available,
+            //                 'hotels'                => $hotels,
+            //                 'hostels'               => $hostels,
+            //                 'apartments'            => $apartments,
+            //                 'resorts'               => $resorts,
+            //                 'visa_requirements'     => $visa_requirements,
+            //                 'best_time_to_visit'    => $best_time_to_visit,
+            //                 'travel_tips'           => $travel_tips,
+            //                 'safety_information'    => $safety_information,
+            //             ]
+            //         );
+
+            //         // Mark this country as processed for SEO
+            //         $processedCountries[] = $country->id;
+            //     }
+            // }
 
             // Insert multiple seasons
             $seasons = explode('|', $this->sanitizeInput($row[26]));

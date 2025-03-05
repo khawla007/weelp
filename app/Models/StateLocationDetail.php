@@ -10,7 +10,7 @@ class StateLocationDetail extends Model
     use HasFactory;
 
     protected $fillable = [
-        'state_id', 'latitude', 'longitude', 'capital_city', 'population', 'timezone', 'language', 'local_cuisine'
+        'state_id', 'latitude', 'longitude', 'capital_city', 'population', 'currency', 'timezone', 'language', 'local_cuisine'
     ];
 
     public function state()

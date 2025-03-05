@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class ActivityTag extends Model
+class Tag extends Model
 {
     protected $fillable = ['name', 'slug', 'taxonomy', 'post_type'];
 

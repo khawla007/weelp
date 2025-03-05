@@ -3,17 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\ActivityCategory;
+use App\Models\Category;
 use Illuminate\Http\Request;
 
-class ActivityCategoryController extends Controller
+class CategoryController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $categories = ActivityCategory::all();
+        $categories = Category::all();
         return response()->json($categories);
     }
 
@@ -25,14 +25,14 @@ class ActivityCategoryController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'parent_id' => 'nullable|exists:activity_categories,id',
+            'parent_id' => 'nullable|exists:categories,id',
         ]);
 
         $validated['slug'] = str_replace(' ', '_', strtolower($validated['name']));
-        $validated['taxonomy'] = 'activity_cat';
-        $validated['post_type'] = 'activity';
+        $validated['taxonomy'] = 'cat';
+        // $validated['post_type'] = 'activity';
 
-        $category = ActivityCategory::create($validated);
+        $category = Category::create($validated);
 
         return response()->json($category, 201);
     }
@@ -42,7 +42,7 @@ class ActivityCategoryController extends Controller
      */
     public function show(string $id)
     {
-        $category = ActivityCategory::findOrFail($id);
+        $category = Category::findOrFail($id);
         return response()->json($category);
     }
 
@@ -51,12 +51,12 @@ class ActivityCategoryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $category = ActivityCategory::findOrFail($id);
+        $category = Category::findOrFail($id);
 
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
-            'parent_id' => 'nullable|exists:activity_categories,id',
+            'parent_id' => 'nullable|exists:categories,id',
         ]);
 
         if (isset($validated['name'])) {
@@ -73,7 +73,7 @@ class ActivityCategoryController extends Controller
      */
     public function destroy(string $id)
     {
-        $category = ActivityCategory::findOrFail($id);
+        $category = Category::findOrFail($id);
         $category->delete();
 
         return response()->json(['message' => 'Category deleted successfully']);

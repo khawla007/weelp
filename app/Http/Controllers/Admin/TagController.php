@@ -3,17 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\ActivityTag;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 
-class ActivityTagController extends Controller
+class TagController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $tags = ActivityTag::all();
+        $tags = Tag::all();
         return response()->json($tags);
     }
 
@@ -28,10 +28,10 @@ class ActivityTagController extends Controller
         ]);
 
         $validated['slug'] = str_replace(' ', '_', strtolower($validated['name']));
-        $validated['taxonomy'] = 'activity_tag';
-        $validated['post_type'] = 'activity';
+        $validated['taxonomy'] = 'tag';
+        // $validated['post_type'] = 'activity';
 
-        $tag = ActivityTag::create($validated);
+        $tag = Tag::create($validated);
 
         return response()->json($tag, 201);
     }
@@ -41,7 +41,7 @@ class ActivityTagController extends Controller
      */
     public function show(string $id)
     {
-        $tag = ActivityTag::findOrFail($id);
+        $tag = Tag::findOrFail($id);
         return response()->json($tag);
     }
 
@@ -50,7 +50,7 @@ class ActivityTagController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $tag = ActivityTag::findOrFail($id);
+        $tag = Tag::findOrFail($id);
 
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
@@ -71,7 +71,7 @@ class ActivityTagController extends Controller
      */
     public function destroy(string $id)
     {
-        $tag = ActivityTag::findOrFail($id);
+        $tag = Tag::findOrFail($id);
         $tag->delete();
 
         return response()->json(['message' => 'Tag deleted successfully']);

@@ -10,8 +10,8 @@ return new class extends Migration {
         Schema::create('state_seo', function (Blueprint $table) {
             $table->id();
             $table->foreignId('state_id')->constrained()->onDelete('cascade');
-            $table->string('meta_title');
-            $table->text('meta_description');
+            $table->string('meta_title')->nullable();
+            $table->text('meta_description')->nullable();
             $table->text('keywords')->nullable();
             $table->string('og_image_url')->nullable();
             $table->string('canonical_url')->nullable();

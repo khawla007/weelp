@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class ActivityAttribute extends Model
+class Attribute extends Model
 {
     use HasFactory;
 
@@ -35,13 +35,13 @@ class ActivityAttribute extends Model
         static::creating(function ($attribute) {
             $slug = Str::slug($attribute->name, '-');
             $attribute->slug = $slug;
-            $attribute->taxonomy = 'act_' . $slug;
+            $attribute->taxonomy = $slug;
         });
 
         static::updating(function ($attribute) {
             $slug = Str::slug($attribute->name, '-');
             $attribute->slug = $slug;
-            $attribute->taxonomy = 'act_' . $slug;
+            $attribute->taxonomy = $slug;
         });
     }
 }

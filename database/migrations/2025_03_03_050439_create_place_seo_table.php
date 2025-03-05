@@ -9,9 +9,9 @@ return new class extends Migration {
         Schema::create('place_seo', function (Blueprint $table) {
             $table->id();
             $table->foreignId('place_id')->constrained('places')->onDelete('cascade');
-            $table->string('meta_title');
-            $table->text('meta_description');
-            $table->text('keywords');
+            $table->string('meta_title')->nullable();
+            $table->text('meta_description')->nullable();
+            $table->text('keywords')->nullable();
             $table->string('og_image_url')->nullable();
             $table->string('canonical_url')->nullable();
             $table->string('schema_type')->nullable();
