@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\ActivityTag;
+use App\Models\Tag;
 
 class TagSeeder extends Seeder
 {
@@ -22,7 +22,7 @@ class TagSeeder extends Seeder
         ];
 
         foreach ($tags as $tag) {
-            ActivityTag::create($tag);
+            Tag::create($tag);
         }
     }
 }
