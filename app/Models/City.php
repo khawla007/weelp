@@ -62,4 +62,12 @@ class City extends Model
     public function places() {
         return $this->hasMany(Place::class);
     }
+
+    public function activityLocations() {
+        return $this->hasMany(ActivityLocation::class, 'city_id');
+    }
+
+    public function activities() {
+        return $this->hasManyThrough(Activity::class, ActivityLocation::class, 'city_id', 'id', 'id', 'activity_id');
+    }
 }

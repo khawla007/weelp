@@ -44,4 +44,12 @@ class Attribute extends Model
             $attribute->taxonomy = $slug;
         });
     }
+
+    public function activityAttributes() {
+        return $this->hasMany(ActivityAttributeValue::class, 'attribute_id');
+    }
+    
+    public function activities() {
+        return $this->hasManyThrough(Activity::class, ActivityAttributeValue::class, 'attribute_id', 'id', 'id', 'activity_id');
+    }
 }

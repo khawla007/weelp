@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             CitySeeder::class,
             PlaceSeeder::class,
             RegionSeeder::class,
+            ActivitySeeder::class,
         ]);
     }
 }

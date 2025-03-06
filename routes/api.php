@@ -5,10 +5,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\UserProfileController;
-use App\Http\Controllers\Admin\ProductController;
-use App\Http\Controllers\Admin\ActivityCategoryController;
-use App\Http\Controllers\Admin\ActivityTagController;
-use App\Http\Controllers\Admin\ActivityAttributeController;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\TagController;
+use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\CountryController;
 use App\Http\Controllers\Admin\CountryLocationDetailController;
 use App\Http\Controllers\Admin\CountryTravelInfoController;
@@ -28,19 +27,11 @@ use App\Http\Controllers\Public\PublicCountryController;
 use App\Http\Controllers\Public\PublicStateController;
 use App\Http\Controllers\Public\PublicCitiesController;
 use App\Http\Controllers\Public\PublicPlaceController;
+use App\Http\Controllers\Public\PublicActivityController;
 
-// for future use Public product routes
-// Route::prefix('products')->group(function () {
-//     Route::get('/', [ProductController::class, 'index']); // Public
-//     Route::get('{id}', [ProductController::class, 'show']); // Public
-// });
-
-// // for future use Admin-only product routes
-// Route::middleware(['auth:api', 'admin'])->prefix('products')->group(function () {
-//     Route::post('/', [ProductController::class, 'store']);
-//     Route::put('{id}', [ProductController::class, 'update']);
-//     Route::delete('{id}', [ProductController::class, 'destroy']);
-// });
+Route::get('/test', function () {
+    return response()->json(['message' => 'Route Working!']);
+});
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -62,11 +53,11 @@ Route::middleware(['auth:api', 'admin'])->group(function () {
     Route::get('/users', [UserController::class, 'getAllUsers']); 
 
     // Admin Side Acitivty Category Routes
-    Route::apiResource('activity-categories', ActivityCategoryController::class);
+    Route::apiResource('activity-categories', CategoryController::class);
     // Admin Side Acitivty Tag Routes
-    Route::apiResource('activity-tags', ActivityTagController::class);
+    Route::apiResource('activity-tags', TagController::class);
     // Admin Side Acitivty Attribute Routes
-    Route::apiResource('activity-attributes', ActivityAttributeController::class);
+    Route::apiResource('activity-attributes', AttributeController::class);
     // Admin Side Destination Countries Routes
     Route::apiResource('countries', CountryController::class);
     // Admin Side Destination Countries Location & Details Routes
@@ -102,14 +93,6 @@ Route::middleware(['auth:api', 'admin'])->group(function () {
         Route::post('country-seo', [CountrySeoController::class, 'store']);
     });
 
-    // Product Routes old Approach
-    Route::prefix('products')->group(function () {
-        Route::get('/', [ProductController::class, 'index']);
-        Route::post('/', [ProductController::class, 'store']);
-        Route::get('{id}', [ProductController::class, 'show']);
-        Route::put('{id}', [ProductController::class, 'update']);
-        Route::delete('{id}', [ProductController::class, 'destroy']);
-    });
     Route::post('/import-countries', [CountryImportController::class, 'import']);
     Route::post('/import-states', [StateImportController::class, 'import']);
     Route::post('/import-cities', [CityImportController::class, 'import']);
@@ -118,15 +101,20 @@ Route::middleware(['auth:api', 'admin'])->group(function () {
 
 // Public API
 
-// Route::prefix('api')->group(function () {
+Route::prefix('region')->group(function () {
     Route::get('/{region_slug}', [PublicRegionController::class, 'getCitiesByRegion']);
     Route::get('/{region_slug}/{city_slug}', [PublicRegionController::class, 'getPlacesByCity']);
     // Route::get('/{region_slug}/country-{country_slug}', [PublicRegionController::class, 'getStatesByCountry']);
     // Route::get('/{region_slug}/country-{country_slug}/{state_slug}', [PublicRegionController::class, 'getCitiesByState']);
     // Route::get('/{region_slug}/{country_slug}/{state_slug}/{city_slug}', [PublicRegionController::class, 'getPlacesInCity']);
-// });
+});
 
 // Route::get('/countries', [PublicCountryController::class, 'getCountries']);
-// Route::get('/{country_slug}', [PublicStateController::class, 'getStatesByCountry']);
-// Route::get('/{country_slug}/{state_slug}', [PublicCitiesController::class, 'getCitiesByState']);
-// Route::get('/{country_slug}/{state_slug}/{city_slug}', [PublicPlaceController::class, 'getPlacesByCity']);
+// Route::prefix('countries')->group(function () {
+    // Route::get('/{country_slug}', [PublicStateController::class, 'getStatesByCountry']);
+    // Route::get('/{country_slug}/{state_slug}', [PublicCitiesController::class, 'getCitiesByState']);
+    // Route::get('/{country_slug}/{state_slug}/{city_slug}', [PublicPlaceController::class, 'getPlacesByCity']);
+// });
+
+Route::get('/activities', [PublicActivityController::class, 'getActivities']);
+Route::get('/activities/{activity_slug}', [PublicActivityController::class, 'getActivityBySlug']);

@@ -18,4 +18,13 @@ class Category extends Model
             $category->slug = Str::slug(str_replace(' ', '_', strtolower($category->name)), '_');
         });
     }
+
+    public function activityCategories() {
+        return $this->hasMany(ActivityCategoryMapping::class, 'category_id');
+    }
+    
+    public function activities() {
+        return $this->hasManyThrough(Activity::class, ActivityCategoryMapping::class, 'category_id', 'id', 'id', 'activity_id');
+    }
+    
 }
