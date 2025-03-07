@@ -71,23 +71,13 @@ class ActivitySeeder extends Seeder {
             // 🏷 Assign Multiple Attributes
             ActivityAttribute::create([
                 'activity_id' => $activity->id,
-                'attribute_id' => rand(1, 2),
+                'attribute_id' => rand(1, 4),
                 'attribute_value' => '1 Hour'
             ]);
             ActivityAttribute::create([
                 'activity_id' => $activity->id,
-                'attribute_id' => rand(2, 1),
+                'attribute_id' => rand(3, 4),
                 'attribute_value' => 'Easy'
-            ]);
-            ActivityAttribute::create([
-                'activity_id' => $activity->id,
-                'attribute_id' => rand(3, 1),
-                'attribute_value' => '1-5'
-            ]);
-            ActivityAttribute::create([
-                'activity_id' => $activity->id,
-                'attribute_id' => rand(4, 2),
-                'attribute_value' => '12+'
             ]);
 
             // 💰 Pricing
