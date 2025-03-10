@@ -20,4 +20,9 @@ class VendorAvailabilityTimeSlot extends Model {
         return $this->belongsTo(VendorVehicle::class);
     }
 
+    public function transferPricingAvailabilities()
+    {
+        return $this->hasMany(TransferPricingAvailability::class, 'vendor_availability_id');
+    }
+    
 }

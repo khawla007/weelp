@@ -15,4 +15,9 @@ class VendorPricingTier extends Model {
     public function vendor() {
         return $this->belongsTo(Vendor::class);
     }
+
+    public function transferPricingAvailabilities()
+    {
+        return $this->hasMany(TransferPricingAvailability::class, 'vendor_pricing_tier_id');
+    }
 }

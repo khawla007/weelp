@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Vendor extends Model {
     use HasFactory;
 
-    protected $table = 'vendor_vendors'; // Custom table name
+    protected $table = 'vendors'; // Custom table name
 
     protected $fillable = ['name', 'description', 'email', 'phone', 'address', 'status'];
 
