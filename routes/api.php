@@ -103,7 +103,8 @@ Route::middleware(['auth:api', 'admin'])->group(function () {
 
 Route::prefix('region')->group(function () {
     Route::get('/{region_slug}', [PublicRegionController::class, 'getCitiesByRegion']);
-    Route::get('/{region_slug}/{city_slug}', [PublicRegionController::class, 'getPlacesByCity']);
+    // Route::get('/{region_slug}/{city_slug}', [PublicRegionController::class, 'getPlacesByCity']);
+    Route::get('/{region_slug}/{city_slug}', [PublicRegionController::class, 'getActivityByCity']);
     // Route::get('/{region_slug}/country-{country_slug}', [PublicRegionController::class, 'getStatesByCountry']);
     // Route::get('/{region_slug}/country-{country_slug}/{state_slug}', [PublicRegionController::class, 'getCitiesByState']);
     // Route::get('/{region_slug}/{country_slug}/{state_slug}/{city_slug}', [PublicRegionController::class, 'getPlacesInCity']);

@@ -13,26 +13,10 @@ class PublicActivityController extends Controller
 {
     public function getActivities()
     {
-
-        // $activities = Activity::with([
-        //     // 'categories',
-        //     // 'locations.city',
-        //     // 'attributes.attribute',
-        //     'categories.category:id,name',  
-        //     'attributes.attribute:id,name',  
-        //     'locations.city:id,name',
-        //     'pricing',
-        //     'seasonalPricing',
-        //     'groupDiscounts',
-        //     'earlyBirdDiscount',
-        //     'lastMinuteDiscount',
-        //     'promoCodes'
-        // ])->get();
-
-        // return response()->json($activities);
         $activities = Activity::with([
             'categories.category', 
             'attributes.attribute', 
+            'locations.city',
             'pricing', 
             'seasonalPricing', 
             'groupDiscounts', 
@@ -54,6 +38,7 @@ class PublicActivityController extends Controller
                         'attribute_value' => $attribute->attribute_value,
                     ];
                 }),
+                'locations' => $activity->locations->pluck('city.name')->join(', '),
                 'pricing' => $activity->pricing,  
                 'seasonalPricing' => $activity->seasonalPricing,
                 'groupDiscounts' => $activity->groupDiscounts,
@@ -66,35 +51,12 @@ class PublicActivityController extends Controller
         return response()->json($activities);
     }
 
-    // public function getActivityBySlug($activityslug)
-    // {
-    //     $activity = Activity::with([
-    //         // 'categories',
-    //         // 'locations.city',
-    //         // 'attributes.attribute',
-    //         'categories.category:id,name',  
-    //         'attributes.attribute:id,name',  
-    //         'locations.city:id,name',
-    //         'pricing',
-    //         'seasonalPricing',
-    //         'groupDiscounts',
-    //         'earlyBirdDiscount',
-    //         'lastMinuteDiscount',
-    //         'promoCodes'
-    //     ])->where('slug', $activityslug)->first();
-
-    //     if (!$activity) {
-    //         return response()->json(['message' => 'Activity not found'], 404);
-    //     }
-
-    //     return response()->json($activity);
-    // }
-
     public function getActivityBySlug($activityslug)
     {
         $activity = Activity::with([
             'categories.category', 
             'attributes.attribute', 
+            'locations.city',
             'pricing', 
             'seasonalPricing', 
             'groupDiscounts', 
@@ -121,6 +83,7 @@ class PublicActivityController extends Controller
                     'attribute_value' => $attribute->attribute_value,
                 ];
             }),
+            'locations' => $activity->locations->pluck('city.name')->join(', '),
             'pricing' => $activity->pricing,  
             'seasonalPricing' => $activity->seasonalPricing,
             'groupDiscounts' => $activity->groupDiscounts,
@@ -131,5 +94,7 @@ class PublicActivityController extends Controller
     
         return response()->json($formattedActivity);
     }
+
+
     
 }

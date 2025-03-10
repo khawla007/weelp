@@ -64,7 +64,7 @@ class ActivitySeeder extends Seeder {
             ]);
             ActivityLocation::create([
                 'activity_id' => $activity->id,
-                'city_id' => rand(1, 2),
+                'city_id' => rand(3, 4),
                 'location_type' => 'Indoor'
             ]);
 

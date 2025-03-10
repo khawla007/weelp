@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\Region;
+use App\Models\Activity;
+use App\Models\City;
 use Illuminate\Http\Request;
 
 class PublicRegionController extends Controller
@@ -29,6 +31,24 @@ class PublicRegionController extends Controller
         }
 
         return response()->json($cities);
+    }
+
+    public function getActivityByCity($region_slug, $city_slug)
+    {
+        $city = City::where('slug', $city_slug)->first();
+
+        if (!$city) {
+            return response()->json(['message' => 'City not found.'], 404);
+        }
+
+        // $activities = $city->activities;
+        $activities = $city->activities()->with(['pricing', 'groupDiscounts'])->get();
+
+        if ($activities->isEmpty()) {
+            return response()->json(['message' => 'No activities found for this city.'], 404);
+        }
+
+        return response()->json($activities);
     }
 
     public function getPlacesByCity($region_slug, $city_slug)

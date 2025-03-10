@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             PlaceSeeder::class,
             RegionSeeder::class,
             ActivitySeeder::class,
+            VendorSeeder::class,
         ]);
     }
 }

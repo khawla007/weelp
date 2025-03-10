@@ -35,6 +35,24 @@ class CitySeeder extends Seeder
                 'description' => 'The City of Lakes.',
                 'feature_image' => 'https://example.com/udaipur.jpg',
                 'featured_destination' => false,
+            ],
+            [
+                'state_id' => 1,
+                'name' => 'Bihad',
+                'city_code' => 'UD',
+                'slug' => 'bihad',
+                'description' => 'The City of Lakes.',
+                'feature_image' => 'https://example.com/udaipur.jpg',
+                'featured_destination' => false,
+            ],
+            [
+                'state_id' => 1,
+                'name' => 'Jeend',
+                'city_code' => 'UD',
+                'slug' => 'jeend',
+                'description' => 'The City of Lakes.',
+                'feature_image' => 'https://example.com/udaipur.jpg',
+                'featured_destination' => false,
             ]
         ];
 
