@@ -18,4 +18,9 @@ class Tag extends Model
             $tag->slug = Str::slug(str_replace(' ', '_', strtolower($tag->name)), '_');
         });
     }
+
+    public function itineraries()
+    {
+        return $this->belongsToMany(Itinerary::class, 'itinerary_tags');
+    }
 }

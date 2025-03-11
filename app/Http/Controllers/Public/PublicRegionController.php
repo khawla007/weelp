@@ -51,6 +51,38 @@ class PublicRegionController extends Controller
         return response()->json($activities);
     }
 
+    public function getItinerariesByCity($region_slug, $city_slug)
+    {
+        $city = City::where('slug', $city_slug)->first();
+
+        if (!$city) {
+            return response()->json(['message' => 'City not found.'], 404);
+        }
+
+        // Itineraries ke saath schedules aur related data fetch karo
+        $itineraries = $city->itineraries()->with([
+            'schedules.activities',
+            'schedules.transfers',
+            'basePricing.variations',
+            'basePricing.blackoutDates',
+            'inclusionsExclusions',
+            'mediaGallery',
+            'seo',
+            'categories',
+            'attributes',
+            'tags'
+        ])->get();
+
+        if ($itineraries->isEmpty()) {
+            return response()->json(['message' => 'No itineraries found for this city.'], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $itineraries
+        ]);
+    }
+
     public function getPlacesByCity($region_slug, $city_slug)
     {
         $region = Region::where('name', $region_slug)->firstOrFail();

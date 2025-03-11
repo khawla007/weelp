@@ -27,4 +27,8 @@ class Vendor extends Model {
     public function drivers() {
         return $this->hasMany(VendorDriver::class);
     }
+
+    public function transferVendor() {
+        return $this->hasMany(TransferVendorRoute::class, 'vendor_id');
+    }
 }

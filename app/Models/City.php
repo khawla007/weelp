@@ -70,4 +70,9 @@ class City extends Model
     public function activities() {
         return $this->hasManyThrough(Activity::class, ActivityLocation::class, 'city_id', 'id', 'id', 'activity_id');
     }
+
+    public function itineraries()
+    {
+        return $this->hasMany(Itinerary::class);
+    }
 }

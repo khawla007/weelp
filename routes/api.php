@@ -28,6 +28,7 @@ use App\Http\Controllers\Public\PublicStateController;
 use App\Http\Controllers\Public\PublicCitiesController;
 use App\Http\Controllers\Public\PublicPlaceController;
 use App\Http\Controllers\Public\PublicActivityController;
+use App\Http\Controllers\Public\PublicItineraryController;
 
 Route::get('/test', function () {
     return response()->json(['message' => 'Route Working!']);
@@ -104,7 +105,9 @@ Route::middleware(['auth:api', 'admin'])->group(function () {
 Route::prefix('region')->group(function () {
     Route::get('/{region_slug}', [PublicRegionController::class, 'getCitiesByRegion']);
     // Route::get('/{region_slug}/{city_slug}', [PublicRegionController::class, 'getPlacesByCity']);
-    Route::get('/{region_slug}/{city_slug}', [PublicRegionController::class, 'getActivityByCity']);
+    Route::get('/{region_slug}/{city_slug}/activities', [PublicRegionController::class, 'getActivityByCity']);
+    Route::get('/{region_slug}/{city_slug}/itineraries/', [PublicRegionController::class, 'getItinerariesByCity']);
+
     // Route::get('/{region_slug}/country-{country_slug}', [PublicRegionController::class, 'getStatesByCountry']);
     // Route::get('/{region_slug}/country-{country_slug}/{state_slug}', [PublicRegionController::class, 'getCitiesByState']);
     // Route::get('/{region_slug}/{country_slug}/{state_slug}/{city_slug}', [PublicRegionController::class, 'getPlacesInCity']);
@@ -117,5 +120,10 @@ Route::prefix('region')->group(function () {
     // Route::get('/{country_slug}/{state_slug}/{city_slug}', [PublicPlaceController::class, 'getPlacesByCity']);
 // });
 
+// activity api
 Route::get('/activities', [PublicActivityController::class, 'getActivities']);
 Route::get('/activities/{activity_slug}', [PublicActivityController::class, 'getActivityBySlug']);
+
+// itineraries api
+Route::get('/itineraries', [PublicItineraryController::class, 'index']);
+Route::get('/itineraries/{slug}', [PublicItineraryController::class, 'show']);

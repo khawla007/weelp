@@ -7,26 +7,29 @@ use Illuminate\Database\Eloquent\Model;
 
 class TransferPricingAvailability extends Model
 {
-    use HasFactory;
 
+    use HasFactory;
     protected $fillable = [
         'transfer_id',
-        'vendor_pricing_tier_id',
-        'vendor_availability_id',
+        'pricing_tier_id',
+        'availability_id',
     ];
 
+    // Relationship with Transfer
     public function transfer()
     {
         return $this->belongsTo(Transfer::class);
     }
 
+    // Relationship with VendorPricingTier
     public function pricingTier()
     {
-        return $this->belongsTo(VendorPricingTier::class, 'vendor_pricing_tier_id');
+        return $this->belongsTo(VendorPricingTier::class);
     }
 
+    // Relationship with VendorAvailabilityTimeSlot
     public function availability()
     {
-        return $this->belongsTo(VendorAvailability::class, 'vendor_availability_id');
+        return $this->belongsTo(VendorAvailabilityTimeSlot::class);
     }
 }

@@ -52,4 +52,13 @@ class Attribute extends Model
     public function activities() {
         return $this->hasManyThrough(Activity::class, ActivityAttributeValue::class, 'attribute_id', 'id', 'id', 'activity_id');
     }
+
+    public function itinerariesAttributes() {
+        return $this->hasMany(ItineraryAttributeValue::class, 'attribute_id');
+    }
+
+    public function itineraries()
+    {
+        return $this->hasManyThrough(Itinerary::class, ItineraryAttributeValue::class, 'attribute_id', 'id', 'id', 'activity_id');
+    }
 }

@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::create('transfer_seo', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('transfer_id')->constrained()->onDelete('cascade');
-            $table->text('meta_title')->nullable();
-            $table->text('meta_description')->nullable();
-            $table->text('keywords')->nullable(); // Comma-separated
+            $table->foreignId('transfer_id')->constrained('transfers')->onDelete('cascade');
+            $table->text('meta_title');
+            $table->text('meta_description');
+            $table->text('keywords'); // Comma-separated keywords
             $table->string('og_image_url')->nullable();
             $table->string('canonical_url')->nullable();
-            $table->string('schema_type')->nullable();
-            $table->json('schema_data')->nullable(); // JSON-LD
+            $table->text('schema_type')->nullable();
+            $table->json('schema_data')->nullable(); // JSON-LD Schema
             $table->timestamps();
         });
     }

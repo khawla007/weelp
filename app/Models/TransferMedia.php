@@ -8,13 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class TransferMedia extends Model
 {
     use HasFactory;
-
     protected $fillable = [
         'transfer_id',
-        'media_type', // 'image' or 'video'
+        'media_type',
         'media_url',
     ];
 
+    // Relationship with Transfer
     public function transfer()
     {
         return $this->belongsTo(Transfer::class);

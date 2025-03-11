@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('transfer_media', function (Blueprint $table) {
+        Schema::create('transfers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('transfer_id')->constrained()->onDelete('cascade');
-            $table->string('file_type'); // image or video
-            $table->string('file_url');
+            $table->text('name');
+            $table->text('description');
+            $table->text('transfer_type');
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('transfer_media');
+        Schema::dropIfExists('transfers');
     }
 };

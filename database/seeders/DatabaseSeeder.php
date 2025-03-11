@@ -30,6 +30,8 @@ class DatabaseSeeder extends Seeder
             RegionSeeder::class,
             ActivitySeeder::class,
             VendorSeeder::class,
+            TransferSeeder::class,
+            ItinerarySeeder::class,
         ]);
     }
 }

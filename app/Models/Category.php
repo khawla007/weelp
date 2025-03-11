@@ -27,4 +27,8 @@ class Category extends Model
         return $this->hasManyThrough(Activity::class, ActivityCategoryMapping::class, 'category_id', 'id', 'id', 'activity_id');
     }
     
+    public function itineraries()
+    {
+        return $this->belongsToMany(Itinerary::class, 'itinerary_category');
+    }
 }

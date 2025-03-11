@@ -15,4 +15,9 @@ class VendorRoute extends Model {
     public function vendor() {
         return $this->belongsTo(Vendor::class);
     }
+
+    public function transferRoutes()
+    {
+        return $this->hasMany(TransferVendorRoute::class, 'route_id');
+    }
 }

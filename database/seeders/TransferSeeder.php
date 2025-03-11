@@ -3,67 +3,163 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
-use App\Models\Vendor;
-use App\Models\VendorRoute;
-use App\Models\VendorPricingTier;
-use App\Models\VendorAvailabilityTimeSlot;
 use App\Models\Transfer;
-use App\Models\TransferPricingAvailability;
 use App\Models\TransferVendorRoute;
+use App\Models\TransferPricingAvailability;
+use App\Models\TransferMedia;
+use App\Models\TransferSeo;
 
 class TransferSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    public function run()
     {
-        // ✅ Get 4 random vendors
-        $vendors = Vendor::inRandomOrder()->limit(4)->get();
-
-        foreach ($vendors as $vendor) {
-            // ✅ Get a random route for this vendor
-            $route = VendorRoute::where('vendor_id', $vendor->id)->inRandomOrder()->first();
-
-            // ✅ Get a random pricing tier for this vendor
-            $pricingTier = VendorPricingTier::where('vendor_id', $vendor->id)->inRandomOrder()->first();
-
-            // ✅ Get a random availability for this vendor
-            $availability = VendorAvailabilityTimeSlot::where('vendor_id', $vendor->id)->inRandomOrder()->first();
-
-            if (!$route || !$pricingTier || !$availability) {
-                continue; // Skip if any of them is missing
-            }
-
-            // ✅ Insert Transfer
-            $transfer = Transfer::create([
-                'name' => 'Transfer ' . $vendor->id,
-                'description' => 'Description for Transfer ' . $vendor->id,
+        $transfers = [
+            [
+                'name' => 'Airport Transfer',
+                'description' => 'Airport to Hotel transfer service',
                 'transfer_type' => 'One-way',
-                'vendor_id' => $vendor->id,
-                'route_id' => $route->id,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
+                'vendor_id' => 1,
+                'route_id' => 1,
+                'pricing_tier_id' => 1,
+                'availability_id' => 1,
+                'media' => [
+                    ['media_type' => 'photo', 'media_url' => 'https://example.com/photo1.jpg'],
+                    ['media_type' => 'video', 'media_url' => 'https://example.com/video1.mp4']
+                ],
+                'seo' => [
+                    'meta_title' => 'Airport Transfer Service',
+                    'meta_description' => 'Comfortable and reliable airport transfer service.',
+                    'keywords' => 'airport, transfer, hotel',
+                    'og_image_url' => 'https://example.com/og-image1.jpg',
+                    'canonical_url' => 'https://example.com/airport-transfer',
+                    'schema_type' => 'Service',
+                    'schema_data' => json_encode([
+                        '@context' => 'https://schema.org',
+                        '@type' => 'Service',
+                        'name' => 'Airport Transfer'
+                    ])
+                ]
+            ],
+            [
+                'name' => 'City Tour',
+                'description' => 'Full day city tour with private guide',
+                'transfer_type' => 'Round-trip',
+                'vendor_id' => 2,
+                'route_id' => 2,
+                'pricing_tier_id' => 2,
+                'availability_id' => 2,
+                'media' => [
+                    ['media_type' => 'photo', 'media_url' => 'https://example.com/photo2.jpg'],
+                    ['media_type' => 'video', 'media_url' => 'https://example.com/video2.mp4']
+                ],
+                'seo' => [
+                    'meta_title' => 'City Tour',
+                    'meta_description' => 'Enjoy a full day city tour with a professional guide.',
+                    'keywords' => 'city, tour, guide',
+                    'og_image_url' => 'https://example.com/og-image2.jpg',
+                    'canonical_url' => 'https://example.com/city-tour',
+                    'schema_type' => 'Service',
+                    'schema_data' => json_encode([
+                        '@context' => 'https://schema.org',
+                        '@type' => 'Service',
+                        'name' => 'City Tour'
+                    ])
+                ]
+            ],
+            [
+                'name' => 'Hotel Transfer',
+                'description' => 'Hotel to Train Station transfer service',
+                'transfer_type' => 'One-way',
+                'vendor_id' => 3,
+                'route_id' => 3,
+                'pricing_tier_id' => 3,
+                'availability_id' => 3,
+                'media' => [
+                    ['media_type' => 'photo', 'media_url' => 'https://example.com/photo3.jpg'],
+                    ['media_type' => 'video', 'media_url' => 'https://example.com/video3.mp4']
+                ],
+                'seo' => [
+                    'meta_title' => 'Hotel Transfer',
+                    'meta_description' => 'Easy and reliable hotel transfer service.',
+                    'keywords' => 'hotel, transfer, train',
+                    'og_image_url' => 'https://example.com/og-image3.jpg',
+                    'canonical_url' => 'https://example.com/hotel-transfer',
+                    'schema_type' => 'Service',
+                    'schema_data' => json_encode([
+                        '@context' => 'https://schema.org',
+                        '@type' => 'Service',
+                        'name' => 'Hotel Transfer'
+                    ])
+                ]
+            ],
+            [
+                'name' => 'Adventure Trip',
+                'description' => 'Mountain hiking trip with professional guide',
+                'transfer_type' => 'Round-trip',
+                'vendor_id' => 4,
+                'route_id' => 4,
+                'pricing_tier_id' => 4,
+                'availability_id' => 4,
+                'media' => [
+                    ['media_type' => 'photo', 'media_url' => 'https://example.com/photo4.jpg'],
+                    ['media_type' => 'video', 'media_url' => 'https://example.com/video4.mp4']
+                ],
+                'seo' => [
+                    'meta_title' => 'Adventure Trip',
+                    'meta_description' => 'Exciting adventure trip with professional guide.',
+                    'keywords' => 'adventure, trip, guide',
+                    'og_image_url' => 'https://example.com/og-image4.jpg',
+                    'canonical_url' => 'https://example.com/adventure-trip',
+                    'schema_type' => 'Service',
+                    'schema_data' => json_encode([
+                        '@context' => 'https://schema.org',
+                        '@type' => 'Service',
+                        'name' => 'Adventure Trip'
+                    ])
+                ]
+            ],
+        ];
+
+        foreach ($transfers as $data) {
+            $transfer = Transfer::create([
+                'name' => $data['name'],
+                'description' => $data['description'],
+                'transfer_type' => $data['transfer_type'],
             ]);
 
-            // ✅ Insert Transfer Pricing & Availability
-            TransferPricingAvailability::create([
-                'transfer_id' => $transfer->id,
-                'vendor_pricing_tier_id' => $pricingTier->id,
-                'vendor_availability_id' => $availability->id,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ]);
-
-            // ✅ Insert Transfer Vendor Route
+            // Vendor & Route  
             TransferVendorRoute::create([
                 'transfer_id' => $transfer->id,
-                'vendor_id' => $vendor->id,
-                'route_id' => $route->id,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
+                'vendor_id' => $data['vendor_id'],
+                'route_id' => $data['route_id'],
+            ]);
+
+            // Pricing & Availability  
+            TransferPricingAvailability::create([
+                'transfer_id' => $transfer->id,
+                'pricing_tier_id' => $data['pricing_tier_id'],
+                'availability_id' => $data['availability_id'],
+            ]);
+
+            // Media  
+            foreach ($data['media'] as $media) {
+                TransferMedia::create([
+                    'transfer_id' => $transfer->id,
+                    'media_type' => $media['media_type'],
+                    'media_url' => $media['media_url'],
+                ]);
+            }
+
+            // SEO  
+            TransferSeo::create([
+                'transfer_id' => $transfer->id,
+                'meta_title' => $data['seo']['meta_title'],
+                'meta_description' => $data['seo']['meta_description'],
+                'keywords' => $data['seo']['keywords'],
+                'og_image_url' => $data['seo']['og_image_url'],
+                'canonical_url' => $data['seo']['canonical_url'],
+                'schema_type' => $data['seo']['schema_type'],
+                'schema_data' => $data['seo']['schema_data'],
             ]);
         }
     }
