@@ -20,7 +20,8 @@ class Country extends Model
 
     public function regions()
     {
-        return $this->belongsToMany(Region::class, 'region_country');
+        // return $this->belongsToMany(Region::class, 'region_country');
+        return $this->belongsToMany(Region::class, 'region_country', 'country_id', 'region_id');
     }
     
     // public function cities(): HasMany

@@ -20,6 +20,7 @@ class Region extends Model
 
     public function countries()
     {
-        return $this->belongsToMany(Country::class, 'region_country');
+        // return $this->belongsToMany(Country::class, 'region_country');
+        return $this->belongsToMany(Country::class, 'region_country', 'region_id', 'country_id');
     }
 }

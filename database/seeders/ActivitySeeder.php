@@ -41,31 +41,74 @@ class ActivitySeeder extends Seeder {
                 'featured_images' => json_encode(['scuba1.jpg', 'scuba2.jpg']),
                 'featured_activity' => true,
             ],
+            [
+                'name' => 'Scuba Diving',
+                'slug' => 'scuba-diving',
+                'description' => 'Explore the underwater world with our professional scuba diving instructors.',
+                'short_description' => 'Scuba diving with professional guides.',
+                'featured_images' => json_encode(['scuba1.jpg', 'scuba2.jpg']),
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Nero Diving Tour',
+                'slug' => 'nero-diving-tour',
+                'description' => 'Explore the underwater world with our professional scuba diving instructors.',
+                'short_description' => 'Scuba diving with professional guides.',
+                'featured_images' => json_encode(['scuba1.jpg', 'scuba2.jpg']),
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Deep Diving Tour',
+                'slug' => 'deep-diving-tour',
+                'description' => 'Explore the underwater world with our professional scuba diving instructors.',
+                'short_description' => 'Scuba diving with professional guides.',
+                'featured_images' => json_encode(['scuba1.jpg', 'scuba2.jpg']),
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Sea Diving Tour',
+                'slug' => 'sea-diving-tour',
+                'description' => 'Explore the underwater world with our professional scuba diving instructors.',
+                'short_description' => 'Scuba diving with professional guides.',
+                'featured_images' => json_encode(['scuba1.jpg', 'scuba2.jpg']),
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Lake Diving Tour',
+                'slug' => 'lake-diving-tour',
+                'description' => 'Explore the underwater world with our professional scuba diving instructors.',
+                'short_description' => 'Scuba diving with professional guides.',
+                'featured_images' => json_encode(['scuba1.jpg', 'scuba2.jpg']),
+                'featured_activity' => true,
+            ],
         ];
 
         foreach ($activities as $activityData) {
             $activity = Activity::create($activityData);
 
-            // 🌍 Assign Multiple Categories
             ActivityCategory::create([
                 'activity_id' => $activity->id,
-                'category_id' => rand(1, 3) // Random Category ID
+                'category_id' => rand(1, 3) 
             ]);
             ActivityCategory::create([
                 'activity_id' => $activity->id,
-                'category_id' => rand(2, 4) // Another Random Category ID
+                'category_id' => rand(2, 4) 
             ]);
 
-            // 📍 Assign Multiple Locations
             ActivityLocation::create([
                 'activity_id' => $activity->id,
-                'city_id' => rand(1, 2),
-                'location_type' => 'Outdoor'
+                'city_id' => rand(1, 4),
+                'location_type' => 'primary',
+                'location_label' => 'Main Location',
+                'duration' => null
             ]);
+        
             ActivityLocation::create([
                 'activity_id' => $activity->id,
-                'city_id' => rand(3, 4),
-                'location_type' => 'Indoor'
+                'city_id' => rand(1, 4),
+                'location_type' => 'additional',
+                'location_label' => 'Highlight', // Custom value allowed
+                'duration' => rand(5, 20)
             ]);
 
             // 🏷 Assign Multiple Attributes

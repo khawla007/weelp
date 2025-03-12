@@ -78,6 +78,38 @@ class ItinerarySeeder extends Seeder
                 'featured' => true,
                 'private' => true,
             ],
+            [
+                'name' => 'Cultural Tour in Kangra',
+                'slug' => Str::slug('Cultural Tour in kangra'),
+                'description' => 'Explore the rich culture of Japan.',
+                'city_id' => 4,
+                'featured' => true,
+                'private' => true,
+            ],
+            [
+                'name' => 'Cultural Tour in Lama Temple',
+                'slug' => Str::slug('Cultural Tour in Lama Temple'),
+                'description' => 'Explore the rich culture of Japan.',
+                'city_id' => 4,
+                'featured' => true,
+                'private' => true,
+            ],
+            [
+                'name' => 'Cultural Tour in Dharamshala',
+                'slug' => Str::slug('Cultural Tour in Dharamshala'),
+                'description' => 'Explore the rich culture of Japan.',
+                'city_id' => 4,
+                'featured' => true,
+                'private' => true,
+            ],
+            [
+                'name' => 'Cultural Tour in Rehan',
+                'slug' => Str::slug('Cultural Tour in Rehan'),
+                'description' => 'Explore the rich culture of Japan.',
+                'city_id' => 4,
+                'featured' => true,
+                'private' => true,
+            ],
         ];
 
         foreach ($itineraries as $itineraryData) {

@@ -29,6 +29,7 @@ use App\Http\Controllers\Public\PublicCitiesController;
 use App\Http\Controllers\Public\PublicPlaceController;
 use App\Http\Controllers\Public\PublicActivityController;
 use App\Http\Controllers\Public\PublicItineraryController;
+use App\Http\Controllers\Public\PublicTransferController;
 
 Route::get('/test', function () {
     return response()->json(['message' => 'Route Working!']);
@@ -121,9 +122,19 @@ Route::prefix('region')->group(function () {
 // });
 
 // activity api
-Route::get('/activities', [PublicActivityController::class, 'getActivities']);
-Route::get('/activities/{activity_slug}', [PublicActivityController::class, 'getActivityBySlug']);
+Route::prefix('activities')->group(function () {
+    Route::get('/', [PublicActivityController::class, 'getActivities']);
+    Route::get('/{activity_slug}', [PublicActivityController::class, 'getActivityBySlug']);
+});
+
+// transfer api
+Route::prefix('transfers')->group(function () {
+    Route::get('/', [PublicTransferController::class, 'index']);
+    Route::get('/{id}', [PublicTransferController::class, 'show']);
+});
 
 // itineraries api
-Route::get('/itineraries', [PublicItineraryController::class, 'index']);
-Route::get('/itineraries/{slug}', [PublicItineraryController::class, 'show']);
+Route::prefix('itineraries')->group(function () {
+    Route::get('/', [PublicItineraryController::class, 'index']);
+    Route::get('/{slug}', [PublicItineraryController::class, 'show']);
+});

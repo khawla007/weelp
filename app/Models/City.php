@@ -24,6 +24,23 @@ class City extends Model
         return $this->belongsTo(State::class);
     }
 
+    public function country()
+    {
+        return $this->hasOneThrough(Country::class, State::class, 'country_id', 'id', 'state_id', 'id');
+    }
+
+    public function region()
+    {
+        return $this->hasOneThrough(
+            Region::class,
+            RegionCountry::class, // Pivot table ka model
+            'country_id', // Foreign key on region_country table
+            'id', // Foreign key on regions table
+            'state_id', // Local key on cities table
+            'region_id' // Local key on region_country table
+        );
+    }
+
     public function locationDetails()
     {
         return $this->hasOne(CityLocationDetail::class);
