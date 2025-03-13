@@ -52,4 +52,9 @@ class Activity extends Model {
     public function promoCodes() {
         return $this->hasMany(ActivityPromoCode::class, 'activity_id');
     }
+    
+    public function availability()
+    {
+        return $this->hasOne(ActivityAvailability::class);
+    }
 }

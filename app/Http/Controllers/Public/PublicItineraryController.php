@@ -369,7 +369,6 @@ class PublicItineraryController extends Controller
         ];
 
         return response()->json([
-            'success' => true,
             'data' => $formattedItinerary
         ]);
 }

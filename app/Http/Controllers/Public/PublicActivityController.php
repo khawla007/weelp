@@ -25,7 +25,8 @@ class PublicActivityController extends Controller
             'groupDiscounts', 
             'earlyBirdDiscount', 
             'lastMinuteDiscount', 
-            'promoCodes'
+            'promoCodes',
+            'availability'
         ])->get()->map(function ($activity) {
             return [
                 'id' => $activity->id,
@@ -70,6 +71,13 @@ class PublicActivityController extends Controller
                 'earlyBirdDiscount' => $activity->earlyBirdDiscount,
                 'lastMinuteDiscount' => $activity->lastMinuteDiscount,
                 'promoCodes' => $activity->promoCodes,
+                'availability' => $activity->availability ? [
+                    'date_based_activity' => $activity->availability->date_based_activity,
+                    'start_date' => $activity->availability->start_date,
+                    'end_date' => $activity->availability->end_date,
+                    'quantity_based_activity' => $activity->availability->quantity_based_activity,
+                    'max_quantity' => $activity->availability->max_quantity,
+                ] : null,
             ];
         });
         

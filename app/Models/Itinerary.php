@@ -62,4 +62,9 @@ class Itinerary extends Model
     {
         return $this->belongsToMany(Tag::class, 'itinerary_tags');
     }
+
+    public function availability()
+    {
+        return $this->hasOne(ItineraryAvailability::class);
+    }
 }

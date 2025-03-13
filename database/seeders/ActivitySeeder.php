@@ -13,6 +13,7 @@ use App\Models\ActivityGroupDiscount;
 use App\Models\ActivityEarlyBirdDiscount;
 use App\Models\ActivityLastMinuteDiscount;
 use App\Models\ActivityPromoCode;
+use App\Models\ActivityAvailability;
 
 class ActivitySeeder extends Seeder {
     public function run() {
@@ -196,6 +197,14 @@ class ActivitySeeder extends Seeder {
                 'discount_type' => 'fixed',
                 'valid_from' => '2025-06-01',
                 'valid_to' => '2025-08-31',
+            ]);
+            ActivityAvailability::create([
+                'activity_id' => $activity->id,
+                'date_based_activity' => $dateBased = fake()->boolean, // Random true or false
+                'start_date' => $dateBased ? fake()->dateTimeBetween('-1 month', '+1 month')->format('Y-m-d') : null,
+                'end_date' => $dateBased ? fake()->dateTimeBetween('+2 month', '+6 month')->format('Y-m-d') : null,
+                'quantity_based_activity' => $quantityBased = fake()->boolean, // Random true or false
+                'max_quantity' => $quantityBased ? fake()->numberBetween(1, 20) : null,
             ]);
         }
     }

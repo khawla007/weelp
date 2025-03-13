@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use App\Models\Itinerary;
 use App\Models\ItinerarySchedule;
 use App\Models\ItineraryActivity;
@@ -17,7 +18,7 @@ use App\Models\ItinerarySeo;
 use App\Models\ItineraryCategory;
 use App\Models\ItineraryAttribute;
 use App\Models\ItineraryTag;
-use Illuminate\Support\Str;
+use App\Models\ItineraryAvailability;
 
 class ItinerarySeeder extends Seeder
 {
@@ -209,6 +210,15 @@ class ItinerarySeeder extends Seeder
             ItineraryTag::create([
                 'itinerary_id' => $itinerary->id,
                 'tag_id' => 1,
+            ]);
+
+            ItineraryAvailability::create([
+                'itinerary_id' => $itinerary->id,
+                'date_based_itinerary' => $dateBased = fake()->boolean,
+                'start_date' => $dateBased ? fake()->dateTimeBetween('-1 month', '+1 month')->format('Y-m-d') : null,
+                'end_date' => $dateBased ? fake()->dateTimeBetween('+2 month', '+6 month')->format('Y-m-d') : null,
+                'quantity_based_itinerary' => $quantityBased = fake()->boolean,
+                'max_quantity' => $quantityBased ? fake()->numberBetween(1, 100) : null,
             ]);
         }
     }
