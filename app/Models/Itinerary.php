@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class Itinerary extends Model
 {
     protected $fillable = [
-        'name', 'slug', 'description', 'city_id', 'featured', 'private'
+        'name', 'slug', 'description', 'featured', 'private'
     ];
 
-    public function city()
-    {
-        return $this->belongsTo(City::class);
+    public function locations() {
+
+        return $this->hasMany(ItineraryLocation::class);
     }
 
     // Schedule relation

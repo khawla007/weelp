@@ -2,18 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PackageFaq extends Model
+class PackageMediaGallery extends Model
 {
-    use HasFactory;
+
+    protected $table = 'package_media_gallery';
 
     protected $fillable = [
-        'package_id',
-        'question_number',
-        'question',
-        'answer',
+        'package_id', 'url'
     ];
 
     public function package()

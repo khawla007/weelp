@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->text('name');
             $table->text('description');
+            $table->string('item_type')->default('transfer'); // Fixed value 'package'
             $table->text('transfer_type');
             $table->timestamps();
         });

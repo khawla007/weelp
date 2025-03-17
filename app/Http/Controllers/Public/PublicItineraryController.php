@@ -41,7 +41,7 @@ class PublicItineraryController extends Controller
     public function index(): JsonResponse
     {
         $itineraries = Itinerary::with([
-            'city.state.country.regions',
+            'locations.city',
             'schedules.activities',
             'schedules.transfers',
             'basePricing.variations',
@@ -58,22 +58,25 @@ class PublicItineraryController extends Controller
                 'name' => $itinerary->name,
                 'slug' => $itinerary->slug,
                 'description' => $itinerary->description,
-                'city_id' => $itinerary->city ? $itinerary->city->id : null,
-                'city' => $itinerary->city ? $itinerary->city->name : null,
-                'state_id' => $itinerary->city && $itinerary->city->state ? $itinerary->city->state->id : null,
-                'state' => $itinerary->city && $itinerary->city->state ? $itinerary->city->state->name : null,
-                'country_id' => $itinerary->city && $itinerary->city->state && $itinerary->city->state->country
-                    ? $itinerary->city->state->country->id
-                    : null,
-                'country' => $itinerary->city && $itinerary->city->state && $itinerary->city->state->country
-                    ? $itinerary->city->state->country->name
-                    : null,
-                'region_id' => $itinerary->city && $itinerary->city->state && $itinerary->city->state->country && $itinerary->city->state->country->regions->isNotEmpty()
-                    ? $itinerary->city->state->country->regions->first()->id
-                    : null,
-                'region' => $itinerary->city && $itinerary->city->state && $itinerary->city->state->country && $itinerary->city->state->country->regions->isNotEmpty()
-                    ? $itinerary->city->state->country->regions->first()->name
-                    : null,
+                'item_type' => $itinerary->item_type,
+                'locations' => $itinerary->locations->map(function ($location) {
+                    $city = $location->city;
+                    return [
+                        'city_id' => $city->id,
+                        'city' => $city->name,
+                        'state_id' => $city->state ? $city->state->id : null,
+                        'state' => $city->state ? $city->state->name : null,
+                        'country_id' => $city->state && $city->state->country ? $city->state->country->id : null,
+                        'country' => $city->state && $city->state->country ? $city->state->country->name : null,
+                        'region_id' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
+                            ? $city->state->country->regions->first()->id
+                            : null,
+                        'region' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
+                            ? $city->state->country->regions->first()->name
+                            : null,
+                        
+                    ];
+                }),
                 'categories' => $itinerary->categories->pluck('name')->toArray(),
                 'attributes' => $itinerary->attributes->map(function ($attribute) {
                     return [
@@ -273,7 +276,7 @@ class PublicItineraryController extends Controller
     public function show($slug): JsonResponse
     {
         $itinerary = Itinerary::with([
-            'city.state.country.regions', 
+            'locations.city',
             'schedules.activities.activity',
             'schedules.transfers.transfer',
             'basePricing.variations',
@@ -298,22 +301,25 @@ class PublicItineraryController extends Controller
             'name' => $itinerary->name,
             'slug' => $itinerary->slug,
             'description' => $itinerary->description,
-            'city_id' => $itinerary->city ? $itinerary->city->id : null,
-            'city' => $itinerary->city ? $itinerary->city->name : null,
-            'state_id' => $itinerary->city && $itinerary->city->state ? $itinerary->city->state->id : null,
-            'state' => $itinerary->city && $itinerary->city->state ? $itinerary->city->state->name : null,
-            'country_id' => $itinerary->city && $itinerary->city->state && $itinerary->city->state->country
-                ? $itinerary->city->state->country->id
-                : null,
-            'country' => $itinerary->city && $itinerary->city->state && $itinerary->city->state->country
-                ? $itinerary->city->state->country->name
-                : null,
-            'region_id' => $itinerary->city && $itinerary->city->state && $itinerary->city->state->country && $itinerary->city->state->country->regions->isNotEmpty()
-                ? $itinerary->city->state->country->regions->first()->id
-                : null,
-            'region' => $itinerary->city && $itinerary->city->state && $itinerary->city->state->country && $itinerary->city->state->country->regions->isNotEmpty()
-                ? $itinerary->city->state->country->regions->first()->name
-        : null,
+            'item_type' => $itinerary->item_type,
+            'locations' => $itinerary->locations->map(function ($location) {
+                    $city = $location->city;
+                    return [
+                        'city_id' => $city->id,
+                        'city' => $city->name,
+                        'state_id' => $city->state ? $city->state->id : null,
+                        'state' => $city->state ? $city->state->name : null,
+                        'country_id' => $city->state && $city->state->country ? $city->state->country->id : null,
+                        'country' => $city->state && $city->state->country ? $city->state->country->name : null,
+                        'region_id' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
+                            ? $city->state->country->regions->first()->id
+                            : null,
+                        'region' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
+                            ? $city->state->country->regions->first()->name
+                            : null,
+                        
+                    ];
+            }),
             'schedules' => $itinerary->schedules->map(function ($schedule) {
                 return [
                     'day' => $schedule->day,

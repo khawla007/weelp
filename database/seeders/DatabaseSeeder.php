@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
             VendorSeeder::class,
             TransferSeeder::class,
             ItinerarySeeder::class,
+            PackageSeeder::class,
         ]);
     }
 }

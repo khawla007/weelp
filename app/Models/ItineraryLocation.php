@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PackageLocation extends Model
+class ItineraryLocation extends Model
 {
     use HasFactory;
 
@@ -14,9 +14,9 @@ class PackageLocation extends Model
         'city_id',
     ];
 
-    public function package()
+    public function itinerary()
     {
-        return $this->belongsTo(Package::class);
+        return $this->belongsTo(Itinerary::class);
     }
 
     public function city() {

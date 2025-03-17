@@ -13,13 +13,11 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
-            $table->unsignedBigInteger('city_id');
+            $table->string('item_type')->default('itinerary'); 
             $table->boolean('featured')->default(false);
             $table->boolean('private')->default(false);
             $table->timestamps();
 
-            // Foreign Key Constraint
-            $table->foreign('city_id')->references('id')->on('cities')->onDelete('cascade');
         });
     }
 

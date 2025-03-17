@@ -12,7 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('package_faqs', function (Blueprint $table) {
-            $table->id();
             $table->bigIncrements('id');
             $table->bigInteger('package_id')->unsigned();
             $table->integer('question_number')->autoIncrement(false); // Auto-generated question number

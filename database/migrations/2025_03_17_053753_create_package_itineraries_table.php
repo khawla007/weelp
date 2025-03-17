@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('package_schedules', function (Blueprint $table) {
+        Schema::create('package_itineraries', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('package_id')->constrained('packages')->onDelete('cascade');
-            $table->integer('day');
             $table->timestamps();
         });
     }
@@ -24,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('package_schedules');
+        Schema::dropIfExists('package_itineraries');
     }
 };

@@ -29,7 +29,9 @@ use App\Http\Controllers\Public\PublicCitiesController;
 use App\Http\Controllers\Public\PublicPlaceController;
 use App\Http\Controllers\Public\PublicActivityController;
 use App\Http\Controllers\Public\PublicItineraryController;
+use App\Http\Controllers\Public\PublicPackageController;
 use App\Http\Controllers\Public\PublicTransferController;
+use App\Http\Controllers\Public\PublicHomeSearchController;
 
 Route::get('/test', function () {
     return response()->json(['message' => 'Route Working!']);
@@ -108,6 +110,7 @@ Route::prefix('region')->group(function () {
     // Route::get('/{region_slug}/{city_slug}', [PublicRegionController::class, 'getPlacesByCity']);
     Route::get('/{region_slug}/{city_slug}/activities', [PublicRegionController::class, 'getActivityByCity']);
     Route::get('/{region_slug}/{city_slug}/itineraries/', [PublicRegionController::class, 'getItinerariesByCity']);
+    Route::get('/{region_slug}/{city_slug}/packages/', [PublicRegionController::class, 'getPackagesByCity']);
 
     // Route::get('/{region_slug}/country-{country_slug}', [PublicRegionController::class, 'getStatesByCountry']);
     // Route::get('/{region_slug}/country-{country_slug}/{state_slug}', [PublicRegionController::class, 'getCitiesByState']);
@@ -138,3 +141,16 @@ Route::prefix('itineraries')->group(function () {
     Route::get('/', [PublicItineraryController::class, 'index']);
     Route::get('/{slug}', [PublicItineraryController::class, 'show']);
 });
+
+// Packages api
+Route::prefix('packages')->group(function () {
+    Route::get('/', [PublicPackageController::class, 'index']);
+    Route::get('/{slug}', [PublicPackageController::class, 'show']);
+});
+
+//get_featured Cities
+Route::get('/featured-cities', [PublicCitiesController::class, 'getFeaturedCities']);
+
+//Search API
+Route::get('/homesearch', [PublicHomeSearchController::class, 'homeSearch']);
+Route::get('/regions-cities', [PublicHomeSearchController::class, 'getRegionsAndCities']);

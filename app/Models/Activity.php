@@ -9,7 +9,7 @@ class Activity extends Model {
     use HasFactory;
 
     protected $fillable = [
-        'name', 'slug', 'description', 'short_description', 'featured_images', 'featured_activity'
+        'name', 'slug', 'description', 'item_type', 'short_description', 'featured_images', 'featured_activity'
     ];
 
     protected $casts = [
@@ -56,5 +56,21 @@ class Activity extends Model {
     public function availability()
     {
         return $this->hasOne(ActivityAvailability::class);
+    }
+
+    public function itineraryActivity() {
+        return $this->hasMany(ItenraryActivityMapping::class, 'activity_id');
+    }
+    
+    public function itineraries() {
+        return $this->hasManyThrough(Itinerary::class, ItenraryActivityMapping::class, 'activity_id', 'id', 'id', 'itinerary_id');
+    }
+
+    public function packageActivity() {
+        return $this->hasMany(PackageActivityMapping::class, 'activity_id');
+    }
+    
+    public function packages() {
+        return $this->hasManyThrough(Package::class, PackageActivityMapping::class, 'activity_id', 'id', 'id', 'package_id');
     }
 }

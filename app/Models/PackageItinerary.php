@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class PriceVariation extends Model
+class PackageItinerary extends Model
 {
     //
 }

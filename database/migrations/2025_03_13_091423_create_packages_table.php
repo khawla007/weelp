@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('packages', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('slug')->unique();
             $table->text('description');
             $table->string('item_type')->default('package'); // Fixed value 'package'
             $table->boolean('featured')->default(false);

@@ -28,5 +28,49 @@ class PublicCitiesController extends Controller
             'data' => $cities
         ]);
     }
+
+    public function getFeaturedCities()
+    {
+        $cities = City::with([
+            'state.country.regions' // Load state, country, and regions
+        ])
+        ->where('featured_destination', true)
+        ->get()
+        ->map(function ($city) {
+            return [
+                'id' => $city->id,
+                'name' => $city->name,
+                'featured_image' => $city->featured_image,
+                'state' => [
+                    'id' => $city->state->id ?? null,
+                    'name' => $city->state->name ?? null,
+                ],
+                'country' => [
+                    'id' => $city->state->country->id ?? null,
+                    'name' => $city->state->country->name ?? null,
+                ],
+                'region' => $city->state->country->regions->map(function ($region) {
+                    return [
+                        'id' => $region->id,
+                        'name' => $region->name,
+                    ];
+                })
+            ];
+        });
+
+        if ($cities->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No featured cities found',
+                'data' => []
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $cities
+        ]);
+    }
+
 }
 

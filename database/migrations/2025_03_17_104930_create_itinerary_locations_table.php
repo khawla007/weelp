@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('package_schedules', function (Blueprint $table) {
+        Schema::create('itinerary_locations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('package_id')->constrained('packages')->onDelete('cascade');
-            $table->integer('day');
+            $table->foreignId('itinerary_id')->constrained('itineraries')->onDelete('cascade');
+            $table->foreignId('city_id')->constrained('cities')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('package_schedules');
+        Schema::dropIfExists('itinerary_locations');
     }
 };

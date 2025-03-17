@@ -88,8 +88,19 @@ class City extends Model
         return $this->hasManyThrough(Activity::class, ActivityLocation::class, 'city_id', 'id', 'id', 'activity_id');
     }
 
-    public function itineraries()
-    {
-        return $this->hasMany(Itinerary::class);
+    public function itineraryLocations() {
+        return $this->hasMany(ItineraryLocation::class, 'city_id');
+    }
+
+    public function itineraries() {
+        return $this->hasManyThrough(Itinerary::class, ItineraryLocation::class, 'city_id', 'id', 'id', 'itinerary_id');
+    }
+
+    public function packageLocations() {
+        return $this->hasMany(PackageLocation::class, 'city_id');
+    }
+
+    public function packages() {
+        return $this->hasManyThrough(Package::class, PackageLocation::class, 'city_id', 'id', 'id', 'package_id');
     }
 }

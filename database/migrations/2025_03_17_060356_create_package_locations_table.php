@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('blackout_dates', function (Blueprint $table) {
+        Schema::create('package_locations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('package_id')->constrained('packages')->onDelete('cascade');
-            $table->date('date');
-            $table->text('reason')->nullable();
+            $table->foreignId('city_id')->constrained('cities')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('blackout_dates');
+        Schema::dropIfExists('package_locations');
     }
 };

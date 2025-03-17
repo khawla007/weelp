@@ -11,10 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('package_schedules', function (Blueprint $table) {
+        Schema::create('package_base_pricing', function (Blueprint $table) {
             $table->id();
             $table->foreignId('package_id')->constrained('packages')->onDelete('cascade');
-            $table->integer('day');
+            $table->string('currency', 50);
+            $table->string('availability');
+            $table->date('start_date')->nullable();
+            $table->date('end_date')->nullable();
             $table->timestamps();
         });
     }
@@ -24,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('package_schedules');
+        Schema::dropIfExists('package_base_pricing');
     }
 };

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('package_availability', function (Blueprint $table) {
+        Schema::create('package_availabilities', function (Blueprint $table) {
             $table->id();
             $table->foreignId('package_id')->constrained()->onDelete('cascade');
             $table->boolean('date_based_package')->default(false);
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('package_availability');
+        Schema::dropIfExists('package_availabilities');
     }
 };

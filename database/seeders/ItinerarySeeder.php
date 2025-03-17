@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Models\Itinerary;
+use App\Models\ItineraryLocation;
 use App\Models\ItinerarySchedule;
 use App\Models\ItineraryActivity;
 use App\Models\ItineraryTransfer;
@@ -31,6 +32,7 @@ class ItinerarySeeder extends Seeder
         // Tables ko truncate ki jagah delete karo
         Itinerary::query()->delete();
         ItinerarySchedule::query()->delete();
+        ItineraryLocation::query()->delete();
         ItineraryActivity::query()->delete();
         ItineraryTransfer::query()->delete();
         ItineraryBasePricing::query()->delete();
@@ -51,7 +53,6 @@ class ItinerarySeeder extends Seeder
                 'name' => 'Luxury Safari in Kenya',
                 'slug' => Str::slug('Luxury Safari in Kenya'),
                 'description' => 'Explore the luxury of Kenyas wild safari.',
-                'city_id' => 1,
                 'featured' => true,
                 'private' => false,
             ],
@@ -59,7 +60,6 @@ class ItinerarySeeder extends Seeder
                 'name' => 'Adventure Trek in Nepal',
                 'slug' => Str::slug('Adventure Trek in Nepal'),
                 'description' => 'Experience the thrill of the Himalayas.',
-                'city_id' => 2,
                 'featured' => true,
                 'private' => false,
             ],
@@ -67,7 +67,6 @@ class ItinerarySeeder extends Seeder
                 'name' => 'Beach Vacation in Maldives',
                 'slug' => Str::slug('Beach Vacation in Maldives'),
                 'description' => 'Relax on the white sands of Maldives.',
-                'city_id' => 3,
                 'featured' => false,
                 'private' => false,
             ],
@@ -75,7 +74,6 @@ class ItinerarySeeder extends Seeder
                 'name' => 'Cultural Tour in Japan',
                 'slug' => Str::slug('Cultural Tour in Japan'),
                 'description' => 'Explore the rich culture of Japan.',
-                'city_id' => 4,
                 'featured' => true,
                 'private' => true,
             ],
@@ -83,7 +81,6 @@ class ItinerarySeeder extends Seeder
                 'name' => 'Cultural Tour in Kangra',
                 'slug' => Str::slug('Cultural Tour in kangra'),
                 'description' => 'Explore the rich culture of Japan.',
-                'city_id' => 4,
                 'featured' => true,
                 'private' => true,
             ],
@@ -91,7 +88,6 @@ class ItinerarySeeder extends Seeder
                 'name' => 'Cultural Tour in Lama Temple',
                 'slug' => Str::slug('Cultural Tour in Lama Temple'),
                 'description' => 'Explore the rich culture of Japan.',
-                'city_id' => 4,
                 'featured' => true,
                 'private' => true,
             ],
@@ -99,7 +95,6 @@ class ItinerarySeeder extends Seeder
                 'name' => 'Cultural Tour in Dharamshala',
                 'slug' => Str::slug('Cultural Tour in Dharamshala'),
                 'description' => 'Explore the rich culture of Japan.',
-                'city_id' => 4,
                 'featured' => true,
                 'private' => true,
             ],
@@ -107,7 +102,6 @@ class ItinerarySeeder extends Seeder
                 'name' => 'Cultural Tour in Rehan',
                 'slug' => Str::slug('Cultural Tour in Rehan'),
                 'description' => 'Explore the rich culture of Japan.',
-                'city_id' => 4,
                 'featured' => true,
                 'private' => true,
             ],
@@ -115,6 +109,11 @@ class ItinerarySeeder extends Seeder
 
         foreach ($itineraries as $itineraryData) {
             $itinerary = Itinerary::create($itineraryData);
+
+            ItineraryLocation::create([
+                'itinerary_id' => $itinerary->id,
+                'city_id' => rand(1, 4),
+            ]);
 
             for ($day = 1; $day <= 3; $day++) {
                 $schedule = ItinerarySchedule::create([

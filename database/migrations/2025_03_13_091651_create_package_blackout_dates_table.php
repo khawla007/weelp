@@ -11,13 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('package_pricing', function (Blueprint $table) {
+        Schema::create('package_blackout_dates', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('package_id')->constrained('packages')->onDelete('cascade');
-            $table->string('currency');
-            $table->string('availability');
-            $table->date('start_date')->nullable();
-            $table->date('end_date')->nullable();
+            $table->foreignId('base_pricing_id')->constrained('package_base_pricing')->onDelete('cascade');
+            $table->date('date');
+            $table->text('reason')->nullable();
             $table->timestamps();
         });
     }
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('package_pricing');
+        Schema::dropIfExists('package_blackout_dates');
     }
 };
