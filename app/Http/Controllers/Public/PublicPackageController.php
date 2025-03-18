@@ -26,7 +26,7 @@ class PublicPackageController extends Controller
             'inclusionsExclusions',
             'mediaGallery',
             'seo',
-            'categories',
+            'categories.category', 
             'attributes',
             'tags'
         ])->get()->map(function ($package) {
@@ -54,9 +54,15 @@ class PublicPackageController extends Controller
                         
                     ];
                 }),
-                'categories' => $package->categories->pluck('name')->toArray(),
+                'categories' => $package->categories->map(function ($category) {
+                    return [
+                        'id' => $category->category->id,
+                        'name' => $category->category->name,
+                    ];
+                })->toArray(),
                 'attributes' => $package->attributes->map(function ($attribute) {
                     return [
+                        // 'id' => $attribute->attribute->id,
                         'name' => $attribute->attribute->name,
                         'attribute_value' => $attribute->attribute_value,
                     ];
@@ -85,8 +91,8 @@ class PublicPackageController extends Controller
             'inclusionsExclusions',
             'mediaGallery',
             'seo',
-            'faq',
-            'categories',
+            'faqs',
+            'categories.category', 
             'attributes.attribute',
             'tags'
         ])->where('slug', $slug)->first();
@@ -153,13 +159,13 @@ class PublicPackageController extends Controller
             }),
             'categories' => $package->categories->map(function ($category) {
                 return [
-                    'id' => $category->id,
-                    'name' => $category->name,
+                    'id' => $category->category->id,
+                    'name' => $category->category->name,
                 ];
             })->toArray(),
             'attributes' => $package->attributes->map(function ($attribute) {
                 return [
-                    'id' => $attribute->attribute->id, // Attribute ID
+                    // 'id' => $attribute->attribute->id,
                     'name' => $attribute->attribute->name,
                     'attribute_value' => $attribute->attribute_value,
                 ];
@@ -174,7 +180,7 @@ class PublicPackageController extends Controller
             'inclusions_exclusions' => $package->inclusionsExclusions,
             'media_gallery' => $package->mediaGallery,
             'information' => $package->information,
-            'faq' => $package->faq,
+            'faqs' => $package->faqs,
             'seo' => $package->seo,
         ];
 

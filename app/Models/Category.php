@@ -26,9 +26,22 @@ class Category extends Model
     public function activities() {
         return $this->hasManyThrough(Activity::class, ActivityCategoryMapping::class, 'category_id', 'id', 'id', 'activity_id');
     }
+
+    public function itineraryCategories() {
+        return $this->hasMany(ItineraryCategoryMapping::class, 'category_id');
+    }
     
     public function itineraries()
     {
-        return $this->belongsToMany(Itinerary::class, 'itinerary_category');
+        return $this->hasManyThrough(Itinerary::class, ItineraryCategoryMapping::class, 'category_id', 'id', 'id', 'itinerary_id');
+    }
+
+    public function packageCategories() {
+        return $this->hasMany(PackageCategoryMapping::class, 'category_id');
+    }
+    
+    public function packages()
+    {
+        return $this->hasManyThrough(Package::class, PackageCategoryMapping::class, 'category_id', 'id', 'id', 'package_id');
     }
 }

@@ -32,10 +32,27 @@ class PublicHomeSearchController extends Controller
         $itineraries = $this->searchItineraries($cityIds, $startDate, $endDate, $quantity);
         $packages = $this->searchPackages($cityIds, $startDate, $endDate, $quantity);
 
+        
+        $categoriesList = collect([]);
+
+        $categoriesList = $categoriesList
+        ->merge($activities->flatMap(function ($activity) {
+            return $activity['categories'];
+        }))
+        ->merge($itineraries->flatMap(function ($itinerary) {
+            return $itinerary['categories'];
+        }))
+        ->merge($packages->flatMap(function ($package) {
+            return $package['categories'];
+        }))
+        ->unique('id')
+        ->values();
+
         $results = [
             'activities' => $activities,
             'itineraries' => $itineraries,
             'packages' => $packages,
+            'categories_list' => $categoriesList
         ];
 
         if ($activities->isEmpty() && $itineraries->isEmpty() && $packages->isEmpty()) {
@@ -69,10 +86,17 @@ class PublicHomeSearchController extends Controller
         return $cityIds;
     }
 
-    // ✅ FIXED Activity Availability Reference
+    // Activity Search Function
     private function searchActivities($cityIds, $startDate, $endDate, $quantity)
     {
-        $query = Activity::whereHas('locations', function ($q) use ($cityIds) {
+        $query = Activity::with([
+            'categories' => function ($q) {
+                $q->with('category:id,name'); 
+            },
+            'pricing',
+            'groupDiscounts',
+            'earlyBirdDiscount'
+        ])->whereHas('locations', function ($q) use ($cityIds) {
             $q->whereIn('city_id', $cityIds);
         });
 
@@ -96,17 +120,54 @@ class PublicHomeSearchController extends Controller
             });
         }
 
-        return $query->get();
+        // return $query->get();
+        return $query->get()->map(function ($activity) {
+            $categories = $activity->categories->map(function ($activityCategory) {
+                return [
+                    'id' => $activityCategory->category->id,
+                    'name' => $activityCategory->category->name,
+                ];
+            })->unique()->values();
+        
+            return [
+                'id' => $activity->id,
+                'name' => $activity->name,
+                'item_type' => $activity->item_type,
+                'categories' => $categories,
+                'pricing' => $activity->pricing ? [
+                    'base_price' => $activity->pricing->base_price,
+                    'currency' => $activity->pricing->currency,
+                ] : null,
+                'group_discount' => $activity->groupDiscounts ? $activity->groupDiscounts->map(function ($discount) {
+                    return [
+                        'min_people' => $discount->min_people,
+                        'discount_amount' => $discount->discount_amount,
+                        'discount_type' => $discount->discount_type,
+                    ];
+                }) : [],
+                'early_bird_discount' => $activity->earlyBirdDiscount ? [
+                    'days_before_start' => $activity->earlyBirdDiscount->first()?->days_before_start,
+                    'discount_amount' => $activity->earlyBirdDiscount->first()?->discount_amount,
+                    'discount_type' => $activity->earlyBirdDiscount->first()?->discount_type,
+                ] : null,
+            ];
+        });
     }
 
 
-    // ✅ FIXED Itineraries Availability Reference
+    // Itinerary Search Function
     private function searchItineraries($cityIds, $startDate, $endDate, $quantity)
     {
-        $query = Itinerary::whereHas('locations', function ($q) use ($cityIds) {
+        $query = Itinerary::with([
+            'categories' => function ($q) {
+                $q->with('category:id,name'); 
+            },
+            'locations',
+            'basePricing.variations',
+        ])->whereHas('locations', function ($q) use ($cityIds) {
             $q->whereIn('city_id', $cityIds);
         });
-
+    
         if ($startDate && $endDate) {
             $query->whereHas('availability', function ($q) use ($startDate, $endDate) {
                 $q->where('date_based_itinerary', true)
@@ -114,7 +175,7 @@ class PublicHomeSearchController extends Controller
                     ->where('end_date', '>=', $endDate);
             });
         }
-
+    
         if ($quantity) {
             $query->whereHas('availability', function ($q) use ($quantity) {
                 $q->where(function ($q) use ($quantity) {
@@ -126,24 +187,62 @@ class PublicHomeSearchController extends Controller
                 });
             });
         }
+    
+        $itineraries = $query->get();
+    
+        $itineraries->transform(function ($itinerary) {
 
-        return $query->get();
+            $categories = $itinerary->categories->map(function ($itineraryCategory) {
+                return [
+                    'id' => $itineraryCategory->category->id,
+                    'name' => $itineraryCategory->category->name,
+                ];
+            })->unique()->values();
+
+            return [
+                'id' => $itinerary->id,
+                'name' => $itinerary->name,
+                'item_type' => $itinerary->item_type,
+                'categories' => $categories,
+                'base_pricing' => $itinerary->basePricing ? [
+                    'currency' => $itinerary->basePricing->currency,
+                    'availability' => $itinerary->basePricing->availability,
+                    'start_date' => $itinerary->basePricing->start_date,
+                    'end_date' => $itinerary->basePricing->end_date,
+                    'variations' => $itinerary->basePricing->variations->map(function ($variation) {
+                        return [
+                            'id' => $variation->id,
+                            'name' => $variation->name,
+                            'regular_price' => $variation->regular_price,
+                            'sale_price' => $variation->sale_price,
+                            'max_guests' => $variation->max_guests,
+                            'description' => $variation->description,
+                        ];
+                    })->toArray(),
+                ] : null,
+            ];
+        });
+    
+        return $itineraries;
     }
+    
 
-    // ✅ FIXED Packages Availability Reference
+    // Package Search function
     private function searchPackages($cityIds, $startDate, $endDate, $quantity)
     {
-        $query = Package::whereHas('locations', function ($q) use ($cityIds) {
+        // $query = Package::whereHas('locations', function ($q) use ($cityIds) {
+        //     $q->whereIn('city_id', $cityIds);
+        // });
+
+        $query = Package::with([
+            'categories' => function ($q) {
+                $q->with('category:id,name'); 
+            },
+            'locations',
+            'basePricing.variations',
+        ])->whereHas('locations', function ($q) use ($cityIds) {
             $q->whereIn('city_id', $cityIds);
         });
-
-        // if ($startDate && $endDate) {
-        //     $query->where('date_based_availability', true)
-        //         ->whereHas('package_availabilities', function ($q) use ($startDate, $endDate) {
-        //             $q->where('start_date', '<=', $startDate)
-        //                 ->where('end_date', '>=', $endDate);
-        //         });
-        // }
 
         if ($startDate && $endDate) {
             $query->whereHas('availability', function ($q) use ($startDate, $endDate) {
@@ -152,16 +251,6 @@ class PublicHomeSearchController extends Controller
                     ->where('end_date', '>=', $endDate);
             });
         }
-
-        // if ($quantity) {
-        //     $query->where(function ($q) use ($quantity) {
-        //         $q->where('quantity_based_availability', false)
-        //             ->orWhere(function ($q) use ($quantity) {
-        //                 $q->where('quantity_based_availability', true)
-        //                     ->where('max_quantity', '>=', $quantity);
-        //             });
-        //     });
-        // }
 
         if ($quantity) {
             $query->whereHas('availability', function ($q) use ($quantity) {
@@ -175,7 +264,43 @@ class PublicHomeSearchController extends Controller
             });
         }
 
-        return $query->get();
+        // return $query->get();
+        $packages = $query->get();
+    
+        $packages->transform(function ($package) {
+
+            $categories = $package->categories->map(function ($packageCategory) {
+                return [
+                    'id' => $packageCategory->category->id,
+                    'name' => $packageCategory->category->name,
+                ];
+            })->unique()->values();
+
+            return [
+                'id' => $package->id,
+                'name' => $package->name,
+                'item_type' => $package->item_type,
+                'categories' => $categories,
+                'base_pricing' => $package->basePricing ? [
+                    'currency' => $package->basePricing->currency,
+                    'availability' => $package->basePricing->availability,
+                    'start_date' => $package->basePricing->start_date,
+                    'end_date' => $package->basePricing->end_date,
+                    'variations' => $package->basePricing->variations->map(function ($variation) {
+                        return [
+                            'id' => $variation->id,
+                            'name' => $variation->name,
+                            'regular_price' => $variation->regular_price,
+                            'sale_price' => $variation->sale_price,
+                            'max_guests' => $variation->max_guests,
+                            'description' => $variation->description,
+                        ];
+                    })->toArray(),
+                ] : null,
+            ];
+        });
+    
+        return $packages;
     }
 
     public function getRegionsAndCities()
@@ -185,7 +310,7 @@ class PublicHomeSearchController extends Controller
             ->get()
             ->map(function ($region) {
                 return [
-                    'id' => 'region_' . $region->id, // Prefix to differentiate region and city
+                    'id' => 'region_' . $region->id, 
                     'name' => $region->name,
                     'type' => 'region'
                 ];
@@ -196,7 +321,7 @@ class PublicHomeSearchController extends Controller
             ->get()
             ->map(function ($city) {
                 return [
-                    'id' => 'city_' . $city->id, // Prefix to differentiate region and city
+                    'id' => 'city_' . $city->id, 
                     'name' => $city->name,
                     'type' => 'city'
                 ];

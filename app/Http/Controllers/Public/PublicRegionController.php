@@ -90,7 +90,7 @@ class PublicRegionController extends Controller
             $query->where('city_id', $city->id)
                 ->where('location_type', 'primary');
         })
-        ->with(['pricing', 'groupDiscounts', 'locations.city.state.country.regions'])
+        ->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions'])
         ->get();
 
         if ($activities->isEmpty()) {
@@ -108,6 +108,12 @@ class PublicRegionController extends Controller
                 'featured_activity' => $activity->featured_activity,
                 'pricing' => $activity->pricing,
                 'groupDiscounts' => $activity->groupDiscounts,
+                'categories' => $activity->categories->map(function ($category) {
+                    return [
+                        'id' => $category->category->id,
+                        'name' => $category->category->name,
+                    ];
+                })->toArray(),
 
                 //  All Locations (including primary + additional)
                 'locations' => $activity->locations->map(function ($location) {
@@ -227,7 +233,7 @@ class PublicRegionController extends Controller
             // 'inclusionsExclusions',
             'mediaGallery',
             // 'seo',
-            'categories',
+            'categories.category',
             // 'attributes.attribute',
             'tags'
         ])->get();
@@ -290,8 +296,8 @@ class PublicRegionController extends Controller
                 // }),
                 'categories' => $itinerary->categories->map(function ($category) {
                     return [
-                        'id' => $category->id,
-                        'name' => $category->name,
+                        'id' => $category->category->id,
+                        'name' => $category->category->name,
                     ];
                 })->toArray(),
                 // 'attributes' => $itinerary->attributes->map(function ($attribute) {
@@ -338,7 +344,7 @@ class PublicRegionController extends Controller
             // 'inclusionsExclusions',
             'mediaGallery',
             // 'seo',
-            'categories',
+            'categories.category',
             // 'attributes.attribute',
             'tags'
         ])->get();
@@ -401,8 +407,8 @@ class PublicRegionController extends Controller
                 // }),
                 'categories' => $package->categories->map(function ($category) {
                     return [
-                        'id' => $category->id,
-                        'name' => $category->name,
+                        'id' => $category->category->id,
+                        'name' => $category->category->name,
                     ];
                 })->toArray(),
                 // 'attributes' => $package->attributes->map(function ($attribute) {

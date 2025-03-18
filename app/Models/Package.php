@@ -34,7 +34,7 @@ class Package extends Model
 
     public function basePricing()
     {
-        return $this->hasMany(PackageBasePricing::class);
+        return $this->hasOne(PackageBasePricing::class, 'package_id');
     }
 
     public function inclusionsExclusions()
@@ -45,7 +45,7 @@ class Package extends Model
     // Category relation
     public function categories()
     {
-        return $this->belongsToMany(Category::class, 'package_categories');
+        return $this->hasMany(PackageCategory::class);
     }
 
     // Attribute relation

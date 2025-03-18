@@ -24,7 +24,7 @@ class Itinerary extends Model
     // Base pricing relation
     public function basePricing()
     {
-        return $this->hasOne(ItineraryBasePricing::class);
+        return $this->hasOne(ItineraryBasePricing::class, 'itinerary_id');
     }
 
     // Inclusion/Exclusion relation
@@ -46,9 +46,8 @@ class Itinerary extends Model
     }
 
     // Category relation
-    public function categories()
-    {
-        return $this->belongsToMany(Category::class, 'itinerary_categories');
+    public function categories() {
+        return $this->hasMany(ItineraryCategory::class);
     }
 
     // Attribute relation
