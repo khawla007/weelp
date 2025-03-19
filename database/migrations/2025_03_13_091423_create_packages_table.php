@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->text('description');
             $table->string('item_type')->default('package'); // Fixed value 'package'
-            $table->boolean('featured')->default(false);
-            $table->boolean('private')->default(false);
+            $table->boolean('featured_package')->default(false);
+            $table->boolean('private_package')->default(false);
             $table->timestamps();
         });
     }

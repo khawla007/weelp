@@ -7,7 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class Itinerary extends Model
 {
     protected $fillable = [
-        'name', 'slug', 'description', 'featured', 'private'
+        'name', 'slug', 'description', 'featured_itinerary', 'private_itinerary'
+    ];
+
+    protected $casts = [
+        'featured_itinerary' => 'boolean',
+        'private_itinerary' => 'boolean'
     ];
 
     public function locations() {

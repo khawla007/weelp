@@ -13,8 +13,13 @@ class Package extends Model
         'name',
         'description',
         'item_type',
-        'featured',
-        'private',
+        'featured_package',
+        'private_package',
+    ];
+
+    protected $casts = [
+        'featured_package' => 'boolean',
+        'private_package' => 'boolean'
     ];
 
     public function locations() {

@@ -14,8 +14,8 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->text('description')->nullable();
             $table->string('item_type')->default('itinerary'); 
-            $table->boolean('featured')->default(false);
-            $table->boolean('private')->default(false);
+            $table->boolean('featured_itinerary')->default(false);
+            $table->boolean('private_itinerary')->default(false);
             $table->timestamps();
 
         });

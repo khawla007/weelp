@@ -35,50 +35,9 @@ class PublicRegionController extends Controller
         return response()->json($cities);
     }
 
-    // -----------------------Old code to get activity based on city without location details--------------------------
-
-    // public function getActivityByCity($region_slug, $city_slug)
-    // {
-    //     $city = City::with(['state.country.regions'])->where('slug', $city_slug)->first();
-    
-    //     if (!$city) {
-    //         return response()->json(['message' => 'City not found.'], 404);
-    //     }
-    
-    //     $activities = $city->activities()->with(['pricing', 'groupDiscounts'])->get();
-    
-    //     if ($activities->isEmpty()) {
-    //         return response()->json(['message' => 'No activities found for this city.'], 404);
-    //     }
-    
-    //     $formattedActivities = $activities->map(function ($activity) use ($city) {
-    //         return [
-    //             'id' => $activity->id,
-    //             'name' => $activity->name,
-    //             'slug' => $activity->slug,
-    //             'pricing' => $activity->pricing,
-    //             'groupDiscounts' => $activity->groupDiscounts,
-    //             'city' => $city->name,
-    //             'city_id' => $city->id,
-    //             'state' => $city->state ? $city->state->name : null,
-    //             'state_id' => $city->state ? $city->state->id : null,
-    //             'country' => $city->state && $city->state->country ? $city->state->country->name : null,
-    //             'country_id' => $city->state && $city->state->country ? $city->state->country->id : null,
-    //             'region' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
-    //                 ? $city->state->country->regions->pluck('name')->join(', ')
-    //                 : null,
-    //             'region_id' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
-    //                 ? $city->state->country->regions->pluck('id')->join(', ')
-    //                 : null,
-    //         ];
-    //     });
-    
-    //     return response()->json($formattedActivities);
-    // }
-
     // -----------------------Code to get activity based on location type primary city with location details--------------------------
-
-    public function getActivityByCity($region_slug, $city_slug)
+    // public function getActivityByCity($region_slug, $city_slug)
+    public function getActivityByCity($city_slug)
     {
         $city = City::with(['state.country.regions'])->where('slug', $city_slug)->first();
 
@@ -91,6 +50,7 @@ class PublicRegionController extends Controller
                 ->where('location_type', 'primary');
         })
         ->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions'])
+        ->where('featured_activity', true) 
         ->get();
 
         if ($activities->isEmpty()) {
@@ -104,7 +64,7 @@ class PublicRegionController extends Controller
                 'id' => $activity->id,
                 'name' => $activity->name,
                 'slug' => $activity->slug,
-                'item' => $activity->item_type,
+                'item_type' => $activity->item_type,
                 'featured_activity' => $activity->featured_activity,
                 'pricing' => $activity->pricing,
                 'groupDiscounts' => $activity->groupDiscounts,
@@ -143,79 +103,9 @@ class PublicRegionController extends Controller
         return response()->json($formattedActivities);
     }
 
-    // -----------------------Code to get activity based on location type primary city with location details and Pagiantion--------------------------
-
-    // public function getActivityByCity($region_slug, $city_slug)
-    // {
-    //     $page = request('page', 1);
-    
-    //     $city = City::with(['state.country.regions'])->where('slug', $city_slug)->first();
-    
-    //     if (!$city) {
-    //         return response()->json(['message' => 'City not found.'], 404);
-    //     }
-    
-    //     $activities = Activity::whereHas('locations', function ($query) use ($city) {
-    //             $query->where('city_id', $city->id)
-    //                 ->where('location_type', 'primary');
-    //         })
-    //         ->with(['pricing', 'groupDiscounts', 'locations.city.state.country.regions'])
-    //         ->orderBy('id', 'asc')
-    //         ->paginate(1, ['*'], 'page', $page)
-    //         ->appends(request()->query());
-    
-    //     if ($activities->isEmpty()) {
-    //         return response()->json(['message' => 'No activities found for this city.'], 404);
-    //     }
-    
-    //     $formattedActivities = $activities->map(function ($activity) {
-    //         $primaryLocation = $activity->locations->where('location_type', 'primary')->first();
-    
-    //         return [
-    //             'id' => $activity->id,
-    //             'name' => $activity->name,
-    //             'slug' => $activity->slug,
-    //             'featured_activity' => $activity->featured_activity,
-    //             'pricing' => $activity->pricing,
-    //             'groupDiscounts' => $activity->groupDiscounts,
-    //             'locations' => $activity->locations->map(function ($location) {
-    //                 $city = $location->city;
-    
-    //                 return [
-    //                     'location_type' => $location->location_type,
-    //                     'location_label' => $location->location_label,
-    //                     'duration' => $location->duration,
-    //                     'city_id' => $city->id,
-    //                     'city' => $city->name,
-    //                     'state_id' => $city->state ? $city->state->id : null,
-    //                     'state' => $city->state ? $city->state->name : null,
-    //                     'country_id' => $city->state && $city->state->country ? $city->state->country->id : null,
-    //                     'country' => $city->state && $city->state->country ? $city->state->country->name : null,
-    //                     'region_id' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
-    //                         ? $city->state->country->regions->first()->id
-    //                         : null,
-    //                     'region' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
-    //                         ? $city->state->country->regions->first()->name
-    //                         : null,
-    //                 ];
-    //             }),
-    //         ];
-    //     });
-    
-    //     return response()->json([
-    //         'data' => $formattedActivities,
-    //         'current_page' => $activities->currentPage(),
-    //         'last_page' => $activities->lastPage(),
-    //         'per_page' => $activities->perPage(),
-    //         'total' => $activities->total(),
-    //         'next_page_url' => $activities->nextPageUrl(),
-    //         'prev_page_url' => $activities->previousPageUrl(),
-    //     ]);
-    // }    
-
     // -----------------------Code to get Itineraries based on city with location details--------------------------
-
-    public function getItinerariesByCity($region_slug, $city_slug)
+    // public function getItinerariesByCity($region_slug, $city_slug)
+    public function getItinerariesByCity($city_slug)
     {
 
         $city = City::with(['state.country.regions'])->where('slug', $city_slug)->first();
@@ -226,17 +116,11 @@ class PublicRegionController extends Controller
 
         // Itineraries ke saath schedules aur related data fetch karo
         $itineraries = $city->itineraries()->with([
-            // 'schedules.activities.activity',
-            // 'schedules.transfers.transfer',
             'basePricing.variations',
-            // 'basePricing.blackoutDates',
-            // 'inclusionsExclusions',
             'mediaGallery',
-            // 'seo',
             'categories.category',
-            // 'attributes.attribute',
             'tags'
-        ])->get();
+        ])->where('featured_itinerary', true)->get();
 
         if ($itineraries->isEmpty()) {
             return response()->json(['message' => 'No itineraries found for this city.'], 404);
@@ -248,6 +132,7 @@ class PublicRegionController extends Controller
                 'name' => $itinerary->name,
                 'slug' => $itinerary->slug,
                 'item_type' => $itinerary->item_type,
+                'featured_itinerary' => $itinerary->featured_itinerary,
                 'locations' => $itinerary->locations->map(function ($location) {
                     $city = $location->city;
                     return [
@@ -265,48 +150,12 @@ class PublicRegionController extends Controller
                             : null,
                     ];
                 }),
-                // 'schedules' => $itinerary->schedules->map(function ($schedule) {
-                //     return [
-                //         'day' => $schedule->day,
-                //         'activities' => $schedule->activities->map(function ($activity) {
-                //             return [
-                //                 'id' => $activity->id,
-                //                 'name' => $activity->activity ? $activity->activity->name : null,
-                //                 'start_time' => $activity->start_time,
-                //                 'end_time' => $activity->end_time,
-                //                 'notes' => $activity->notes,
-                //                 'price' => $activity->price,
-                //                 'include_in_package' => $activity->include_in_package,
-                //             ];
-                //         }),
-                //         'transfers' => $schedule->transfers->map(function ($transfer) {
-                //             return [
-                //                 'id' => $transfer->id,
-                //                 'name' => $transfer->transfer ? $transfer->transfer->name : null,
-                //                 'start_time' => $transfer->start_time,
-                //                 'end_time' => $transfer->end_time,
-                //                 'pickup_location' => $transfer->pickup_location,
-                //                 'dropoff_location' => $transfer->dropoff_location,
-                //                 'pax' => $transfer->pax,
-                //                 'price' => $transfer->price,
-                //                 'include_in_package' => $transfer->include_in_package,
-                //             ];
-                //         }),
-                //     ];
-                // }),
                 'categories' => $itinerary->categories->map(function ($category) {
                     return [
                         'id' => $category->category->id,
                         'name' => $category->category->name,
                     ];
                 })->toArray(),
-                // 'attributes' => $itinerary->attributes->map(function ($attribute) {
-                //     return [
-                //         'id' => $attribute->attribute->id,
-                //         'name' => $attribute->attribute->name,
-                //         'attribute_value' => $attribute->attribute_value,
-                //     ];
-                // }),
                 'tags' => $itinerary->tags->map(function ($tag) {
                     return [
                         'id' => $tag->id,
@@ -314,9 +163,7 @@ class PublicRegionController extends Controller
                     ];
                 })->toArray(),
                 'base_pricing' => $itinerary->basePricing,
-                // 'inclusions_exclusions' => $itinerary->inclusionsExclusions,
                 'media_gallery' => $itinerary->mediaGallery,
-                // 'seo' => $itinerary->seo,
             ];
         });
 
@@ -327,7 +174,8 @@ class PublicRegionController extends Controller
 
     // -----------------------Code to get Packages based on city with location details--------------------------
 
-    public function getPackagesByCity($region_slug, $city_slug)
+    // public function getPackagesByCity($region_slug, $city_slug)
+    public function getPackagesByCity($city_slug)
     {
         $city = City::where('slug', $city_slug)->first();
 
@@ -335,19 +183,12 @@ class PublicRegionController extends Controller
             return response()->json(['message' => 'City not found.'], 404);
         }
 
-        // Itineraries ke saath schedules aur related data fetch karo
         $packages = $city->packages()->with([
-            // 'schedules.activities.activity',
-            // 'schedules.transfers.transfer',
             'basePricing.variations',
-            // 'basePricing.blackoutDates',
-            // 'inclusionsExclusions',
             'mediaGallery',
-            // 'seo',
             'categories.category',
-            // 'attributes.attribute',
             'tags'
-        ])->get();
+        ])->where('featured_package', true)->get();
 
         if ($packages->isEmpty()) {
             return response()->json(['message' => 'No packages found for this city.'], 404);
@@ -358,7 +199,8 @@ class PublicRegionController extends Controller
                 'id' => $package->id,
                 'name' => $package->name,
                 'slug' => $package->slug,
-                'item' => $package->item_type,
+                'item_type' => $package->item_type,
+                'featured_package' => $package->featured_package,
                 'locations' => $package->locations->map(function ($location) {
                     $city = $location->city;
                     return [
@@ -376,48 +218,12 @@ class PublicRegionController extends Controller
                             : null,
                     ];
                 }),
-                // 'schedules' => $package->schedules->map(function ($schedule) {
-                //     return [
-                //         'day' => $schedule->day,
-                //         'activities' => $schedule->activities->map(function ($activity) {
-                //             return [
-                //                 'id' => $activity->id,
-                //                 'name' => $activity->activity ? $activity->activity->name : null,
-                //                 'start_time' => $activity->start_time,
-                //                 'end_time' => $activity->end_time,
-                //                 'notes' => $activity->notes,
-                //                 'price' => $activity->price,
-                //                 'include_in_package' => $activity->include_in_package,
-                //             ];
-                //         }),
-                //         'transfers' => $schedule->transfers->map(function ($transfer) {
-                //             return [
-                //                 'id' => $transfer->id,
-                //                 'name' => $transfer->transfer ? $transfer->transfer->name : null,
-                //                 'start_time' => $transfer->start_time,
-                //                 'end_time' => $transfer->end_time,
-                //                 'pickup_location' => $transfer->pickup_location,
-                //                 'dropoff_location' => $transfer->dropoff_location,
-                //                 'pax' => $transfer->pax,
-                //                 'price' => $transfer->price,
-                //                 'include_in_package' => $transfer->include_in_package,
-                //             ];
-                //         }),
-                //     ];
-                // }),
                 'categories' => $package->categories->map(function ($category) {
                     return [
                         'id' => $category->category->id,
                         'name' => $category->category->name,
                     ];
                 })->toArray(),
-                // 'attributes' => $package->attributes->map(function ($attribute) {
-                //     return [
-                //         'id' => $attribute->attribute->id,
-                //         'name' => $attribute->attribute->name,
-                //         'attribute_value' => $attribute->attribute_value,
-                //     ];
-                // }),
                 'tags' => $package->tags->map(function ($tag) {
                     return [
                         'id' => $tag->id,
@@ -425,9 +231,7 @@ class PublicRegionController extends Controller
                     ];
                 })->toArray(),
                 'base_pricing' => $package->basePricing,
-                // 'inclusions_exclusions' => $package->inclusionsExclusions,
                 'media_gallery' => $package->mediaGallery,
-                // 'seo' => $package->seo,
             ];
         });
 
@@ -436,83 +240,160 @@ class PublicRegionController extends Controller
         ]);
     }
 
-    // -----------------------Code to get activity based on city with location details and Pagiantion--------------------------
+    // Getting all type of items through city for city page includiing activity , itinerary and package
+    public function getAllItemsByCity($city_slug)
+    {
+        $city = City::with(['state.country.regions'])->where('slug', $city_slug)->first();
 
-    // public function getItinerariesByCity($region_slug, $city_slug)
-    // {
-    //     $page = request('page', 1);
+        if (!$city) {
+            return response()->json(['message' => 'City not found.'], 404);
+        }
 
-    //     $city = City::where('slug', $city_slug)->first();
+        // Get Activities
+        $activities = Activity::whereHas('locations', function ($query) use ($city) {
+            $query->where('city_id', $city->id)
+                ->where('location_type', 'primary');
+        })
+        ->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions'])
+        ->get();
 
-    //     if (!$city) {
-    //         return response()->json(['message' => 'City not found.'], 404);
-    //     }
+        // Get Itineraries
+        $itineraries = $city->itineraries()->with([
+            'basePricing.variations',
+            'mediaGallery',
+            'categories.category',
+            'tags'
+        ])->get();
 
-    //     // Itineraries ke saath schedules aur related data fetch karo (paginated)
-    //     $itineraries = $city->itineraries()
-    //         ->with([
-    //             'basePricing.variations',
-    //             'mediaGallery',
-    //             'categories',
-    //             'tags'
-    //         ])
-    //         ->orderBy('id', 'asc')
-    //         ->paginate(1, ['*'], 'page', $page)
-    //         ->appends(request()->query());
+        // Get Packages
+        $packages = $city->packages()->with([
+            'basePricing.variations',
+            'mediaGallery',
+            'categories.category',
+            'tags'
+        ])->get();
 
-    //     if ($itineraries->isEmpty()) {
-    //         return response()->json(['message' => 'No itineraries found for this city.'], 404);
-    //     }
+        // Collecting the list of categories of all items that are present in this city.
+        $categoriesList = collect([]);
 
-    //     $formattedItineraries = $itineraries->map(function ($itinerary) {
-    //         return [
-    //             'id' => $itinerary->id,
-    //             'name' => $itinerary->name,
-    //             'slug' => $itinerary->slug,
-    //             'city_id' => $itinerary->city ? $itinerary->city->id : null,
-    //             'city' => $itinerary->city ? $itinerary->city->name : null,
-    //             'state_id' => $itinerary->city && $itinerary->city->state ? $itinerary->city->state->id : null,
-    //             'state' => $itinerary->city && $itinerary->city->state ? $itinerary->city->state->name : null,
-    //             'country_id' => $itinerary->city && $itinerary->city->state && $itinerary->city->state->country
-    //                 ? $itinerary->city->state->country->id
-    //                 : null,
-    //             'country' => $itinerary->city && $itinerary->city->state && $itinerary->city->state->country
-    //                 ? $itinerary->city->state->country->name
-    //                 : null,
-    //             'region_id' => $itinerary->city && $itinerary->city->state && $itinerary->city->state->country && $itinerary->city->state->country->regions->isNotEmpty()
-    //                 ? $itinerary->city->state->country->regions->first()->id
-    //                 : null,
-    //             'region' => $itinerary->city && $itinerary->city->state && $itinerary->city->state->country && $itinerary->city->state->country->regions->isNotEmpty()
-    //                 ? $itinerary->city->state->country->regions->first()->name
-    //                 : null,
-    //             'categories' => $itinerary->categories->map(function ($category) {
-    //                 return [
-    //                     'id' => $category->id,
-    //                     'name' => $category->name,
-    //                 ];
-    //             })->toArray(),
-    //             'tags' => $itinerary->tags->map(function ($tag) {
-    //                 return [
-    //                     'id' => $tag->id,
-    //                     'name' => $tag->name,
-    //                 ];
-    //             })->toArray(),
-    //             'base_pricing' => $itinerary->basePricing,
-    //             'media_gallery' => $itinerary->mediaGallery,
-    //         ];
-    //     });
+        $categoriesList = $categoriesList
+            ->merge($activities->flatMap(function ($activity) {
+                return $activity->categories->map(function ($category) {
+                    return [
+                        'id' => $category->category->id,
+                        'name' => $category->category->name,
+                    ];
+                });
+            }))
+            ->merge($itineraries->flatMap(function ($itinerary) {
+                return $itinerary->categories->map(function ($category) {
+                    return [
+                        'id' => $category->category->id,
+                        'name' => $category->category->name,
+                    ];
+                });
+            }))
+            ->merge($packages->flatMap(function ($package) {
+                return $package->categories->map(function ($category) {
+                    return [
+                        'id' => $category->category->id,
+                        'name' => $category->category->name,
+                    ];
+                });
+            }))
+            ->unique('id')
+            ->values(); 
 
-    //     return response()->json([
-    //         'data' => $formattedItineraries,
-    //         'current_page' => $itineraries->currentPage(),
-    //         'last_page' => $itineraries->lastPage(),
-    //         'per_page' => $itineraries->perPage(),
-    //         'total' => $itineraries->total(),
-    //         'next_page_url' => $itineraries->nextPageUrl(),
-    //         'prev_page_url' => $itineraries->previousPageUrl(),
-    //     ]);
-    // }
+        $formattedActivities = $activities->map(function ($activity) {
+            return [
+                'id' => $activity->id,
+                'name' => $activity->name,
+                'slug' => $activity->slug,
+                'item_type' => $activity->item_type,
+                'featured_activity' => $activity->featured_activity,
+                'pricing' => $activity->pricing,
+                'groupDiscounts' => $activity->groupDiscounts,
+                'categories' => $activity->categories->map(function ($category) {
+                    return [
+                        'id' => $category->category->id,
+                        'name' => $category->category->name,
+                    ];
+                })->toArray(),
+                'locations' => $activity->locations->map(function ($location) {
+                    $city = $location->city;
+                    return [
+                        'city_id' => $city->id,
+                        'city' => $city->name,
+                        'state' => $city->state ? $city->state->name : null,
+                        'country' => $city->state && $city->state->country ? $city->state->country->name : null,
+                        'region' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
+                            ? $city->state->country->regions->first()->name
+                            : null,
+                    ];
+                }),
+            ];
+        });
+        
+        $formattedItineraries = $itineraries->map(function ($itinerary) {
+            return [
+                'id' => $itinerary->id,
+                'name' => $itinerary->name,
+                'slug' => $itinerary->slug,
+                'item_type' => $itinerary->item_type,
+                'featured_itinerary' => $itinerary->featured_itinerary,
+                'base_pricing' => $itinerary->basePricing,
+                'categories' => $itinerary->categories->map(function ($category) {
+                    return [
+                        'id' => $category->category->id,
+                        'name' => $category->category->name,
+                    ];
+                })->toArray(),
+                'tags' => $itinerary->tags->map(function ($tag) {
+                    return [
+                        'id' => $tag->id,
+                        'name' => $tag->name,
+                    ];
+                })->toArray(),
+                'media_gallery' => $itinerary->mediaGallery,
+            ];
+        });
+        
+        $formattedPackages = $packages->map(function ($package) {
+            return [
+                'id' => $package->id,
+                'name' => $package->name,
+                'slug' => $package->slug,
+                'item_type' => $package->item_type,
+                'featured_package' => $package->featured_package,
+                'base_pricing' => $package->basePricing,
+                'categories' => $package->categories->map(function ($category) {
+                    return [
+                        'id' => $category->category->id,
+                        'name' => $category->category->name,
+                    ];
+                })->toArray(),
+                'tags' => $package->tags->map(function ($tag) {
+                    return [
+                        'id' => $tag->id,
+                        'name' => $tag->name,
+                    ];
+                })->toArray(),
+                'media_gallery' => $package->mediaGallery,
+            ];
+        });
+        
+        $allData = [
+            'all_items' => $formattedActivities
+                ->concat($formattedItineraries)
+                ->concat($formattedPackages),
 
+                'categories_list' => $categoriesList,
+        ];
+        
+        return response()->json($allData);
+    }
+
+    // -------------------------Getting places by city------------------------
     public function getPlacesByCity($region_slug, $city_slug)
     {
         $region = Region::where('name', $region_slug)->firstOrFail();

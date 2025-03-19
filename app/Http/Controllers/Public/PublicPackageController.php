@@ -13,8 +13,7 @@ use Illuminate\Http\JsonResponse;
 class PublicPackageController extends Controller
 {
     
-    //  -------------------Code to get itineraries with location details-------------------
-
+    //  -------------------Code to get Packages with location details-------------------
     public function index(): JsonResponse
     {
         $packages = Package::with([
@@ -34,6 +33,7 @@ class PublicPackageController extends Controller
                 'id' => $package->id,
                 'name' => $package->name,
                 'slug' => $package->slug,
+                'featured_package' => $package->featured_package,
                 'description' => $package->description,
                 'item_type' => $package->item_type,
                 'locations' => $package->locations->map(function ($location) {
@@ -77,8 +77,72 @@ class PublicPackageController extends Controller
         ]);
     }
 
-    // ---------------------------New Code to get Single Package with location details--------------------------
+    //  -------------------Code to get Packages featured based with location details-------------------
+    public function getFeaturedPackages(): JsonResponse
+    {
+        $packages = Package::with([
+            'locations.city',
+            'schedules.activities',
+            'schedules.transfers',
+            'basePricing.variations',
+            'basePricing.blackoutDates',
+            'inclusionsExclusions',
+            'mediaGallery',
+            'seo',
+            'categories.category', 
+            'attributes',
+            'tags'
+        ])
+        ->where('featured_package', true)
+        ->get()
+        ->map(function ($package) {
+            return [
+                'id' => $package->id,
+                'name' => $package->name,
+                'slug' => $package->slug,
+                'featured_package' => $package->featured_package,
+                'description' => $package->description,
+                'item_type' => $package->item_type,
+                'locations' => $package->locations->map(function ($location) {
+                    $city = $location->city;
+                    return [
+                        'city_id' => $city->id,
+                        'city' => $city->name,
+                        'state_id' => $city->state ? $city->state->id : null,
+                        'state' => $city->state ? $city->state->name : null,
+                        'country_id' => $city->state && $city->state->country ? $city->state->country->id : null,
+                        'country' => $city->state && $city->state->country ? $city->state->country->name : null,
+                        'region_id' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
+                            ? $city->state->country->regions->first()->id
+                            : null,
+                        'region' => $city->state && $city->state->country && $city->state->country->regions->isNotEmpty()
+                            ? $city->state->country->regions->first()->name
+                            : null,
+                    ];
+                }),
+                'categories' => $package->categories->map(function ($category) {
+                    return [
+                        'id' => $category->category->id,
+                        'name' => $category->category->name,
+                    ];
+                })->toArray(),
+                'attributes' => $package->attributes->map(function ($attribute) {
+                    return [
+                        'name' => $attribute->attribute->name,
+                        'attribute_value' => $attribute->attribute_value,
+                    ];
+                }),
+                'tags' => $package->tags->pluck('name')->toArray(),
+                'media_gallery' => $package->mediaGallery->pluck('url')->toArray(),
+            ];
+        });
 
+        return response()->json([
+            'data' => $packages
+        ]);
+    }
+
+    // ---------------------------New Code to get Single Package with location details--------------------------
     public function show($slug): JsonResponse
     {
         $package = Package::with([
@@ -108,6 +172,7 @@ class PublicPackageController extends Controller
             'id' => $package->id,
             'name' => $package->name,
             'slug' => $package->slug,
+            'featured_package' => $package->featured_package,
             'description' => $package->description,
             'item_type' => $package->item_type,
             'locations' => $package->locations->map(function ($location) {
