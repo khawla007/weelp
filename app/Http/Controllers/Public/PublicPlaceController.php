@@ -29,6 +29,13 @@ class PublicPlaceController extends Controller
 
         $places = Place::where('city_id', $city->id)->get();
 
+        if (collect($places)->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Place not found'
+            ], 404);
+        }
+        
         return response()->json([
             'success' => true,
             'data' => $places

@@ -127,7 +127,7 @@ class ActivitySeeder extends Seeder {
             // 💰 Pricing
             $pricing = ActivityPricing::create([
                 'activity_id' => $activity->id,
-                'base_price' => rand(50, 500),
+                'regular_price' => rand(50, 500),
                 'currency' => 'USD',
             ]);
 

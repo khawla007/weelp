@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 use App\Models\Region;
 use App\Models\Activity;
 use App\Models\Itinerary;
@@ -28,11 +29,22 @@ class PublicRegionController extends Controller
             }
         }
         
-        if (empty($cities)) {
-            return response()->json(['error' => 'No cities found in this region'], 404);
-        }
+        // if (empty($cities)) {
+        //     return response()->json(['error' => 'No cities found in this region'], 404);
+        // }
 
-        return response()->json($cities);
+        // return response()->json($cities);
+        if (collect($cities)->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No cities found in this region'
+            ], 404);
+        }
+        
+        return response()->json([
+            'success' => true,
+            'data' => $cities
+        ], 200);
     }
 
     // -----------------------Code to get activity based on location type primary city with location details--------------------------
@@ -100,7 +112,18 @@ class PublicRegionController extends Controller
             ];
         });
 
-        return response()->json($formattedActivities);
+        // return response()->json($formattedActivities);
+        if (collect($formattedActivities)->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Activities not found'
+            ], 404);
+        }
+        
+        return response()->json([
+            'success' => true,
+            'data' => $formattedActivities
+        ], 200);
     }
 
     // -----------------------Code to get Itineraries based on city with location details--------------------------
@@ -167,9 +190,20 @@ class PublicRegionController extends Controller
             ];
         });
 
+        // return response()->json([
+        //     'data' => $formattedItineraries
+        // ]);
+        if (collect($formattedItineraries)->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Itineraries not found'
+            ], 404);
+        }
+        
         return response()->json([
+            'success' => true,
             'data' => $formattedItineraries
-        ]);
+        ], 200);
     }
 
     // -----------------------Code to get Packages based on city with location details--------------------------
@@ -235,9 +269,17 @@ class PublicRegionController extends Controller
             ];
         });
 
+        if (collect($formattedPackages)->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Packages not found'
+            ], 404);
+        }
+        
         return response()->json([
+            'success' => true,
             'data' => $formattedPackages
-        ]);
+        ], 200);
     }
 
     // Getting all type of items through city for city page includiing activity , itinerary and package
@@ -274,9 +316,7 @@ class PublicRegionController extends Controller
         ])->get();
 
         // Collecting the list of categories of all items that are present in this city.
-        $categoriesList = collect([]);
-
-        $categoriesList = $categoriesList
+        $categoriesList = collect([])
             ->merge($activities->flatMap(function ($activity) {
                 return $activity->categories->map(function ($category) {
                     return [
@@ -302,7 +342,7 @@ class PublicRegionController extends Controller
                 });
             }))
             ->unique('id')
-            ->values(); 
+            ->values();
 
         $formattedActivities = $activities->map(function ($activity) {
             return [
@@ -333,7 +373,7 @@ class PublicRegionController extends Controller
                 }),
             ];
         });
-        
+
         $formattedItineraries = $itineraries->map(function ($itinerary) {
             return [
                 'id' => $itinerary->id,
@@ -357,7 +397,7 @@ class PublicRegionController extends Controller
                 'media_gallery' => $itinerary->mediaGallery,
             ];
         });
-        
+
         $formattedPackages = $packages->map(function ($package) {
             return [
                 'id' => $package->id,
@@ -381,17 +421,272 @@ class PublicRegionController extends Controller
                 'media_gallery' => $package->mediaGallery,
             ];
         });
-        
-        $allData = [
-            'all_items' => $formattedActivities
-                ->concat($formattedItineraries)
-                ->concat($formattedPackages),
 
-                'categories_list' => $categoriesList,
-        ];
-        
-        return response()->json($allData);
+        // Combine all items into a single collection
+        $allData = $formattedActivities
+                    ->concat($formattedItineraries)
+                    ->concat($formattedPackages)
+                    ->sortBy('name') // Sorting by name (optional)
+                    ->values();
+
+        // Pagination
+        $perPage = 8; // Change as needed
+        $currentPage = request()->get('page', 1);
+        $paginatedData = new \Illuminate\Pagination\LengthAwarePaginator(
+            $allData->forPage($currentPage, $perPage),
+            $allData->count(),
+            $perPage,
+            $currentPage,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+
+        if ($paginatedData->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $paginatedData,
+            'categories_list' => $categoriesList
+        ], 200);
     }
+
+
+    // -----------------------Code to get All Packages based on region with location details--------------------------
+    public function getPackagesByRegion($region_slug)
+    {
+        // Find Region
+        $region = Region::where('slug', $region_slug)->first();
+
+        if (!$region) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Region not found'
+            ], 404);
+        }
+
+        // Get city IDs linked to the region
+        $cityIds = City::whereExists(function ($query) use ($region) {
+            $query->select(DB::raw(1))
+                ->from('states')
+                ->whereColumn('cities.state_id', 'states.id')
+                ->whereExists(function ($subQuery) use ($region) {
+                    $subQuery->select(DB::raw(1))
+                        ->from('countries')
+                        ->whereColumn('states.country_id', 'countries.id')
+                        ->whereExists(function ($innerQuery) use ($region) {
+                            $innerQuery->select(DB::raw(1))
+                                ->from('region_country')
+                                ->whereColumn('countries.id', 'region_country.country_id')
+                                ->where('region_country.region_id', $region->id);
+                        });
+                });
+        })->pluck('id');
+
+        if ($cityIds->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No cities and Packages found in this region'
+            ], 404);
+        }
+
+        // Get all packages linked to those cities using the pivot table
+        $packages = Package::whereHas('locations', function ($query) use ($cityIds) {
+            $query->whereIn('city_id', $cityIds);
+        })
+            ->with([
+                'basePricing.variations',
+                'mediaGallery',
+                'categories.category',
+                'tags',
+                'locations.city.state.country.regions'
+            ])
+            ->where('featured_package', true)
+            ->get();
+
+        if ($packages->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No packages found for this region.'
+            ], 404);
+        }
+
+        // Format the package data
+        $formattedPackages = $packages->map(function ($package) {
+            return [
+                'id' => $package->id,
+                'name' => $package->name,
+                'slug' => $package->slug,
+                'item_type' => $package->item_type,
+                'featured_package' => $package->featured_package,
+                'locations' => $package->locations->map(function ($location) {
+                    $city = $location->city;
+                    return [
+                        'city_id' => $city->id,
+                        'city' => $city->name,
+                        'state_id' => $city->state->id ?? null,
+                        'state' => $city->state->name ?? null,
+                        'country_id' => $city->state->country->id ?? null,
+                        'country' => $city->state->country->name ?? null,
+                        'region_id' => $city->state->country->regions->first()->id ?? null,
+                        'region' => $city->state->country->regions->first()->name ?? null,
+                    ];
+                })->toArray(),
+                'categories' => $package->categories->map(function ($category) {
+                    return [
+                        'id' => $category->category->id ?? null,
+                        'name' => $category->category->name ?? null,
+                    ];
+                })->toArray(),
+                'tags' => $package->tags->map(function ($tag) {
+                    return [
+                        'id' => $tag->id ?? null,
+                        'name' => $tag->name ?? null,
+                    ];
+                })->toArray(),
+                'base_pricing' => $package->basePricing,
+                'media_gallery' => $package->mediaGallery,
+            ];
+        });
+        
+        return response()->json([
+            'success' => true,
+            'data' => $formattedPackages
+        ], 200);
+    }
+
+    public function getAllItemsByRegion($region_slug)
+    {
+        $region = Region::with('countries.states.cities')->where('slug', $region_slug)->first();
+    
+        if (!$region) {
+            return response()->json(['success' => 'false', 'message' => 'Region not found.'], 404);
+        }
+    
+        $cities = $region->countries->flatMap(fn ($country) =>  
+            $country->states->flatMap(fn ($state) => $state->cities)
+        );
+    
+        if ($cities->isEmpty()) {
+            return response()->json([
+                'success' => 'false',
+                'message' => 'No cities found under this region.'
+            ], 404);
+        }
+    
+        // Combine Activities, Itineraries, and Packages with Pagination
+        $activities = Activity::whereHas('locations', fn ($query) =>  
+            $query->whereIn('city_id', $cities->pluck('id'))
+        )->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions']);
+    
+        $itineraries = Itinerary::whereHas('locations', fn ($query) =>  
+            $query->whereIn('city_id', $cities->pluck('id'))
+        )->with(['basePricing.variations', 'mediaGallery', 'categories.category', 'tags']);
+    
+        $packages = Package::whereHas('locations', fn ($query) =>  
+            $query->whereIn('city_id', $cities->pluck('id'))
+        )->with(['basePricing.variations', 'mediaGallery', 'categories.category', 'tags']);
+    
+        // Use `paginate()` to get paginated data
+        $allItems = collect()
+            ->merge($activities->get()->map(fn ($activity) => [
+                'id' => $activity->id,
+                'name' => $activity->name,
+                'slug' => $activity->slug,
+                'item_type' => 'activity',
+                'featured' => $activity->featured_activity,
+                'pricing' => $activity->pricing ? [
+                    'regular_price' => $activity->pricing->regular_price,
+                    'currency' => $activity->pricing->currency,
+                ] : null,
+            ]))
+            ->merge($itineraries->get()->map(fn ($itinerary) => [
+                'id' => $itinerary->id,
+                'name' => $itinerary->name,
+                'slug' => $itinerary->slug,
+                'item_type' => 'itinerary',
+                'featured' => $itinerary->featured_itinerary,
+                'base_pricing' => $itinerary->basePricing ? [
+                    'regular_price' => $itinerary->basePricing->regular_price,
+                    'currency' => $itinerary->basePricing->currency,
+                ] : null,
+            ]))
+            ->merge($packages->get()->map(fn ($package) => [
+                'id' => $package->id,
+                'name' => $package->name,
+                'slug' => $package->slug,
+                'item_type' => 'package',
+                'featured' => $package->featured_package,
+                'base_pricing' => $package->basePricing ? [
+                    'regular_price' => $package->basePricing->regular_price,
+                    'currency' => $package->basePricing->currency,
+                ] : null,
+            ]))
+            ->sortByDesc('id')
+            ->values();
+    
+        // Paginate data
+        $perPage = 10;
+        $page = request()->get('page', 1); // Default page = 1
+        $paginatedItems = $allItems->forPage($page, $perPage);
+    
+        $paginationData = [
+            'current_page' => (int) $page,
+            'last_page' => ceil($allItems->count() / $perPage),
+            'per_page' => $perPage,
+            'total' => $allItems->count(),
+            'data' => $paginatedItems->values(),
+        ];
+    
+        // Collecting categories list
+        $categoriesList = $allItems->flatMap(fn ($item) => 
+            match ($item['item_type']) {
+                'activity' => Activity::find($item['id'])->categories->map(fn ($category) => [
+                    'id' => $category->category->id,
+                    'name' => $category->category->name,
+                ]),
+                'itinerary' => Itinerary::find($item['id'])->categories->map(fn ($category) => [
+                    'id' => $category->category->id,
+                    'name' => $category->category->name,
+                ]),
+                'package' => Package::find($item['id'])->categories->map(fn ($category) => [
+                    'id' => $category->category->id,
+                    'name' => $category->category->name,
+                ]),
+                default => [],
+            }
+        )->unique('id')->values();
+    
+        // Collecting cities list
+        $locationList = $allItems->flatMap(fn ($item) => 
+            match ($item['item_type']) {
+                'activity' => Activity::find($item['id'])->locations->map(fn ($location) => [
+                    'id' => $location->city->id,
+                    'name' => $location->city->name,
+                ]),
+                'itinerary' => Itinerary::find($item['id'])->locations->map(fn ($location) => [
+                    'id' => $location->city->id,
+                    'name' => $location->city->name,
+                ]),
+                'package' => Package::find($item['id'])->locations->map(fn ($location) => [
+                    'id' => $location->city->id,
+                    'name' => $location->city->name,
+                ]),
+                default => [],
+            }
+        )->unique('id')->values();
+    
+        // Return Response
+        return response()->json([
+            'success' => 'true',
+            'data' => $paginationData,
+            'category_list' => $categoriesList,
+            'location_list' => $locationList,
+        ], 200);
+    }      
 
     // -------------------------Getting places by city------------------------
     public function getPlacesByCity($region_slug, $city_slug)
@@ -413,7 +708,18 @@ class PublicRegionController extends Controller
             return response()->json(['error' => 'City not found'], 404);
         }
     
-        return response()->json($places);
+        // return response()->json($places);
+        if (collect($places)->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Places not found'
+            ], 404);
+        }
+        
+        return response()->json([
+            'success' => true,
+            'data' => $places
+        ], 200);
     }
 
     // public function getStatesByCountry($region_slug, $country_slug)

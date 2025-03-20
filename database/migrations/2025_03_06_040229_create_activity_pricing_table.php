@@ -9,7 +9,7 @@ return new class extends Migration {
         Schema::create('activity_pricing', function (Blueprint $table) {
             $table->id();
             $table->foreignId('activity_id')->constrained('activities')->onDelete('cascade');
-            $table->decimal('base_price', 10, 2);
+            $table->decimal('regular_price', 10, 2);
             $table->string('currency', 10);
             $table->timestamps();
         });

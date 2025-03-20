@@ -108,6 +108,8 @@ Route::middleware(['auth:api', 'admin'])->group(function () {
 
 Route::prefix('region')->group(function () {
     Route::get('/{region_slug}', [PublicRegionController::class, 'getCitiesByRegion']);
+    Route::get('/{region_slug}/region-packages', [PublicRegionController::class, 'getPackagesByRegion']);
+    Route::get('/{region_slug}/region-all-items', [PublicRegionController::class, 'getAllItemsByRegion']);
     // Route::get('/{region_slug}/{city_slug}', [PublicRegionController::class, 'getPlacesByCity']);
     // Route::get('/{region_slug}/{city_slug}/activities', [PublicRegionController::class, 'getActivityByCity']);
     // Route::get('/{region_slug}/{city_slug}/itineraries/', [PublicRegionController::class, 'getItinerariesByCity']);
@@ -159,8 +161,9 @@ Route::prefix('packages')->group(function () {
 Route::get('/featured-cities', [PublicCitiesController::class, 'getFeaturedCities']);
 
 // Search API
-Route::get('/homesearch', [PublicHomeSearchController::class, 'homeSearch']);
 Route::get('/regions-cities', [PublicHomeSearchController::class, 'getRegionsAndCities']);
+Route::get('/homesearch', [PublicHomeSearchController::class, 'homeSearch']);
+
 
 // Shop Page all items API
 Route::get('/shop', [PublicShopController::class, 'index']);

@@ -12,6 +12,48 @@ use App\Models\Region;
 
 class PublicHomeSearchController extends Controller
 {
+    // getting region and cities for Where to? search feild on home page.
+    public function getRegionsAndCities()
+    {
+        // Get all regions
+        $regions = Region::select('id', 'name')
+            ->get()
+            ->map(function ($region) {
+                return [
+                    'id' => 'region_' . $region->id, 
+                    'name' => $region->name,
+                    'type' => 'region'
+                ];
+            });
+
+        // Get all cities
+        $cities = City::select('id', 'name')
+            ->get()
+            ->map(function ($city) {
+                return [
+                    'id' => 'city_' . $city->id, 
+                    'name' => $city->name,
+                    'type' => 'city'
+                ];
+            });
+
+        // Merge and sort
+        $list = $regions->merge($cities)->sortBy('name')->values();
+
+        if ($list->isEmpty()) {
+            return response()->json([
+                'success' => 'false',
+                'message' => 'Locations not found'
+            ]);
+        }
+
+        return response()->json([
+            'success' => 'true',
+            'data' => $list
+        ]);
+    }
+
+    // Merging all activity, itinerary and packages in one function to return response in api
     public function homeSearch(Request $request)
     {
         $request->validate([
@@ -19,12 +61,15 @@ class PublicHomeSearchController extends Controller
             'start_date' => 'nullable|date',
             'end_date'   => 'nullable|date|after_or_equal:start_date',
             'quantity'   => 'nullable|integer|min:1',
+            'page'       => 'nullable|integer|min:1',
         ]);
 
         $location = $request->location;
         $startDate = $request->start_date;
         $endDate = $request->end_date;
         $quantity = $request->quantity;
+        $page = $request->page ?? 1;
+        $perPage = 4;
 
         $cityIds = $this->getCityIdsFromLocationSlug($location);
 
@@ -32,31 +77,38 @@ class PublicHomeSearchController extends Controller
         $itineraries = $this->searchItineraries($cityIds, $startDate, $endDate, $quantity);
         $packages = $this->searchPackages($cityIds, $startDate, $endDate, $quantity);
 
-        
-        $categoriesList = collect([]);
+        // Merge all items into a single list
+        $allItems = $activities
+            ->concat($itineraries)
+            ->concat($packages);
 
-        $categoriesList = $categoriesList
-        ->merge($activities->flatMap(function ($activity) {
-            return $activity['categories'];
-        }))
-        ->merge($itineraries->flatMap(function ($itinerary) {
-            return $itinerary['categories'];
-        }))
-        ->merge($packages->flatMap(function ($package) {
-            return $package['categories'];
-        }))
-        ->unique('id')
-        ->values();
+        // Paginate (4 items per page)
+        $paginatedItems = $allItems->forPage($page, $perPage)->values();
+
+        // Get total pages
+        $totalItems = $allItems->count();
+        $totalPages = ceil($totalItems / $perPage);
+
+        // Prepare category list
+        $categoriesList = collect($allItems->flatMap(function ($item) {
+            return $item['categories'];
+        }))->unique('id')->values();
 
         $results = [
-            'activities' => $activities,
-            'itineraries' => $itineraries,
-            'packages' => $packages,
-            'categories_list' => $categoriesList
+            'success' => 'true',
+            'data' => $paginatedItems,
+            'categories_list' => $categoriesList,
+            'pagination' => [
+                'current_page' => $page,
+                'per_page' => $perPage,
+                'total_items' => $totalItems,
+                'total_pages' => $totalPages
+            ]
         ];
 
-        if ($activities->isEmpty() && $itineraries->isEmpty() && $packages->isEmpty()) {
+        if ($totalItems === 0) {
             return response()->json([
+                'success' => 'false',
                 'message' => 'No items found'
             ]);
         }
@@ -77,7 +129,7 @@ class PublicHomeSearchController extends Controller
         $region = Region::where('slug', $slug)->first();
         if ($region) {
             $regionCities = City::whereHas('state.country.regions', function ($query) use ($region) {
-                $query->where('regions.id', $region->id); // ✅ Table prefix added here
+                $query->where('regions.id', $region->id); 
             })->pluck('id')->toArray();
     
             $cityIds = array_merge($cityIds, $regionCities);
@@ -230,10 +282,6 @@ class PublicHomeSearchController extends Controller
     // Package Search function
     private function searchPackages($cityIds, $startDate, $endDate, $quantity)
     {
-        // $query = Package::whereHas('locations', function ($q) use ($cityIds) {
-        //     $q->whereIn('city_id', $cityIds);
-        // });
-
         $query = Package::with([
             'categories' => function ($q) {
                 $q->with('category:id,name'); 
@@ -301,38 +349,6 @@ class PublicHomeSearchController extends Controller
         });
     
         return $packages;
-    }
-
-    public function getRegionsAndCities()
-    {
-        // Get all regions
-        $regions = Region::select('id', 'name')
-            ->get()
-            ->map(function ($region) {
-                return [
-                    'id' => 'region_' . $region->id, 
-                    'name' => $region->name,
-                    'type' => 'region'
-                ];
-            });
-
-        // Get all cities
-        $cities = City::select('id', 'name')
-            ->get()
-            ->map(function ($city) {
-                return [
-                    'id' => 'city_' . $city->id, 
-                    'name' => $city->name,
-                    'type' => 'city'
-                ];
-            });
-
-        // Merge and sort
-        $list = $regions->merge($cities)->sortBy('name')->values();
-
-        return response()->json([
-            'data' => $list
-        ]);
     }
 
 }

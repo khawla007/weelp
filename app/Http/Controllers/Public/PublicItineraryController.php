@@ -77,6 +77,13 @@ class PublicItineraryController extends Controller
             ];
         });
 
+        if ($itineraries->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Itineraries not found'
+            ]);
+        }
+
         return response()->json([
             'success' => true,
             'data' => $itineraries
@@ -147,6 +154,13 @@ class PublicItineraryController extends Controller
                 ] : null,
             ];
         });
+
+        if ($itineraries->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Itineraries not found'
+            ]);
+        }
 
         return response()->json([
             'success' => true,
@@ -256,9 +270,20 @@ class PublicItineraryController extends Controller
             'seo' => $itinerary->seo,
         ];
 
+        // return response()->json([
+        //     'data' => $formattedItinerary
+        // ]);
+        if (empty($formattedItinerary)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Itinerary not found'
+            ]);
+        }
+        
         return response()->json([
+            'success' => true,
             'data' => $formattedItinerary
         ]);
-}
+    }
 
 }

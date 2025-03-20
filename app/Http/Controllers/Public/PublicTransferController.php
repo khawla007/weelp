@@ -20,10 +20,21 @@ class PublicTransferController extends Controller
             'seo'
         ])->get();
 
+        // return response()->json([
+        //     'success' => true,
+        //     'data' => $transfers
+        // ]);
+        if (collect($transfers)->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Transfers not found'
+            ], 404);
+        }
+        
         return response()->json([
             'success' => true,
             'data' => $transfers
-        ]);
+        ], 200);
     }
 
     public function show($id): JsonResponse
@@ -37,16 +48,27 @@ class PublicTransferController extends Controller
             'seo'
         ])->find($id);
 
-        if (!$transfer) {
+        // if (!$transfer) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Transfer not found'
+        //     ], 404);
+        // }
+
+        // return response()->json([
+        //     'success' => true,
+        //     'data' => $transfer
+        // ]);
+        if (empty($transfer)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Transfer not found'
             ], 404);
         }
-
+        
         return response()->json([
             'success' => true,
             'data' => $transfer
-        ]);
+        ], 200);
     }
 }

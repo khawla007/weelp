@@ -9,9 +9,15 @@ class PublicCountryController extends Controller
 {
     public function getCountries()
     {
-        // ✅ Sirf countries fetch karni hai (without extra relationships)
         $countries = Country::all();
 
+        if (empty($countries)) {
+            return response()->json([
+                'status' => 'false',
+                'message' => 'Country not found'
+            ], 404);
+        }
+        
         return response()->json([
             'status' => 'success',
             'data' => $countries

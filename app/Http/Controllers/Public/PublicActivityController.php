@@ -88,7 +88,18 @@ class PublicActivityController extends Controller
             ];
         });
         
-        return response()->json($activities);
+        // return response()->json($activities);
+        if ($activities->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Activities not found'
+            ]);
+        }
+        
+        return response()->json([
+            'success' => true,
+            'data' => $activities
+        ]);
     }
 
     // ----------------------Code to get all activities featured based with all location details----------------------
@@ -166,7 +177,18 @@ class PublicActivityController extends Controller
             ];
         });
 
-        return response()->json($activities);
+        // return response()->json($activities);
+        if ($activities->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Activities not found'
+            ]);
+        }
+        
+        return response()->json([
+            'success' => true,
+            'data' => $activities
+        ]);
     }
 
     // ----------------------Code to get Single activities with all required data----------------------
@@ -241,7 +263,18 @@ class PublicActivityController extends Controller
             'promoCodes' => $activity->promoCodes,
         ];
     
-        return response()->json($formattedActivity);
+        // return response()->json($formattedActivity);
+        if (empty($formattedActivity)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Activity not found'
+            ]);
+        }
+        
+        return response()->json([
+            'success' => true,
+            'data' => $formattedActivity
+        ]);
     }
 
 

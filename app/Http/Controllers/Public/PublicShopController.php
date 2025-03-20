@@ -133,18 +133,33 @@ class PublicShopController extends Controller
             ], 422);
         }
 
+        // return response()->json([
+        //     'success' => 'true',
+        //     'data' => $paginatedItems->items(),
+        //     'categories_list' => $categoriesList,
+        //     'location_list' => $locationList,
+        //     'current_page' => $paginatedItems->currentPage(),
+        //     'per_page' => $paginatedItems->perPage(),
+        //     'total' => $paginatedItems->total(),
+        //     'last_page' => $paginatedItems->lastPage(),
+        // ]);
+        if ($paginatedItems->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Shop items not found'
+            ], 404);
+        }
+        
         return response()->json([
-            // 'shop_items' => $paginatedItems
-            'shop_items' => [
-                'data' => $paginatedItems->items(),
-                'categories_list' => $categoriesList,
-                'location_list' => $locationList,
-                'current_page' => $paginatedItems->currentPage(),
-                'per_page' => $paginatedItems->perPage(),
-                'total' => $paginatedItems->total(),
-                'last_page' => $paginatedItems->lastPage(),
-            ]
-        ]);
+            'success' => true,
+            'data' => $paginatedItems->items(),
+            'categories_list' => $categoriesList,
+            'location_list' => $locationList,
+            'current_page' => $paginatedItems->currentPage(),
+            'per_page' => $paginatedItems->perPage(),
+            'total' => $paginatedItems->total(),
+            'last_page' => $paginatedItems->lastPage(),
+        ], 200);
     }
 
     private function formatItem($item, $type)

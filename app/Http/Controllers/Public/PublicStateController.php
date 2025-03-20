@@ -18,10 +18,21 @@ class PublicStateController extends Controller
 
         $states = State::where('country_id', $country->id)->get();
 
+        // return response()->json([
+        //     'success' => true,
+        //     'data' => $states
+        // ]);
+        if (collect($states)->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'States not found'
+            ], 404);
+        }
+        
         return response()->json([
             'success' => true,
             'data' => $states
-        ]);
+        ], 200);
     }
 }
 

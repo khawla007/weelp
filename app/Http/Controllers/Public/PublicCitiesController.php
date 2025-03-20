@@ -23,6 +23,12 @@ class PublicCitiesController extends Controller
 
         $cities = City::where('state_id', $state->id)->get();
 
+        if (empty($cities)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cities not found'
+            ]);
+        }
         return response()->json([
             'success' => true,
             'data' => $cities
@@ -32,7 +38,7 @@ class PublicCitiesController extends Controller
     public function getFeaturedCities()
     {
         $cities = City::with([
-            'state.country.regions' // Load state, country, and regions
+            'state.country.regions'
         ])
         ->where('featured_destination', true)
         ->get()
@@ -40,6 +46,8 @@ class PublicCitiesController extends Controller
             return [
                 'id' => $city->id,
                 'name' => $city->name,
+                'slug' => $city->slug,
+                'description' => $city->description,
                 'featured_image' => $city->featured_image,
                 'state' => [
                     'id' => $city->state->id ?? null,
@@ -61,8 +69,7 @@ class PublicCitiesController extends Controller
         if ($cities->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'No featured cities found',
-                'data' => []
+                'message' => 'No featured cities found'
             ]);
         }
 

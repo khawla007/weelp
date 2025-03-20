@@ -10,15 +10,14 @@ class ActivityPricing extends Model {
 
     protected $table = 'activity_pricing';
     protected $fillable = [
-        'activity_id', 'base_price', 'currency', 
-        'enable_seasonal_pricing', 'enable_early_bird_discount', 'enable_last_minute_discount'
+        'activity_id', 'regular_price', 'currency'
     ];
 
-    protected $casts = [
-        'enable_seasonal_pricing' => 'boolean',
-        'enable_early_bird_discount' => 'boolean',
-        'enable_last_minute_discount' => 'boolean'
-    ];
+    // protected $casts = [
+    //     'enable_seasonal_pricing' => 'boolean',
+    //     'enable_early_bird_discount' => 'boolean',
+    //     'enable_last_minute_discount' => 'boolean'
+    // ];
 
     public function activity() {
         return $this->belongsTo(Activity::class);
