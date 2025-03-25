@@ -104,12 +104,18 @@ Route::middleware(['auth:api', 'admin'])->group(function () {
     Route::post('/import-places', [PlaceImportController::class, 'import']);
 });
 
-// Public API
+// *****************************************************************************************************************
+// Public-------------------------API___________________Public API_________________Public -----------------------API
+
+// *****************************************************************************************************************
 
 Route::prefix('region')->group(function () {
-    Route::get('/{region_slug}', [PublicRegionController::class, 'getCitiesByRegion']);
+    Route::get('/{slug}', [PublicRegionController::class, 'getRegionDetails']);
+    Route::get('/{region_slug}/cities', [PublicRegionController::class, 'getCitiesByRegion']);
     Route::get('/{region_slug}/region-packages', [PublicRegionController::class, 'getPackagesByRegion']);
+
     Route::get('/{region_slug}/region-all-items', [PublicRegionController::class, 'getAllItemsByRegion']);
+    
     // Route::get('/{region_slug}/{city_slug}', [PublicRegionController::class, 'getPlacesByCity']);
     // Route::get('/{region_slug}/{city_slug}/activities', [PublicRegionController::class, 'getActivityByCity']);
     // Route::get('/{region_slug}/{city_slug}/itineraries/', [PublicRegionController::class, 'getItinerariesByCity']);
@@ -119,10 +125,26 @@ Route::prefix('region')->group(function () {
     // Route::get('/{region_slug}/country-{country_slug}/{state_slug}', [PublicRegionController::class, 'getCitiesByState']);
     // Route::get('/{region_slug}/{country_slug}/{state_slug}/{city_slug}', [PublicRegionController::class, 'getPlacesInCity']);
 });
+
+// get all featured Cities for home page
+Route::get('/featured-cities', [PublicCitiesController::class, 'getFeaturedCities']);
+
+// get single city page by slug
+Route::get('/city/{slug}', [PublicCitiesController::class, 'getCityDetails']);
+
+// getting activity beahlf of city
 Route::get('/{city_slug}/activities', [PublicRegionController::class, 'getActivityByCity']);
+
+// getting itinerary beahlf of city
 Route::get('/{city_slug}/itineraries/', [PublicRegionController::class, 'getItinerariesByCity']);
+
+// getting package beahlf of city
+
 Route::get('/{city_slug}/packages/', [PublicRegionController::class, 'getPackagesByCity']);
+
+// getting all items beahlf of city
 Route::get('/{city_slug}/all-items/', [PublicRegionController::class, 'getAllItemsByCity']);
+
 // Route::get('/countries', [PublicCountryController::class, 'getCountries']);
 // Route::prefix('countries')->group(function () {
     // Route::get('/{country_slug}', [PublicStateController::class, 'getStatesByCountry']);
@@ -157,13 +179,12 @@ Route::prefix('packages')->group(function () {
     Route::get('/{slug}', [PublicPackageController::class, 'show']);
 });
 
-// get_featured Cities
-Route::get('/featured-cities', [PublicCitiesController::class, 'getFeaturedCities']);
-
 // Search API
 Route::get('/regions-cities', [PublicHomeSearchController::class, 'getRegionsAndCities']);
 Route::get('/homesearch', [PublicHomeSearchController::class, 'homeSearch']);
 
+// Filter API
+Route::get('/filter', [PublicFilterController::class, 'filter']);
 
 // Shop Page all items API
 Route::get('/shop', [PublicShopController::class, 'index']);

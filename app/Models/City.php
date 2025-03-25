@@ -13,7 +13,9 @@ class City extends Model
         'name', 'city_code', 'slug', 'state_id', 'description', 
         'feature_image', 'featured_city'
     ];
-
+    protected $casts = [
+        'featured_destination' => 'boolean'
+    ];
     // public function country(): BelongsTo
     // {
     //     return $this->belongsTo(Country::class);

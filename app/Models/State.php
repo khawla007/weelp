@@ -13,6 +13,10 @@ class State extends Model
         'name', 'state_code', 'slug', 'country_id', 'description', 'feature_image', 'featured_destination'
     ];
 
+    protected $casts = [
+        'featured_destination' => 'boolean'
+    ];
+    
     public function country() {
         return $this->belongsTo(Country::class);
     }

@@ -18,6 +18,10 @@ class Country extends Model
         'featured_destination'
     ];
 
+    protected $casts = [
+        'featured_destination' => 'boolean'
+    ];
+
     public function regions()
     {
         // return $this->belongsToMany(Region::class, 'region_country');

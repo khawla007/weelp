@@ -18,6 +18,10 @@ class Place extends Model {
         'featured_destination',
     ];
 
+    protected $casts = [
+        'featured_destination' => 'boolean'
+    ];
+
     public function locationDetails() {
         return $this->hasOne(PlaceLocationDetail::class);
     }

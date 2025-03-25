@@ -9,6 +9,7 @@ use App\Models\Country;
 
 class PublicCitiesController extends Controller
 {
+    // -------------------------getting city behalf of state-------------------------
     public function getCitiesByState($country_slug, $state_slug)
     {
         $country = Country::where('slug', $country_slug)->first();
@@ -35,6 +36,7 @@ class PublicCitiesController extends Controller
         ]);
     }
 
+    // ---------------------------getting all featured city for home page-------------------------
     public function getFeaturedCities()
     {
         $cities = City::with([
@@ -77,6 +79,62 @@ class PublicCitiesController extends Controller
             'success' => true,
             'data' => $cities
         ]);
+    }
+
+    // ----------------------------get single city page by slug--------------------------------
+
+    public function getCityDetails($slug)
+    {
+        $city = City::with([
+            'state',
+            'country',
+            'region',
+            'locationDetails',
+            'travelInfo',
+            'seasons',
+            'events',
+            'additionalInfo',
+            'faqs',
+            'seo'
+        ])->where('slug', $slug)->first();
+
+        if (!$city) {
+            return response()->json([
+                'success' => false,
+                'message' => 'City not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $city->id,
+                'name' => $city->name,
+                'slug' => $city->slug,
+                'description' => $city->description,
+                'feature_image' => $city->feature_image,
+                'featured_destination' => $city->featured_destination,
+                'state' => $city->state ? [
+                    'id' => $city->state->id,
+                    'name' => $city->state->name
+                ] : null,
+                'country' => $city->country ? [
+                    'id' => $city->country->id,
+                    'name' => $city->country->name
+                ] : null,
+                'region' => $city->region ? [
+                    'id' => $city->region->id,
+                    'name' => $city->region->name
+                ] : null,
+                'location_details' => $city->locationDetails,
+                'travel_info' => $city->travelInfo,
+                'seasons' => $city->seasons,
+                'events' => $city->events,
+                'additional_info' => $city->additionalInfo,
+                'faqs' => $city->faqs,
+                'seo' => $city->seo
+            ]
+        ], 200);
     }
 
 }

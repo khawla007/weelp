@@ -246,7 +246,7 @@ class PackageSeeder extends Seeder
 
             PackageTag::create([
                 'package_id' => $package->id,
-                'tag_id' => 1,
+                'tag_id' => rand(1, 4),
             ]);
 
             PackageAvailability::create([
