@@ -212,6 +212,7 @@ class PublicShopController extends Controller
         $minPrice = request()->get('min_price', 0);
         $maxPrice = request()->get('max_price', null);
         $sortBy = request()->get('sort_by', 'id_desc');
+        $featured = request()->filled('featured') ? request()->get('featured') === 'true' : null;
     
         // Fetch Category & Tag IDs
         $categoryIds = Category::whereIn('slug', $categorySlugs)->pluck('id')->toArray();
@@ -220,14 +221,17 @@ class PublicShopController extends Controller
         // Fetch All Activities, Itineraries, Packages with item_type filter
         $activities = Activity::when(!empty($cityIds), fn ($query) => $query->whereHas('locations', fn ($q) => $q->whereIn('city_id', $cityIds)))
         ->when($itemType, fn ($query) => $query->where('item_type', $itemType))
+        ->when($featured !== null, fn ($query) => $query->where('featured_activity', $featured))
         ->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions']);
 
         $itineraries = Itinerary::when(!empty($cityIds), fn ($query) => $query->whereHas('locations', fn ($q) => $q->whereIn('city_id', $cityIds)))
             ->when($itemType, fn ($query) => $query->where('item_type', $itemType))
+            ->when($featured !== null, fn ($query) => $query->where('featured_itinerary', $featured))
             ->with(['basePricing.variations', 'categories.category', 'tags']);
 
         $packages = Package::when(!empty($cityIds), fn ($query) => $query->whereHas('locations', fn ($q) => $q->whereIn('city_id', $cityIds)))
             ->when($itemType, fn ($query) => $query->where('item_type', $itemType))
+            ->when($featured !== null, fn ($query) => $query->where('featured_package', $featured))
             ->with(['basePricing.variations', 'categories.category', 'tags']);
     
         // Apply Filters
@@ -360,6 +364,7 @@ class PublicShopController extends Controller
                     'discount_amount' => $item->earlyBirdDiscount->first()?->discount_amount,
                     'discount_type' => $item->earlyBirdDiscount->first()?->discount_type,
                 ] : null;
+                $featured = $item->featured_activity;
                 break;
             case 'itinerary':
             case 'package':
@@ -379,12 +384,15 @@ class PublicShopController extends Controller
                         ];
                     })->toArray(),
                 ] : null;
+                $featured = ($type === 'itinerary') ? $item->featured_itinerary : $item->featured_package;
         }
 
         return [
             'id' => $item->id,
-            'type' => $type,
             'name' => $item->name,
+            'slug' => $item->slug,
+            'item_type' => $type,
+            'featured' => $featured,
             'price' => $price,
             'group_discount' => $groupDiscount,
             'early_bird_discount' => $earlyBirdDiscount,

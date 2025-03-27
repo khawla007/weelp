@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class ActivityLocation extends Model {
     use HasFactory;
 
-    protected $fillable = ['activity_id', 'city_id', 'location_type'];
+    protected $fillable = ['activity_id', 'city_id', 'location_type', 'location_label', 'duration'];
 
     public function activity() {
         return $this->belongsTo(Activity::class);

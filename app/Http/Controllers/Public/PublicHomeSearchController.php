@@ -9,6 +9,8 @@ use App\Models\Itinerary;
 use App\Models\Package;
 use App\Models\City;
 use App\Models\Region;
+use App\Models\Category;
+use App\Models\Tag;
 
 class PublicHomeSearchController extends Controller
 {
@@ -56,31 +58,73 @@ class PublicHomeSearchController extends Controller
     // Merging all activity, itinerary and packages in one function to return response in api
     public function homeSearch(Request $request)
     {
+
+
         $request->validate([
             'location'   => 'required|string',
             'start_date' => 'nullable|date',
             'end_date'   => 'nullable|date|after_or_equal:start_date',
             'quantity'   => 'nullable|integer|min:1',
+            'categories' => 'nullable|string', 
+            'tags'       => 'nullable|string', 
+            'featured' => 'nullable|string|in:true,false',
+            'min_price' => 'nullable|numeric|min:0',
+            'max_price' => 'nullable|numeric|min:0',
+            'sort_by'     => 'nullable|string|in:price_asc,price_desc,name_asc,name_desc,id_asc,id_desc',
             'page'       => 'nullable|integer|min:1',
+            'item_type'  => 'nullable|string', // New filter added
         ]);
 
         $location = $request->location;
         $startDate = $request->start_date;
         $endDate = $request->end_date;
         $quantity = $request->quantity;
+        $categorySlugs = $request->categories ? explode(',', $request->categories) : [];
+        $tagSlugs      = $request->tags ? explode(',', $request->tags) : [];
+        $featured = $request->featured;
+        $minPrice = $request->min_price;
+        $maxPrice = $request->max_price;
+        $sortBy = $request->sort_by;
         $page = $request->page ?? 1;
         $perPage = 4;
+        $itemType = $request->item_type;
 
         $cityIds = $this->getCityIdsFromLocationSlug($location);
+        // Get category & tag IDs from slugs
+        $categoryIds = Category::whereIn('slug', $categorySlugs)->pluck('id')->toArray();
+        $tagIds = Tag::whereIn('slug', $tagSlugs)->pluck('id')->toArray();
 
-        $activities = $this->searchActivities($cityIds, $startDate, $endDate, $quantity);
-        $itineraries = $this->searchItineraries($cityIds, $startDate, $endDate, $quantity);
-        $packages = $this->searchPackages($cityIds, $startDate, $endDate, $quantity);
+        $activities  = $this->searchActivities($cityIds, $startDate, $endDate, $quantity, $categoryIds, $tagIds, $sortBy, $minPrice, $maxPrice, $featured, $itemType);
+        $itineraries = $this->searchItineraries($cityIds, $startDate, $endDate, $quantity, $categoryIds, $tagIds, $sortBy, $minPrice, $maxPrice, $featured, $itemType);
+        $packages    = $this->searchPackages($cityIds, $startDate, $endDate, $quantity, $categoryIds, $tagIds, $sortBy, $minPrice, $maxPrice, $featured, $itemType);
 
         // Merge all items into a single list
         $allItems = $activities
             ->concat($itineraries)
             ->concat($packages);
+
+
+        // Sorting
+        switch ($sortBy) {
+            case 'name_asc':
+                $allItems = $allItems->sortBy('name');
+                break;
+            case 'name_desc':
+                $allItems = $allItems->sortByDesc('name');
+                break;
+            case 'price_asc':
+                $allItems = $allItems->sortBy(fn ($item) => (float) ($item['base_pricing']['variations'][0]['sale_price'] ?? $item['price']['regular_price'] ?? 0));
+                break;
+            case 'price_desc':
+                $allItems = $allItems->sortByDesc(fn ($item) => (float) ($item['base_pricing']['variations'][0]['sale_price'] ?? $item['price']['regular_price'] ?? 0));
+                break;
+
+            case 'id_asc':
+                $allItems = $allItems->sortBy('id');
+                break;
+            default:
+                $allItems = $allItems->sortByDesc('id'); // Default: Newest First
+        }
 
         // Paginate (4 items per page)
         $paginatedItems = $allItems->forPage($page, $perPage)->values();
@@ -97,7 +141,7 @@ class PublicHomeSearchController extends Controller
         $results = [
             'success' => 'true',
             'data' => $paginatedItems,
-            'categories_list' => $categoriesList,
+            // 'categories_list' => $categoriesList,
             'pagination' => [
                 'current_page' => $page,
                 'per_page' => $perPage,
@@ -139,7 +183,9 @@ class PublicHomeSearchController extends Controller
     }
 
     // Activity Search Function
-    private function searchActivities($cityIds, $startDate, $endDate, $quantity)
+
+    // private function searchActivities($cityIds, $startDate, $endDate, $quantity)
+    private function searchActivities($cityIds, $startDate, $endDate, $quantity, $categoryIds, $tagIds, $sortBy, $minPrice, $maxPrice, $featured, $itemType)
     {
         $query = Activity::with([
             'categories' => function ($q) {
@@ -172,6 +218,39 @@ class PublicHomeSearchController extends Controller
             });
         }
 
+        if ($featured !== null) {
+            $query->where('featured_activity', (bool) $featured);
+        }
+
+        if ($minPrice || $maxPrice) {
+            $query->whereHas('pricing', function ($q) use ($minPrice, $maxPrice) {
+                if ($minPrice) {
+                    $q->where('regular_price', '>=', $minPrice);
+                }
+                if ($maxPrice) {
+                    $q->where('regular_price', '<=', $maxPrice);
+                }
+            });
+        }
+
+        if ($itemType) {
+            $query->where('item_type', $itemType);
+        }
+
+        // **Handle Category & Tag Filtering Correctly**
+        if (!empty($categoryIds)) {
+            $query->whereHas('categories', function ($q) use ($categoryIds) {
+                $q->whereIn('activity_categories.category_id', $categoryIds);
+            });
+        }
+
+        if (!empty($categorySlugs) && empty($categoryIds)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Category not found',
+            ], 200);
+        }
+
         // return $query->get();
         return $query->get()->map(function ($activity) {
             $categories = $activity->categories->map(function ($activityCategory) {
@@ -184,10 +263,12 @@ class PublicHomeSearchController extends Controller
             return [
                 'id' => $activity->id,
                 'name' => $activity->name,
+                'slug' => $activity->slug,
                 'item_type' => $activity->item_type,
+                'featured'  => $activity->featured_activity,
                 'categories' => $categories,
                 'pricing' => $activity->pricing ? [
-                    'base_price' => $activity->pricing->base_price,
+                    'regular_price' => $activity->pricing->regular_price,
                     'currency' => $activity->pricing->currency,
                 ] : null,
                 'group_discount' => $activity->groupDiscounts ? $activity->groupDiscounts->map(function ($discount) {
@@ -208,12 +289,15 @@ class PublicHomeSearchController extends Controller
 
 
     // Itinerary Search Function
-    private function searchItineraries($cityIds, $startDate, $endDate, $quantity)
+
+    // private function searchItineraries($cityIds, $startDate, $endDate, $quantity)
+    private function searchItineraries($cityIds, $startDate, $endDate, $quantity, $categoryIds, $tagIds, $sortBy, $minPrice, $maxPrice, $featured, $itemType)
     {
         $query = Itinerary::with([
             'categories' => function ($q) {
                 $q->with('category:id,name'); 
             },
+            // 'tags:id,name',
             'locations',
             'basePricing.variations',
         ])->whereHas('locations', function ($q) use ($cityIds) {
@@ -239,23 +323,76 @@ class PublicHomeSearchController extends Controller
                 });
             });
         }
-    
+        
+
+        // **Min Price & Max Price Filtering**
+        if ($minPrice !== null || $maxPrice !== null) {
+            $query->whereHas('basePricing.variations', function ($q) use ($minPrice, $maxPrice) {
+                if ($minPrice !== null) {
+                    $q->where('regular_price', '>=', $minPrice);
+                }
+                if ($maxPrice !== null) {
+                    $q->where('regular_price', '<=', $maxPrice);
+                }
+            });
+        }
+
+        // **Featured filter**
+        if ($featured !== null) {
+            $query->where('featured_itinerary', (bool) $featured);
+        }
+
+        if ($itemType) {
+            $query->where('item_type', $itemType);
+        }
+
+        // **Handle Category & Tag Filtering Correctly**
+        if (!empty($categoryIds)) {
+            $query->whereHas('categories', function ($q) use ($categoryIds) {
+                $q->whereIn('itinerary_categories.category_id', $categoryIds);
+            });
+        }
+
+        if (!empty($categorySlugs) && empty($categoryIds)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Category not found',
+            ], 200);
+        }
+
+        if (!empty($tagIds)) {
+            $query->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
+        }
+
+        if (!empty($tagSlugs) && empty($tagIds)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tag not found',
+            ], 200);
+        }
+
         $itineraries = $query->get();
     
         $itineraries->transform(function ($itinerary) {
 
             $categories = $itinerary->categories->map(function ($itineraryCategory) {
-                return [
+                return $itineraryCategory->category ? [
                     'id' => $itineraryCategory->category->id,
                     'name' => $itineraryCategory->category->name,
-                ];
-            })->unique()->values();
-
+                ] : null;
+            })->filter()->unique()->values(); // Remove null values
+            
             return [
                 'id' => $itinerary->id,
                 'name' => $itinerary->name,
+                'slug' => $itinerary->slug,
                 'item_type' => $itinerary->item_type,
+                'featured'  => $itinerary->featured_itinerary,
                 'categories' => $categories,
+                'tags' => $itinerary->tags->map(fn ($tag) => [
+                    'slug' => $tag->slug,
+                    'name' => $tag->name,
+                ])->toArray(),
                 'base_pricing' => $itinerary->basePricing ? [
                     'currency' => $itinerary->basePricing->currency,
                     'availability' => $itinerary->basePricing->availability,
@@ -280,12 +417,15 @@ class PublicHomeSearchController extends Controller
     
 
     // Package Search function
-    private function searchPackages($cityIds, $startDate, $endDate, $quantity)
+
+    // private function searchPackages($cityIds, $startDate, $endDate, $quantity)
+    private function searchPackages($cityIds, $startDate, $endDate, $quantity, $categoryIds, $tagIds, $sortBy, $minPrice, $maxPrice, $featured, $itemType)
     {
         $query = Package::with([
             'categories' => function ($q) {
                 $q->with('category:id,name'); 
             },
+            // 'tags:id,name',
             'locations',
             'basePricing.variations',
         ])->whereHas('locations', function ($q) use ($cityIds) {
@@ -312,23 +452,75 @@ class PublicHomeSearchController extends Controller
             });
         }
 
+        // **Min Price & Max Price Filtering**
+        if ($minPrice !== null || $maxPrice !== null) {
+            $query->whereHas('basePricing.variations', function ($q) use ($minPrice, $maxPrice) {
+                if ($minPrice !== null) {
+                    $q->where('regular_price', '>=', $minPrice);
+                }
+                if ($maxPrice !== null) {
+                    $q->where('regular_price', '<=', $maxPrice);
+                }
+            });
+        }
+
+        // **Featured filter**
+        if ($featured !== null) {
+            $query->where('featured_package', (bool) $featured);
+        }
+
+        if ($itemType) {
+            $query->where('item_type', $itemType);
+        }
+
+        // **Handle Category & Tag Filtering Correctly**
+        if (!empty($categoryIds)) {
+            $query->whereHas('categories', function ($q) use ($categoryIds) {
+                $q->whereIn('package_categories.category_id', $categoryIds);
+            });
+        }
+
+        if (!empty($categorySlugs) && empty($categoryIds)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Category not found',
+            ], 200);
+        }
+
+        if (!empty($tagIds)) {
+            $query->whereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
+        }
+
+        if (!empty($tagSlugs) && empty($tagIds)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tag not found',
+            ], 200);
+        }
+
         // return $query->get();
         $packages = $query->get();
     
         $packages->transform(function ($package) {
 
             $categories = $package->categories->map(function ($packageCategory) {
-                return [
+                return $packageCategory->category ? [
                     'id' => $packageCategory->category->id,
                     'name' => $packageCategory->category->name,
-                ];
-            })->unique()->values();
+                ] : null;
+            })->filter()->unique()->values(); // Remove null values
 
             return [
                 'id' => $package->id,
                 'name' => $package->name,
+                'slug' => $package->slug,
                 'item_type' => $package->item_type,
+                'featured'  => $package->featured_package,
                 'categories' => $categories,
+                'tags' => $package->tags->map(fn ($tag) => [
+                    'slug' => $tag->slug,
+                    'name' => $tag->name,
+                ])->toArray(),
                 'base_pricing' => $package->basePricing ? [
                     'currency' => $package->basePricing->currency,
                     'availability' => $package->basePricing->availability,

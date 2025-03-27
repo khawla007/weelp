@@ -908,29 +908,65 @@ class PublicRegionController extends Controller
             ], 404);
         }
 
+        // **New City Filter & Validation**
+        $citySlugs = request()->has('city') ? explode(',', request()->get('city')) : [];
+        $selectedCities = City::whereIn('slug', $citySlugs)->get();
+
+        // Extract IDs of cities found in the backend
+        $selectedCityIds = $selectedCities->pluck('id')->toArray();
+
+        // Ensure all requested cities exist
+        if (!empty($citySlugs) && count($selectedCities) !== count($citySlugs)) {
+            return response()->json(['success' => false, 'message' => 'One or more cities not found.'], 404);
+        }
+
+        // Ensure all requested cities belong to the region
+        $validCityIds = $cities->pluck('id')->intersect($selectedCityIds);
+
+        if (!empty($citySlugs) && $validCityIds->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'Selected city does not belong to this region.'], 404);
+        }
+
         // Get Filters from Request
         $categorySlugs = request()->has('categories') ? explode(',', request()->get('categories')) : [];
         $tagSlugs = request()->has('tags') ? explode(',', request()->get('tags')) : [];
         $minPrice = request()->get('min_price', 0);
         $maxPrice = request()->get('max_price', null);
         $sortBy = request()->get('sort_by', 'id_desc'); // Default: Newest First
+        $itemTypes = request()->has('item_types') ? explode(',', request()->get('item_types')) : [];
 
         // Fetch Category and Tag IDs
         $categoryIds = Category::whereIn('slug', $categorySlugs)->pluck('id')->toArray();
         $tagIds = Tag::whereIn('slug', $tagSlugs)->pluck('id')->toArray();
 
+        // check if category is not in backend
+        if (!empty($categorySlugs) && empty($categoryIds)) {
+            return response()->json(['success' => false, 'message' => 'Category not found.'], 404);
+        }
+        // check if tag is not in backend
+        if (!empty($tagSlugs) && empty($tagIds)) {
+            return response()->json(['success' => false, 'message' => 'Tag not found.'], 404);
+        }
         // Fetch Activities, Itineraries, and Packages
         $activities = Activity::whereHas('locations', fn ($query) =>  
-            $query->whereIn('city_id', $cities->pluck('id'))
+            $query->whereIn('city_id', $validCityIds->isEmpty() ? $cities->pluck('id') : $validCityIds)
+            ->when($itemTypes, fn ($query) => $query->where('item_type', $itemTypes))
         )->with(['pricing', 'groupDiscounts', 'categories.category', 'locations.city.state.country.regions']);
 
         $itineraries = Itinerary::whereHas('locations', fn ($query) =>  
-            $query->whereIn('city_id', $cities->pluck('id'))
+            $query->whereIn('city_id', $validCityIds->isEmpty() ? $cities->pluck('id') : $validCityIds)
+            ->when($itemTypes, fn ($query) => $query->where('item_type', $itemTypes))
         )->with(['basePricing.variations', 'mediaGallery', 'categories.category', 'tags']);
 
         $packages = Package::whereHas('locations', fn ($query) =>  
-            $query->whereIn('city_id', $cities->pluck('id'))
+            $query->whereIn('city_id', $validCityIds->isEmpty() ? $cities->pluck('id') : $validCityIds)
+            ->when($itemTypes, fn ($query) => $query->where('item_type', $itemTypes))
         )->with(['basePricing.variations', 'mediaGallery', 'categories.category', 'tags']);
+        
+        $validItemTypes = ['activity', 'itinerary', 'package'];
+        if (!empty($itemTypes) && array_diff($itemTypes, $validItemTypes)) {
+            return response()->json(['success' => false, 'message' => 'Invalid item type.'], 404);
+        }
 
         // Apply Category Filter
         if (!empty($categoryIds)) {
@@ -957,6 +993,19 @@ class PublicRegionController extends Controller
         $itineraries = $itineraries->get();
         $packages = $packages->get();
 
+        // **Check for Empty Data**
+        if (!empty($citySlugs) && count($selectedCities) && $activities->isEmpty() && $itineraries->isEmpty() && $packages->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'No items found .'], 404);
+        }
+
+        if (!empty($categorySlugs) && ($activities->isEmpty() && $itineraries->isEmpty() && $packages->isEmpty())) {
+            return response()->json(['success' => false, 'message' => 'Category has no items.'], 404);
+        }
+
+        if (!empty($tagSlugs) && ($itineraries->isEmpty() && $packages->isEmpty())) {
+            return response()->json(['success' => false, 'message' => 'Tag has no items.'], 404);
+        }
+
         // Merge Results
         $allItems = collect()
             ->merge($activities->map(fn ($activity) => [
@@ -970,6 +1019,19 @@ class PublicRegionController extends Controller
                     'slug' => $category->category->slug,
                     'name' => $category->category->name,
                 ])->toArray(),
+                'locations' => $activity->locations->map(function ($location) {
+                    $city = $location->city;
+                    return [
+                        'city_id' => $city->id,
+                        'city' => $city->name,
+                        'state_id' => $city->state?->id,
+                        'state' => $city->state?->name,
+                        'country_id' => $city->state?->country?->id,
+                        'country' => $city->state?->country?->name,
+                        'region_id' => $city->state?->country?->regions->first()?->id,
+                        'region' => $city->state?->country?->regions->first()?->name,
+                    ];
+                }),
             ]))
             ->merge($itineraries->map(fn ($itinerary) => [
                 'id' => $itinerary->id,
@@ -986,6 +1048,19 @@ class PublicRegionController extends Controller
                     'slug' => $tag->slug,
                     'name' => $tag->name,
                 ])->toArray(),
+                'locations' => $itinerary->locations->map(function ($location) {
+                    $city = $location->city;
+                    return [
+                        'city_id' => $city->id,
+                        'city' => $city->name,
+                        'state_id' => $city->state?->id,
+                        'state' => $city->state?->name,
+                        'country_id' => $city->state?->country?->id,
+                        'country' => $city->state?->country?->name,
+                        'region_id' => $city->state?->country?->regions->first()?->id,
+                        'region' => $city->state?->country?->regions->first()?->name,
+                    ];
+                }),
             ]))
             ->merge($packages->map(fn ($package) => [
                 'id' => $package->id,
@@ -1002,6 +1077,19 @@ class PublicRegionController extends Controller
                     'slug' => $tag->slug,
                     'name' => $tag->name,
                 ])->toArray(),
+                'locations' => $package->locations->map(function ($location) {
+                    $city = $location->city;
+                    return [
+                        'city_id' => $city->id,
+                        'city' => $city->name,
+                        'state_id' => $city->state?->id,
+                        'state' => $city->state?->name,
+                        'country_id' => $city->state?->country?->id,
+                        'country' => $city->state?->country?->name,
+                        'region_id' => $city->state?->country?->regions->first()?->id,
+                        'region' => $city->state?->country?->regions->first()?->name,
+                    ];
+                }),
             ]));
 
         // Sorting
@@ -1012,11 +1100,17 @@ class PublicRegionController extends Controller
             case 'name_desc':
                 $allItems = $allItems->sortByDesc('name');
                 break;
+            // case 'price_asc':
+            //     $allItems = $allItems->sortBy(fn ($item) => $item['base_pricing']['regular_price'] ?? $item['pricing']['regular_price'] ?? 0);
+            //     break;
+            // case 'price_desc':
+            //     $allItems = $allItems->sortByDesc(fn ($item) => $item['base_pricing']['regular_price'] ?? $item['pricing']['regular_price'] ?? 0);
+            //     break;
             case 'price_asc':
-                $allItems = $allItems->sortBy(fn ($item) => $item['base_pricing']['regular_price'] ?? $item['pricing']['regular_price'] ?? 0);
+                $allItems = $allItems->sortBy(fn ($item) => (float) ($item['base_pricing']['variations'][0]['sale_price'] ?? $item['price']['regular_price'] ?? 0));
                 break;
             case 'price_desc':
-                $allItems = $allItems->sortByDesc(fn ($item) => $item['base_pricing']['regular_price'] ?? $item['pricing']['regular_price'] ?? 0);
+                $allItems = $allItems->sortByDesc(fn ($item) => (float) ($item['base_pricing']['variations'][0]['sale_price'] ?? $item['price']['regular_price'] ?? 0));
                 break;
             case 'id_asc':
                 $allItems = $allItems->sortBy('id');
