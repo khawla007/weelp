@@ -23,18 +23,84 @@ use Illuminate\Support\Facades\DB;
 
 class ActivityController extends Controller
 {
+
+    // $activities = Activity::with([
+    //     'categories', 'locations', 'attributes', 'pricing', 'seasonalPricing',
+    //     'groupDiscounts', 'earlyBirdDiscount', 'lastMinuteDiscount', 'promoCodes', 'availability'
+    // ])->get();
+
+    // return response()->json($activities, 200);
     /**
      * Display a listing of the activities.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $activities = Activity::with([
-            'categories', 'locations', 'attributes', 'pricing', 'seasonalPricing',
-            'groupDiscounts', 'earlyBirdDiscount', 'lastMinuteDiscount', 'promoCodes', 'availability'
-        ])->get();
-
-        return response()->json($activities, 200);
-    }
+        $perPage = 3;
+        $page = $request->get('page', 1);
+    
+        // Extract Filters from Query String
+        $categorySlug = $request->get('category');
+        $difficulty = $request->get('difficulty_level');
+        $duration = $request->get('duration');
+        $ageGroup = $request->get('age_restriction');
+        $season = $request->get('season');
+        $minPrice = $request->get('min_price', 0);
+        $maxPrice = $request->get('max_price');
+    
+        // Fetch Category ID from Slug
+        $category = $categorySlug ? Category::where('slug', $categorySlug)->first() : null;
+        $categoryId = $category ? $category->id : null;
+    
+        // 🔹 Fetch Attribute IDs Dynamically
+        $difficultyAttr = Attribute::where('slug', 'difficulty-level')->first();
+        $durationAttr = Attribute::where('slug', 'duration')->first();
+        $ageGroupAttr = Attribute::where('slug', 'age-restriction')->first(); // Adjust slug if different
+    
+        // Base Query with Filters
+        $activities = Activity::with(['categories.category', 'locations.city', 'pricing', 'attributes'])
+            ->when($categoryId, fn($query) => 
+                $query->whereHas('categories', fn($q) => 
+                    $q->where('category_id', $categoryId)
+                )
+            )
+            ->when($difficulty && $difficultyAttr, fn($query) => 
+                $query->whereHas('attributes', fn($q) => 
+                    $q->where('attribute_id', $difficultyAttr->id)
+                      ->where('attribute_value', $difficulty)
+                )
+            )
+            ->when($duration && $durationAttr, fn($query) => 
+                $query->whereHas('attributes', fn($q) => 
+                    $q->where('attribute_id', $durationAttr->id)
+                      ->where('attribute_value', $duration)
+                )
+            )
+            ->when($ageGroup && $ageGroupAttr, fn($query) => 
+                $query->whereHas('attributes', fn($q) => 
+                    $q->where('attribute_id', $ageGroupAttr->id)
+                      ->where('attribute_value', $ageGroup)
+                )
+            )
+            ->when($season, fn($query) => 
+                $query->whereHas('seasonalPricing', fn($q) => 
+                    $q->where('season_name', $season)
+                )
+            )
+            ->when($maxPrice !== null, fn($query) => 
+                $query->whereHas('pricing', fn($q) => 
+                    $q->whereBetween('regular_price', [$minPrice, $maxPrice])
+                )
+            )
+            ->paginate($perPage);
+    
+        return response()->json([
+            'success' => true,
+            'data' => $activities,
+            'current_page' => (int) $page,
+            'per_page' => $perPage,
+            'total' => $activities->total(),
+        ], 200);
+    }    
 
     /**
      * Store a newly created activity in storage.
@@ -326,16 +392,6 @@ class ActivityController extends Controller
      */
     public function show(string $id)
     {
-        // $activity = Activity::with([
-        //     'categories:id,name', 'locations.city:id,name', 'attributes.attribute:id,name', 'pricing', 'seasonalPricing',
-        //     'groupDiscounts', 'earlyBirdDiscount', 'lastMinuteDiscount', 'promoCodes', 'availability'
-        // ])->find($id);
-
-        // if (!$activity) {
-        //     return response()->json(['message' => 'Activity not found'], 404);
-        // }
-
-        // return response()->json($activity, 200);
         $activity = Activity::with([
             'categories', 
             'locations.city', 

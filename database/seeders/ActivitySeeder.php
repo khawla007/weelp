@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Activity;
 use App\Models\ActivityCategory;
 use App\Models\ActivityLocation;
+use App\Models\Attribute;
 use App\Models\ActivityAttribute;
 use App\Models\ActivityPricing;
 use App\Models\ActivitySeasonalPricing;
@@ -113,18 +114,37 @@ class ActivitySeeder extends Seeder {
             ]);
 
             // 🏷 Assign Multiple Attributes
-            ActivityAttribute::create([
-                'activity_id' => $activity->id,
-                'attribute_id' => rand(1, 4),
-                'attribute_value' => '1 Hour'
-            ]);
-            ActivityAttribute::create([
-                'activity_id' => $activity->id,
-                'attribute_id' => rand(3, 4),
-                'attribute_value' => 'Easy'
-            ]);
+            // ActivityAttribute::create([
+            //     'activity_id' => $activity->id,
+            //     'attribute_id' => rand(1, 4),
+            //     'attribute_value' => '1 Hour'
+            // ]);
+            // ActivityAttribute::create([
+            //     'activity_id' => $activity->id,
+            //     'attribute_id' => rand(3, 4),
+            //     'attribute_value' => 'Easy'
+            // ]);
 
-            // 💰 Pricing
+            // Fetch all attributes
+            $attribute = Attribute::inRandomOrder()->first();
+            
+            if (!$attribute || empty($attribute->values)) {
+                continue; // Skip if no attribute or empty values
+            }
+
+            // Decode JSON values and pick a random one
+            $attributeValues = json_decode($attribute->values, true);
+            $randomValue = is_array($attributeValues) ? $attributeValues[array_rand($attributeValues)] : null;
+
+            if ($randomValue) {
+                ActivityAttribute::create([
+                    'activity_id' => $activity->id,
+                    'attribute_id' => $attribute->id,
+                    'attribute_value' => $randomValue, // Use a value from JSON
+                ]);
+            }
+
+            // Pricing
             $pricing = ActivityPricing::create([
                 'activity_id' => $activity->id,
                 'regular_price' => rand(50, 500),
