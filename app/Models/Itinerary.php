@@ -64,11 +64,21 @@ class Itinerary extends Model
     // Tag relation
     public function tags()
     {
-        return $this->belongsToMany(Tag::class, 'itinerary_tags');
+        return $this->hasMany(ItineraryTag::class);
     }
 
     public function availability()
     {
         return $this->hasOne(ItineraryAvailability::class);
     }
+
+    // public function activities()
+    // {
+    //     return $this->hasMany(ItineraryActivity::class);
+    // }
+
+    // public function transfers()
+    // {
+    //     return $this->hasMany(ItineraryTransfer::class);
+    // }
 }

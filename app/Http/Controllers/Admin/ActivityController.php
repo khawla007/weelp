@@ -24,21 +24,14 @@ use Illuminate\Support\Facades\DB;
 class ActivityController extends Controller
 {
 
-    // $activities = Activity::with([
-    //     'categories', 'locations', 'attributes', 'pricing', 'seasonalPricing',
-    //     'groupDiscounts', 'earlyBirdDiscount', 'lastMinuteDiscount', 'promoCodes', 'availability'
-    // ])->get();
-
-    // return response()->json($activities, 200);
     /**
      * Display a listing of the activities.
-     */
+    */
     public function index(Request $request)
     {
-        $perPage = 3;
-        $page = $request->get('page', 1);
-    
-        // Extract Filters from Query String
+        $perPage = 3; 
+        $page = $request->get('page', 1); 
+        
         $categorySlug = $request->get('category');
         $difficulty = $request->get('difficulty_level');
         $duration = $request->get('duration');
@@ -46,18 +39,19 @@ class ActivityController extends Controller
         $season = $request->get('season');
         $minPrice = $request->get('min_price', 0);
         $maxPrice = $request->get('max_price');
-    
-        // Fetch Category ID from Slug
+        $sortBy = $request->get('sort_by', 'id_desc'); // Default: Newest First
+        
         $category = $categorySlug ? Category::where('slug', $categorySlug)->first() : null;
         $categoryId = $category ? $category->id : null;
     
-        // 🔹 Fetch Attribute IDs Dynamically
         $difficultyAttr = Attribute::where('slug', 'difficulty-level')->first();
         $durationAttr = Attribute::where('slug', 'duration')->first();
         $ageGroupAttr = Attribute::where('slug', 'age-restriction')->first(); // Adjust slug if different
-    
-        // Base Query with Filters
-        $activities = Activity::with(['categories.category', 'locations.city', 'pricing', 'attributes'])
+        
+        $query = Activity::query()
+            ->select('activities.*')  // Select all fields from activities
+            ->join('activity_pricing', 'activity_pricing.activity_id', '=', 'activities.id') // Join with activity_pricing table
+            ->with(['categories.category', 'locations.city', 'pricing', 'attributes']) // Eager load relationships
             ->when($categoryId, fn($query) => 
                 $query->whereHas('categories', fn($q) => 
                     $q->where('category_id', $categoryId)
@@ -90,21 +84,54 @@ class ActivityController extends Controller
                 $query->whereHas('pricing', fn($q) => 
                     $q->whereBetween('regular_price', [$minPrice, $maxPrice])
                 )
-            )
-            ->paginate($perPage);
-    
+            );
+
+            // Sorting based on the 'sort_by' parameter
+            switch ($sortBy) {
+                case 'price_asc':
+                    $query->orderBy('activity_pricing.regular_price', 'asc');
+                    break;
+                case 'price_desc':
+                    $query->orderBy('activity_pricing.regular_price', 'desc');
+                    break;
+                case 'name_asc':
+                    $query->orderBy('activities.name', 'asc');
+                    break;
+                case 'name_desc':
+                    $query->orderBy('activities.name', 'desc');
+                    break;
+                case 'id_asc':
+                    $query->orderBy('activities.id', 'asc'); // Sort by ID ascending (oldest first)
+                    break;
+                case 'id_desc':
+                    $query->orderBy('activities.id', 'desc'); // Sort by ID descending (newest first)
+                    break;
+                case 'featured':
+                    $query->orderByRaw('activities.featured_activity DESC'); // Sort featured=true first
+                    break;
+                default:
+                    $query->orderBy('activities.id', 'desc'); // Default to newest first (created_at_desc)
+                    break;
+            }
+            $allItems = $query->get(); 
+            // ->get();
+        
+        $paginatedItems = $allItems->forPage($page, $perPage);
+        
         return response()->json([
             'success' => true,
-            'data' => $activities,
+            'data' => $paginatedItems->values(),
             'current_page' => (int) $page,
             'per_page' => $perPage,
-            'total' => $activities->total(),
+            'total' => $allItems->count(),
         ], 200);
     }    
 
+
+
     /**
      * Store a newly created activity in storage.
-     */
+    */
     public function store(Request $request)
     {
         $validated = $request->validate([

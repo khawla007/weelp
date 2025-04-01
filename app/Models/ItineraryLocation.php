@@ -10,7 +10,7 @@ class ItineraryLocation extends Model
     use HasFactory;
 
     protected $fillable = [
-        'package_id',
+        'itinerary_id',
         'city_id',
     ];
 
