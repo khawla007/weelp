@@ -10,11 +10,16 @@ use Illuminate\Support\Str;
 class AttributeController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of the Attribute.
      */
     public function index()
     {
-        return response()->json(Attribute::all());
+        // return response()->json(Attribute::all());
+        $attributes = Attribute::all();
+        return response()->json([
+            'success' => true,
+            'data' => $attributes
+        ]);
     }
 
     /**

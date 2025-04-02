@@ -62,7 +62,7 @@ class Package extends Model
     // Tag relation
     public function tags()
     {
-        return $this->belongsToMany(Tag::class, 'package_tags');
+        return $this->hasMany(PackageTag::class,);
     }
 
     public function faqs()

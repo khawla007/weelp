@@ -13,7 +13,7 @@ class AttributeSeeder extends Seeder
      */
     public function run()
     {
-        // 1️⃣ Define Attributes with Values
+        // Define Attributes with Values
         $attributes = [
             [
                 'name' => 'Duration',
@@ -45,14 +45,15 @@ class AttributeSeeder extends Seeder
             ]
         ];
 
-        // 2️⃣ Insert Attributes
+        // Insert Attributes
         foreach ($attributes as $data) {
             Attribute::create([
                 'name' => $data['name'],
                 'type' => $data['type'],
                 'description' => $data['description'],
                 'default_value' => $data['default_value'],
-                'values' => in_array($data['type'], ['single_select', 'multi_select']) ? json_encode($data['values']) : null
+                // 'values' => in_array($data['type'], ['single_select', 'multi_select']) ? json_encode($data['values']) : null
+                'values' => in_array($data['type'], ['single_select', 'multi_select']) ? implode(',', $data['values']) : null
             ]);
         }
     }
