@@ -23,6 +23,8 @@ use App\Http\Controllers\Admin\PlaceImportController;
 use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\ItineraryController;
 use App\Http\Controllers\Admin\CityController;
+use App\Http\Controllers\Admin\TransferController;
+use App\Http\Controllers\Admin\VendorController;
 
 
 // Public
@@ -133,6 +135,16 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::delete('/{id}', [ActivityController::class, 'destroy']); // Delete
     });
 
+    // Admin Side Transfer route
+    Route::prefix('/transfers')->group(function () {
+        Route::post('/', [TransferController::class, 'save']); // Create
+        Route::put('/{id}', [TransferController::class, 'save']); // Update
+        Route::patch('/{id}', [TransferController::class, 'save']); // Partial Update
+        Route::get('/', [TransferController::class, 'index']);
+        Route::get('/{id}', [TransferController::class, 'show']);
+        Route::delete('/{id}', [TransferController::class, 'destroy']);
+    });
+
     // Admin Side Itinerary route
     // Route::apiResource('itineraries', ItineraryController::class);
     Route::prefix('/itinerary')->group(function () {
@@ -142,6 +154,15 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::get('/', [ItineraryController::class, 'index']); // Get all
         Route::get('/{id}', [ItineraryController::class, 'show']); // Get single
         Route::delete('/{id}', [ItineraryController::class, 'destroy']); // Delete
+    });
+
+    Route::prefix('/vendors')->group(function () {
+        Route::post('/', [VendorController::class, 'save']); // Create
+        Route::put('/{id}', [VendorController::class, 'save']); // Update
+        Route::patch('/{id}', [VendorController::class, 'save']); // Partial Update
+        Route::get('/', [VendorController::class, 'index']);      // List vendors
+        Route::get('/{id}', [VendorController::class, 'show']); // Show a vendor
+        Route::delete('/{id}', [VendorController::class, 'destroy']);  // Delete vendor
     });
 
 });

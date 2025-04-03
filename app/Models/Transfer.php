@@ -17,13 +17,13 @@ class Transfer extends Model
     // Relationship with TransferVendorRoute
     public function vendorRoutes()
     {
-        return $this->hasOne(TransferVendorRoute::class);
+        return $this->hasOne(TransferVendorRoute::class)->with('vendor', 'route');
     }
 
     // Relationship with TransferPricingAvailability
     public function pricingAvailability()
     {
-        return $this->hasOne(TransferPricingAvailability::class);
+        return $this->hasOne(TransferPricingAvailability::class)->with('pricingTier', 'availability');
     }
 
     // Relationship with Media
