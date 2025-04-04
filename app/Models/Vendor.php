@@ -31,4 +31,9 @@ class Vendor extends Model {
     public function transferVendor() {
         return $this->hasMany(TransferVendorRoute::class, 'vendor_id');
     }
+
+    public function availabilityTimeSlots()
+    {
+        return $this->hasMany(VendorAvailabilityTimeSlot::class);
+    }
 }

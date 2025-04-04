@@ -25,6 +25,6 @@ class VendorDriver extends Model {
     }
 
     public function schedules() {
-        return $this->hasMany(VendorDriverSchedule::class);
+        return $this->hasMany(VendorDriverSchedule::class, 'driver_id');
     }
 }

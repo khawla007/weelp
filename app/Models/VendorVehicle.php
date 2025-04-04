@@ -16,6 +16,11 @@ class VendorVehicle extends Model {
         return $this->belongsTo(Vendor::class);
     }
 
+    public function availabilityTimeSlots()
+    {
+        return $this->hasMany(VendorAvailabilityTimeSlot::class, 'vehicle_id');
+    }
+
     public function drivers() {
         return $this->hasMany(VendorDriver::class, 'assigned_vehicle_id');
     }

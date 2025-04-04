@@ -15,11 +15,76 @@ class TransferController extends Controller
     /**
      * Display a listing of the transfers.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $transfers = Transfer::with(['vendorRoutes', 'pricingAvailability', 'media', 'seo'])->get();
-        return response()->json($transfers);
-    }
+        $perPage = 3;
+        $page = $request->get('page', 1);
+        $sortBy = $request->get('sort_by', 'id_desc');
+    
+        // Filter params
+        $vehicleType = $request->get('vehicle_type');
+        $capacity = $request->get('capacity');
+        $minPrice = $request->get('min_price', 0);
+        $maxPrice = $request->get('max_price');
+        $availabilityDate = $request->get('availability_date');
+    
+        $query = Transfer::query()
+            ->select('transfers.*')
+            ->join('transfer_vendor_routes', 'transfers.id', '=', 'transfer_vendor_routes.transfer_id')
+            ->join('vendor_vehicles', 'transfer_vendor_routes.vendor_id', '=', 'vendor_vehicles.vendor_id')
+            ->join('transfer_pricing_availabilities', 'transfers.id', '=', 'transfer_pricing_availabilities.transfer_id')
+            ->join('vendor_pricing_tiers', 'transfer_pricing_availabilities.pricing_tier_id', '=', 'vendor_pricing_tiers.id')
+            ->with([
+                'vendorRoutes.route',
+                'pricingAvailability.pricingTier',
+                'pricingAvailability.availability',
+                'media',
+                'seo',
+            ])
+            ->when($vehicleType, fn($q) => $q->where('vendor_vehicles.vehicle_type', $vehicleType))
+            ->when($capacity, fn($q) => $q->where('vendor_vehicles.capacity', '>=', $capacity))
+            ->when($minPrice !== null && $maxPrice !== null, fn($q) =>
+                $q->whereBetween('vendor_pricing_tiers.base_price', [$minPrice, $maxPrice])
+            )
+            ->when($availabilityDate, function ($q) use ($availabilityDate) {
+                $q->join('vendor_availability_time_slots', 'transfer_pricing_availabilities.availability_id', '=', 'vendor_availability_time_slots.id')
+                  ->whereDate('vendor_availability_time_slots.date', $availabilityDate);
+            });
+    
+        // Sorting logic
+        switch ($sortBy) {
+            case 'price_asc':
+                $query->orderBy('vendor_pricing_tiers.base_price', 'asc');
+                break;
+            case 'price_desc':
+                $query->orderBy('vendor_pricing_tiers.base_price', 'desc');
+                break;
+            case 'name_asc':
+                $query->orderBy('transfers.name', 'asc');
+                break;
+            case 'name_desc':
+                $query->orderBy('transfers.name', 'desc');
+                break;
+            case 'id_asc':
+            default:
+                $query->orderBy('transfers.id', 'asc');
+                break;
+            case 'id_desc':
+                $query->orderBy('transfers.id', 'desc');
+                break;
+        }
+    
+        $allItems = $query->get();
+        $paginatedItems = $allItems->forPage($page, $perPage);
+    
+        return response()->json([
+            'success' => true,
+            'data' => $paginatedItems->values(),
+            'current_page' => (int) $page,
+            'per_page' => $perPage,
+            'total' => $allItems->count(),
+        ]);
+    }       
 
     /**
      * Store a newly created transfers in storage.
