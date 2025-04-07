@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Itinerary;
+use App\Models\ItineraryInfomation;
 use App\Models\ItineraryLocation;
 use App\Models\ItinerarySchedule;
 use App\Models\ItineraryActivity;
@@ -13,10 +14,11 @@ use App\Models\ItineraryPriceVariation;
 use App\Models\ItineraryBlackoutDate;
 use App\Models\ItineraryInclusionExclusion;
 use App\Models\ItineraryMediaGallery;
-use App\Models\ItinerarySeo;
 use App\Models\ItineraryCategory;
 use App\Models\ItineraryAttribute;
 use App\Models\ItineraryTag;
+use App\Models\ItineraryFaq;
+use App\Models\ItinerarySeo;
 use App\Models\ItineraryAvailability;
 use App\Models\Category;
 use App\Models\Attribute;
@@ -236,59 +238,144 @@ class ItineraryController extends Controller
                 }
             }
     
-            // Handle Schedules
+            // // Handle Schedules
+            // $scheduleMap = [];
+            // if ($request->has('schedules')) {
+            //     $itinerary->schedules()->delete();
+            //     foreach ($request->schedules as $schedule) {
+            //         $newSchedule = ItinerarySchedule::create([
+            //             'itinerary_id' => $itinerary->id,
+            //             'day' => $schedule['day'],
+            //         ]);
+            //         $scheduleMap[$schedule['day']] = $newSchedule->id;
+            //     }
+            // }
+
+            // // Handle Activities
+            // if ($request->has('activities')) {
+            //     foreach ($request->activities as $activity) {
+            //         // Check if the schedule exists for the given day
+            //         $scheduleId = $scheduleMap[$activity['day']] ?? null;
+            //         if ($scheduleId) {
+            //             ItineraryActivity::create([
+            //                 'schedule_id' => $scheduleId,
+            //                 'activity_id' => $activity['activity_id'],
+            //                 'start_time' => $activity['start_time'],
+            //                 'end_time' => $activity['end_time'],
+            //                 'notes' => $activity['notes'],
+            //                 'price' => $activity['price'],
+            //                 'include_in_package' => $activity['include_in_package'],
+            //             ]);
+            //         }
+            //     }
+            // }
+    
+            // // Handle Transfers
+            // if ($request->has('transfers')) {
+            //     foreach ($request->transfers as $transfer) {
+            //         // Check if the schedule exists for the given day
+            //         $scheduleId = $scheduleMap[$transfer['day']] ?? null;
+            //         if ($scheduleId) {
+            //             ItineraryTransfer::create([
+            //                 'schedule_id' => $scheduleId,
+            //                 'transfer_id' => $transfer['transfer_id'],
+            //                 'start_time' => $transfer['start_time'],
+            //                 'end_time' => $transfer['end_time'],
+            //                 'notes' => $transfer['notes'],
+            //                 'price' => $transfer['price'],
+            //                 'include_in_package' => $transfer['include_in_package'],
+            //                 'pickup_location' => $transfer['pickup_location'],
+            //                 'dropoff_location' => $transfer['dropoff_location'],
+            //                 'pax' => $transfer['pax'],
+            //             ]);
+            //         }
+            //     }
+            // }
+
             $scheduleMap = [];
+
+            // Build map from existing schedules: [day => id]
+            $existingSchedules = $itinerary->schedules->keyBy('day');
+            
             if ($request->has('schedules')) {
-                $itinerary->schedules()->delete();
                 foreach ($request->schedules as $schedule) {
-                    $newSchedule = ItinerarySchedule::create([
-                        'itinerary_id' => $itinerary->id,
-                        'day' => $schedule['day'],
-                    ]);
-                    $scheduleMap[$schedule['day']] = $newSchedule->id;
+                    $day = $schedule['day'];
+            
+                    if (isset($existingSchedules[$day])) {
+                        // ✅ Use existing schedule
+                        $scheduleMap[$day] = $existingSchedules[$day]->id;
+                    } else {
+                        // 🆕 If new day, create it
+                        $newSchedule = ItinerarySchedule::create([
+                            'itinerary_id' => $itinerary->id,
+                            'day' => $day,
+                        ]);
+                        $scheduleMap[$day] = $newSchedule->id;
+                    }
                 }
             }
 
-            // Handle Activities
             if ($request->has('activities')) {
+                $existingIds = ItineraryActivity::whereHas('schedule', fn($q) => $q->where('itinerary_id', $itinerary->id))->pluck('id')->toArray();
+                $sentIds = collect($request->activities)->pluck('id')->filter()->toArray();
+            
+                $toDelete = array_diff($existingIds, $sentIds);
+                if ($toDelete) ItineraryActivity::whereIn('id', $toDelete)->delete();
+            
                 foreach ($request->activities as $activity) {
-                    // Check if the schedule exists for the given day
                     $scheduleId = $scheduleMap[$activity['day']] ?? null;
-                    if ($scheduleId) {
-                        ItineraryActivity::create([
-                            'schedule_id' => $scheduleId,
-                            'activity_id' => $activity['activity_id'],
-                            'start_time' => $activity['start_time'],
-                            'end_time' => $activity['end_time'],
-                            'notes' => $activity['notes'],
-                            'price' => $activity['price'],
-                            'include_in_package' => $activity['include_in_package'],
-                        ]);
+                    if (!$scheduleId) continue;
+            
+                    $data = [
+                        'schedule_id' => $scheduleId,
+                        'activity_id' => $activity['activity_id'],
+                        'start_time' => $activity['start_time'],
+                        'end_time' => $activity['end_time'],
+                        'notes' => $activity['notes'],
+                        'price' => $activity['price'],
+                        'include_in_package' => $activity['include_in_package'],
+                    ];
+            
+                    if (!empty($activity['id']) && in_array($activity['id'], $existingIds)) {
+                        ItineraryActivity::where('id', $activity['id'])->update($data);
+                    } else {
+                        ItineraryActivity::create($data);
                     }
                 }
             }
-    
-            // Handle Transfers
+
             if ($request->has('transfers')) {
+                $existingIds = ItineraryTransfer::whereHas('schedule', fn($q) => $q->where('itinerary_id', $itinerary->id))->pluck('id')->toArray();
+                $sentIds = collect($request->transfers)->pluck('id')->filter()->toArray();
+            
+                $toDelete = array_diff($existingIds, $sentIds);
+                if ($toDelete) ItineraryTransfer::whereIn('id', $toDelete)->delete();
+            
                 foreach ($request->transfers as $transfer) {
-                    // Check if the schedule exists for the given day
                     $scheduleId = $scheduleMap[$transfer['day']] ?? null;
-                    if ($scheduleId) {
-                        ItineraryTransfer::create([
-                            'schedule_id' => $scheduleId,
-                            'transfer_id' => $transfer['transfer_id'],
-                            'start_time' => $transfer['start_time'],
-                            'end_time' => $transfer['end_time'],
-                            'notes' => $transfer['notes'],
-                            'price' => $transfer['price'],
-                            'include_in_package' => $transfer['include_in_package'],
-                            'pickup_location' => $transfer['pickup_location'],
-                            'dropoff_location' => $transfer['dropoff_location'],
-                            'pax' => $transfer['pax'],
-                        ]);
+                    if (!$scheduleId) continue;
+            
+                    $data = [
+                        'schedule_id' => $scheduleId,
+                        'transfer_id' => $transfer['transfer_id'],
+                        'start_time' => $transfer['start_time'],
+                        'end_time' => $transfer['end_time'],
+                        'notes' => $transfer['notes'],
+                        'price' => $transfer['price'],
+                        'include_in_package' => $transfer['include_in_package'],
+                        'pickup_location' => $transfer['pickup_location'] ?? null,
+                        'dropoff_location' => $transfer['dropoff_location'] ?? null,
+                        'pax' => $transfer['pax'] ?? null,
+                    ];
+            
+                    if (!empty($transfer['id']) && in_array($transfer['id'], $existingIds)) {
+                        ItineraryTransfer::where('id', $transfer['id'])->update($data);
+                    } else {
+                        ItineraryTransfer::create($data);
                     }
                 }
             }
+                        
     
             // Handle Pricing
             if ($request->has('pricing')) {
@@ -446,7 +533,21 @@ class ItineraryController extends Controller
      */
     public function show(string $id)
     {
-        $itinerary = Itinerary::find($id);
+        // $itinerary = Itinerary::find($id);
+        
+        $itinerary = Itinerary::with([
+            'locations.city',
+            'categories.category',
+            'attributes.attribute',
+            'tags.tag',
+            'schedules.transfers',
+            'schedules.activities',
+            'basePricing',
+            'inclusionsExclusions',
+            'mediaGallery',
+            'availability',
+            'seo',
+        ])->find($id);
         
         if (!$itinerary) {
             return response()->json(['message' => 'Itinerary not found'], 404);

@@ -292,7 +292,7 @@ class ActivityController extends Controller
                     ]);
                 }
             }
-
+            logger()->info('ATTRIBUTES RECEIVED:', $request->attributes);
             // Handle Attributes
             if ($request->has('attributes')) {
                 $activity->attributes()->delete(); 
@@ -300,6 +300,7 @@ class ActivityController extends Controller
                 $attributes = $request->input('attributes', []); 
             
                 foreach ($attributes as $attribute) {
+                    logger()->info('Processing attribute', $attribute);
                     ActivityAttribute::updateOrCreate(
                         [
                             'activity_id' => $activity->id,

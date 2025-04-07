@@ -11,6 +11,7 @@ use App\Models\PackageInformation;
 use App\Models\PackageSchedule;
 use App\Models\PackageActivity;
 use App\Models\PackageTransfer;
+use App\Models\PackageItinerary;
 use App\Models\PackageBasePricing;
 use App\Models\PackagePriceVariation;
 use App\Models\PackageBlackoutDate;
@@ -37,6 +38,7 @@ class PackageSeeder extends Seeder
         PackageSchedule::query()->delete();
         PackageActivity::query()->delete();
         PackageTransfer::query()->delete();
+        PackageItinerary::query()->delete();
         PackageBasePricing::query()->delete();
         PackagePriceVariation::query()->delete();
         PackageBlackoutDate::query()->delete();
@@ -130,19 +132,9 @@ class PackageSeeder extends Seeder
                     'day' => $day,
                 ]);
 
-                PackageActivity::create([
-                    'schedule_id' => $schedule->id,
-                    'activity_id' => 1,
-                    'start_time' => '09:00:00',
-                    'end_time' => '11:00:00',
-                    'notes' => 'Sample activity note',
-                    'price' => 100.00,
-                    'include_in_package' => true,
-                ]);
-
                 PackageTransfer::create([
                     'schedule_id' => $schedule->id,
-                    'transfer_id' => 1,
+                    'transfer_id' => rand(1, 4),
                     'start_time' => '12:00:00',
                     'end_time' => '14:00:00',
                     'notes' => 'Sample transfer note',
@@ -151,6 +143,26 @@ class PackageSeeder extends Seeder
                     'pickup_location' => 'Airport',
                     'dropoff_location' => 'Hotel',
                     'pax' => 2,
+                ]);
+
+                PackageActivity::create([
+                    'schedule_id' => $schedule->id,
+                    'activity_id' => rand(1, 8),
+                    'start_time' => '09:00:00',
+                    'end_time' => '11:00:00',
+                    'notes' => 'Sample activity note',
+                    'price' => 100.00,
+                    'include_in_package' => true,
+                ]);
+
+                PackageItinerary::create([
+                    'schedule_id' => $schedule->id,
+                    'itinerary_id' => rand(1, 8),
+                    'start_time' => '09:00:00',
+                    'end_time' => '11:00:00',
+                    'notes' => 'Sample itinerary note',
+                    'price' => 100.00,
+                    'include_in_package' => true,
                 ]);
             }
 

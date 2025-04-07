@@ -28,4 +28,10 @@ class PackageSchedule extends Model
     {
         return $this->hasMany(PackageTransfer::class, 'schedule_id');
     }
+
+    public function itineraries()
+    {
+        return $this->hasMany(PackageItinerary::class, 'schedule_id');
+    }
+
 }

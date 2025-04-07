@@ -20,11 +20,13 @@ use App\Http\Controllers\Admin\CountryImportController;
 use App\Http\Controllers\Admin\StateImportController;
 use App\Http\Controllers\Admin\CityImportController;
 use App\Http\Controllers\Admin\PlaceImportController;
+
+use App\Http\Controllers\Admin\CityController;
+use App\Http\Controllers\Admin\VendorController;
+use App\Http\Controllers\Admin\TransferController;
 use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\ItineraryController;
-use App\Http\Controllers\Admin\CityController;
-use App\Http\Controllers\Admin\TransferController;
-use App\Http\Controllers\Admin\VendorController;
+use App\Http\Controllers\Admin\PackageController;
 
 
 // Public
@@ -124,15 +126,14 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::delete('/{id}', [CityController::class, 'destroy']);
     });
 
-    // Admin Side activity route
-    // Route::apiResource('activities', ActivityController::class);
-    Route::prefix('/activity')->group(function () {
-        Route::post('/', [ActivityController::class, 'save']); // Create
-        Route::put('/{id}', [ActivityController::class, 'save']); // Update
-        Route::patch('/{id}', [ActivityController::class, 'save']); // Partial Update
-        Route::get('/', [ActivityController::class, 'index']); // Get all
-        Route::get('/{id}', [ActivityController::class, 'show']); // Get single
-        Route::delete('/{id}', [ActivityController::class, 'destroy']); // Delete
+    // Admin Side vendors route
+    Route::prefix('/vendors')->group(function () {
+        Route::post('/', [VendorController::class, 'save']); // Create
+        Route::put('/{id}', [VendorController::class, 'save']); // Update
+        Route::patch('/{id}', [VendorController::class, 'save']); // Partial Update
+        Route::get('/', [VendorController::class, 'index']);      // List vendors
+        Route::get('/{id}', [VendorController::class, 'show']); // Show a vendor
+        Route::delete('/{id}', [VendorController::class, 'destroy']);  // Delete vendor
     });
 
     // Admin Side Transfer route
@@ -145,9 +146,20 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::delete('/{id}', [TransferController::class, 'destroy']);
     });
 
+    // Admin Side activity route
+    // Route::apiResource('activities', ActivityController::class);
+    Route::prefix('/activities')->group(function () {
+        Route::post('/', [ActivityController::class, 'save']); // Create
+        Route::put('/{id}', [ActivityController::class, 'save']); // Update
+        Route::patch('/{id}', [ActivityController::class, 'save']); // Partial Update
+        Route::get('/', [ActivityController::class, 'index']); // Get all
+        Route::get('/{id}', [ActivityController::class, 'show']); // Get single
+        Route::delete('/{id}', [ActivityController::class, 'destroy']); // Delete
+    });
+
     // Admin Side Itinerary route
     // Route::apiResource('itineraries', ItineraryController::class);
-    Route::prefix('/itinerary')->group(function () {
+    Route::prefix('/itineraries')->group(function () {
         Route::post('/', [ItineraryController::class, 'save']); // Create
         Route::put('/{id}', [ItineraryController::class, 'save']); // Update
         Route::patch('/{id}', [ItineraryController::class, 'save']); // Partial Update
@@ -156,14 +168,18 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::delete('/{id}', [ItineraryController::class, 'destroy']); // Delete
     });
 
-    Route::prefix('/vendors')->group(function () {
-        Route::post('/', [VendorController::class, 'save']); // Create
-        Route::put('/{id}', [VendorController::class, 'save']); // Update
-        Route::patch('/{id}', [VendorController::class, 'save']); // Partial Update
-        Route::get('/', [VendorController::class, 'index']);      // List vendors
-        Route::get('/{id}', [VendorController::class, 'show']); // Show a vendor
-        Route::delete('/{id}', [VendorController::class, 'destroy']);  // Delete vendor
+    // Admin Side Package route
+    // Route::apiResource('packages', PackageController::class);
+    Route::prefix('/packages')->group(function () {
+        Route::post('/', [PackageController::class, 'save']); // Create
+        Route::put('/{id}', [PackageController::class, 'save']); // Update
+        Route::patch('/{id}', [PackageController::class, 'save']); // Partial Update
+        Route::get('/', [PackageController::class, 'index']); // Get all
+        Route::get('/{id}', [PackageController::class, 'show']); // Get single
+        Route::delete('/{id}', [PackageController::class, 'destroy']); // Delete
     });
+
+
 
 });
 

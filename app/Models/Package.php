@@ -11,6 +11,7 @@ class Package extends Model
 
     protected $fillable = [
         'name',
+        'slug',
         'description',
         'item_type',
         'featured_package',
