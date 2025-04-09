@@ -149,9 +149,9 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
     // Admin Side activity route
     // Route::apiResource('activities', ActivityController::class);
     Route::prefix('/activities')->group(function () {
-        Route::post('/', [ActivityController::class, 'save']); // Create
-        Route::put('/{id}', [ActivityController::class, 'save']); // Update
-        Route::patch('/{id}', [ActivityController::class, 'save']); // Partial Update
+        Route::post('/', [ActivityController::class, 'store']); // Create
+        Route::put('/{id}', [ActivityController::class, 'update']); // Update
+        Route::patch('/{id}', [ActivityController::class, 'update']); // Partial Update
         Route::get('/', [ActivityController::class, 'index']); // Get all
         Route::get('/{id}', [ActivityController::class, 'show']); // Get single
         Route::delete('/{id}', [ActivityController::class, 'destroy']); // Delete
@@ -160,9 +160,9 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
     // Admin Side Itinerary route
     // Route::apiResource('itineraries', ItineraryController::class);
     Route::prefix('/itineraries')->group(function () {
-        Route::post('/', [ItineraryController::class, 'save']); // Create
-        Route::put('/{id}', [ItineraryController::class, 'save']); // Update
-        Route::patch('/{id}', [ItineraryController::class, 'save']); // Partial Update
+        Route::post('/', [ItineraryController::class, 'store']); // Create
+        Route::put('/{id}', [ItineraryController::class, 'update']); // Update
+        Route::patch('/{id}', [ItineraryController::class, 'update']); // Partial Update
         Route::get('/', [ItineraryController::class, 'index']); // Get all
         Route::get('/{id}', [ItineraryController::class, 'show']); // Get single
         Route::delete('/{id}', [ItineraryController::class, 'destroy']); // Delete
@@ -171,9 +171,9 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
     // Admin Side Package route
     // Route::apiResource('packages', PackageController::class);
     Route::prefix('/packages')->group(function () {
-        Route::post('/', [PackageController::class, 'save']); // Create
-        Route::put('/{id}', [PackageController::class, 'save']); // Update
-        Route::patch('/{id}', [PackageController::class, 'save']); // Partial Update
+        Route::post('/', [PackageController::class, 'store']); // Create
+        Route::put('/{id}', [PackageController::class, 'update']); // Update
+        Route::patch('/{id}', [PackageController::class, 'update']); // Partial Update
         Route::get('/', [PackageController::class, 'index']); // Get all
         Route::get('/{id}', [PackageController::class, 'show']); // Get single
         Route::delete('/{id}', [PackageController::class, 'destroy']); // Delete

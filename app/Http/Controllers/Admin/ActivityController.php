@@ -134,108 +134,9 @@ class ActivityController extends Controller
     */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|unique:activities,slug',
-            'description' => 'nullable|string',
-            'short_description' => 'nullable|string',
-            'featured_images' => 'nullable|json',
-            'featured_activity' => 'boolean',
-            'categories' => 'nullable|array',
-            'locations' => 'nullable|array',
-            'attributes' => 'nullable|array',
-            'pricing' => 'nullable|array',
-            'seasonal_pricing' => 'nullable|array',
-            'group_discounts' => 'nullable|array',
-            'early_bird_discount' => 'nullable|array',
-            'last_minute_discount' => 'nullable|array',
-            'promo_codes' => 'nullable|array',
-            'availability' => 'nullable|array',
-        ]);
-
-        DB::beginTransaction();
-        try {
-            // Create the activity
-            $activity = Activity::create($validated);
-
-            // Attach categories
-            if (!empty($request->categories)) {
-                foreach ($request->categories as $category_id) {
-                    ActivityCategory::create(['activity_id' => $activity->id, 'category_id' => $category_id]);
-                }
-            }
-
-            // Add locations
-            if (!empty($request->locations)) {
-                foreach ($request->locations as $location) {
-                    ActivityLocation::create(array_merge($location, ['activity_id' => $activity->id]));
-                }
-            }
-
-            // Assign attributes
-            if (!empty($request->attributes)) {
-                foreach ($request->attributes as $attribute) {
-                    ActivityAttribute::create(array_merge($attribute, ['activity_id' => $activity->id]));
-                }
-            }
-
-            // Set pricing
-            if (!empty($request->pricing)) {
-                ActivityPricing::create(array_merge($request->pricing, ['activity_id' => $activity->id]));
-            }
-
-            // Add seasonal pricing
-            if (!empty($request->seasonal_pricing)) {
-                foreach ($request->seasonal_pricing as $season) {
-                    ActivitySeasonalPricing::create(array_merge($season, ['activity_id' => $activity->id]));
-                }
-            }
-
-            // Add group discounts
-            if (!empty($request->group_discounts)) {
-                foreach ($request->group_discounts as $discount) {
-                    ActivityGroupDiscount::create(array_merge($discount, ['activity_id' => $activity->id]));
-                }
-            }
-
-            // Add early bird discount
-            if (!empty($request->early_bird_discount)) {
-                ActivityEarlyBirdDiscount::create(array_merge($request->early_bird_discount, ['activity_id' => $activity->id]));
-            }
-
-            // Add last minute discount
-            if (!empty($request->last_minute_discount)) {
-                ActivityLastMinuteDiscount::create(array_merge($request->last_minute_discount, ['activity_id' => $activity->id]));
-            }
-
-            // Add promo codes
-            if (!empty($request->promo_codes)) {
-                foreach ($request->promo_codes as $promo) {
-                    ActivityPromoCode::create(array_merge($promo, ['activity_id' => $activity->id]));
-                }
-            }
-
-            // Add availability
-            if (!empty($request->availability)) {
-                ActivityAvailability::create(array_merge($request->availability, ['activity_id' => $activity->id]));
-            }
-
-            DB::commit();
-            return response()->json($activity->load(['categories', 'locations', 'attributes', 'pricing', 'seasonalPricing', 'groupDiscounts', 'earlyBirdDiscount', 'lastMinuteDiscount', 'promoCodes', 'availability']), 201);
-        } catch (\Exception $e) {
-            DB::rollback();
-            return response()->json(['error' => 'Something went wrong!', 'message' => $e->getMessage()], 500);
-        }
-    }
-
-    /**
-     * Create newly or Update existing activity.
-     */
-    public function save(Request $request, $id = null)
-    {
         $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|unique:activities,slug,' . $id,
+            'slug' => 'required|string|unique:activities,slug',
             'description' => 'nullable|string',
             'short_description' => 'nullable|string',
             'featured_images' => 'nullable|array',
@@ -251,39 +152,33 @@ class ActivityController extends Controller
             'promo_codes' => 'nullable|array',
             'availability' => 'nullable|array',
         ]);
-        // dd($request->all());
+    
         try {
             DB::beginTransaction();
-
-            // Create or Update Activity
-            $activity = Activity::updateOrCreate(
-                ['id' => $id], 
-                [
-                    'name' => $request->name,
-                    'slug' => $request->slug,
-                    'description' => $request->description,
-                    'short_description' => $request->short_description,
-                    'featured_images' => json_encode($request->featured_images),
-                    'featured_activity' => $request->featured_activity ?? false,
-                ]
-            );
-
-            // Handle Categories
+    
+            $activity = Activity::create([
+                'name' => $request->name,
+                'slug' => $request->slug,
+                'description' => $request->description,
+                'short_description' => $request->short_description,
+                'featured_images' => $request->featured_images ? json_encode($request->featured_images) : null,
+                'featured_activity' => $request->featured_activity ?? false,
+            ]);
+    
+            // Categories
             if ($request->has('categories')) {
-                $activity->categories()->delete();
                 foreach ($request->categories as $category_id) {
-                    ActivityCategory::updateOrCreate([
+                    ActivityCategory::create([
                         'activity_id' => $activity->id,
                         'category_id' => $category_id,
                     ]);
                 }
             }
-
-            // Handle Locations
+    
+            // Locations
             if ($request->has('locations')) {
-                $activity->locations()->delete();
                 foreach ($request->locations as $location) {
-                    ActivityLocation::updateOrCreate([
+                    ActivityLocation::create([
                         'activity_id' => $activity->id,
                         'city_id' => $location['city_id'],
                         'location_type' => $location['location_type'],
@@ -292,57 +187,45 @@ class ActivityController extends Controller
                     ]);
                 }
             }
-            logger()->info('ATTRIBUTES RECEIVED:', $request->attributes);
-            // Handle Attributes
+    
+            // Attributes
             if ($request->has('attributes')) {
-                $activity->attributes()->delete(); 
-            
-                $attributes = $request->input('attributes', []); 
-            
-                foreach ($attributes as $attribute) {
-                    logger()->info('Processing attribute', $attribute);
-                    ActivityAttribute::updateOrCreate(
-                        [
-                            'activity_id' => $activity->id,
-                            'attribute_id' => $attribute['attribute_id'],
-                        ],
-                        [
-                            'attribute_value' => $attribute['attribute_value'],
-                        ]
-                    );
+                foreach ($request->input('attributes') as $attribute) {
+                    ActivityAttribute::create([
+                        'activity_id' => $activity->id,
+                        'attribute_id' => $attribute['attribute_id'],
+                        'attribute_value' => $attribute['attribute_value'],
+                    ]);
                 }
             }
-
-            // Handle Pricing
+    
+            // Pricing
             if ($request->has('pricing')) {
-                $pricing = ActivityPricing::updateOrCreate(
-                    ['activity_id' => $activity->id],
-                    [
-                        'regular_price' => $request->pricing['regular_price'],
-                        'currency' => $request->pricing['currency'],
-                    ]
-                );
-
-                // Handle Seasonal Pricing
+                ActivityPricing::create([
+                    'activity_id' => $activity->id,
+                    'regular_price' => $request->pricing['regular_price'],
+                    'currency' => $request->pricing['currency'],
+                ]);
+    
+                // Seasonal Pricing
                 if ($request->has('seasonal_pricing')) {
-                    ActivitySeasonalPricing::updateOrCreate(
-                        ['activity_id' => $activity->id],
-                        [
+                    foreach ($request->seasonal_pricing as $season) {
+                        ActivitySeasonalPricing::create([
+                            'activity_id' => $activity->id,
+                            'season_name' => $season['season_name'],
                             'enable_seasonal_pricing' => true,
-                            'season_name' => $request->seasonal_pricing['season_name'],
-                            'season_start' => $request->seasonal_pricing['season_start'],
-                            'season_end' => $request->seasonal_pricing['season_end'],
-                            'season_price' => $request->seasonal_pricing['season_price'],
-                        ]
-                    );
+                            'season_start' => $season['season_start'],
+                            'season_end' => $season['season_end'],
+                            'season_price' => $season['season_price'],
+                        ]);
+                    }
                 }
             }
-
-            // Handle Group Discounts
+    
+            // Group Discounts
             if ($request->has('group_discounts')) {
-                $activity->groupDiscounts()->delete();
                 foreach ($request->group_discounts as $discount) {
-                    ActivityGroupDiscount::updateOrCreate([
+                    ActivityGroupDiscount::create([
                         'activity_id' => $activity->id,
                         'min_people' => $discount['min_people'],
                         'discount_amount' => $discount['discount_amount'],
@@ -350,38 +233,33 @@ class ActivityController extends Controller
                     ]);
                 }
             }
-
-            // Handle Early Bird Discount
+    
+            // Early Bird Discount
             if ($request->has('early_bird_discount')) {
-                ActivityEarlyBirdDiscount::updateOrCreate(
-                    ['activity_id' => $activity->id],
-                    [
-                        'enable_early_bird_discount' => true,
-                        'days_before_start' => $request->early_bird_discount['days_before_start'],
-                        'discount_amount' => $request->early_bird_discount['discount_amount'],
-                        'discount_type' => $request->early_bird_discount['discount_type'],
-                    ]
-                );
+                ActivityEarlyBirdDiscount::create([
+                    'activity_id' => $activity->id,
+                    'enable_early_bird_discount' => true,
+                    'days_before_start' => $request->early_bird_discount['days_before_start'],
+                    'discount_amount' => $request->early_bird_discount['discount_amount'],
+                    'discount_type' => $request->early_bird_discount['discount_type'],
+                ]);
             }
-
-            // Handle Last Minute Discount
+    
+            // Last Minute Discount
             if ($request->has('last_minute_discount')) {
-                ActivityLastMinuteDiscount::updateOrCreate(
-                    ['activity_id' => $activity->id],
-                    [
-                        'enable_last_minute_discount' => true,
-                        'days_before_start' => $request->last_minute_discount['days_before_start'],
-                        'discount_amount' => $request->last_minute_discount['discount_amount'],
-                        'discount_type' => $request->last_minute_discount['discount_type'],
-                    ]
-                );
+                ActivityLastMinuteDiscount::create([
+                    'activity_id' => $activity->id,
+                    'enable_last_minute_discount' => true,
+                    'days_before_start' => $request->last_minute_discount['days_before_start'],
+                    'discount_amount' => $request->last_minute_discount['discount_amount'],
+                    'discount_type' => $request->last_minute_discount['discount_type'],
+                ]);
             }
-
-            // Handle Promo Codes
+    
+            // Promo Codes
             if ($request->has('promo_codes')) {
-                $activity->promoCodes()->delete();
                 foreach ($request->promo_codes as $promo) {
-                    ActivityPromoCode::updateOrCreate([
+                    ActivityPromoCode::create([
                         'activity_id' => $activity->id,
                         'promo_code' => $promo['promo_code'],
                         'max_uses' => $promo['max_uses'],
@@ -392,28 +270,220 @@ class ActivityController extends Controller
                     ]);
                 }
             }
-
-            // Handle Availability
+    
+            // Availability
             if ($request->has('availability')) {
-                ActivityAvailability::updateOrCreate(
-                    ['activity_id' => $activity->id],
-                    [
-                        'date_based_activity' => $request->availability['date_based_activity'],
-                        'start_date' => $request->availability['start_date'] ?? null,
-                        'end_date' => $request->availability['end_date'] ?? null,
-                        'quantity_based_activity' => $request->availability['quantity_based_activity'],
-                        'max_quantity' => $request->availability['max_quantity'] ?? null,
-                    ]
-                );
+                ActivityAvailability::create([
+                    'activity_id' => $activity->id,
+                    'date_based_activity' => $request->availability['date_based_activity'],
+                    'start_date' => $request->availability['start_date'] ?? null,
+                    'end_date' => $request->availability['end_date'] ?? null,
+                    'quantity_based_activity' => $request->availability['quantity_based_activity'],
+                    'max_quantity' => $request->availability['max_quantity'] ?? null,
+                ]);
             }
-
+    
             DB::commit();
-            return response()->json(['message' => $id ? 'Activity updated successfully' : 'Activity created successfully', 'activity' => $activity], 200);
+    
+            return response()->json(['message' => 'Activity created successfully', 'activity' => $activity], 201);
+    
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['error' => 'Something went wrong', 'details' => $e->getMessage()], 500);
         }
     }
+    
+
+    /**
+     * Create newly or Update existing activity.
+     */
+    // public function save(Request $request, $id = null)
+    // {
+    //     $request->validate([
+    //         'name' => 'required|string|max:255',
+    //         'slug' => 'required|string|unique:activities,slug,' . $id,
+    //         'description' => 'nullable|string',
+    //         'short_description' => 'nullable|string',
+    //         'featured_images' => 'nullable|array',
+    //         'featured_activity' => 'boolean',
+    //         'categories' => 'nullable|array',
+    //         'locations' => 'nullable|array',
+    //         'attributes' => 'nullable|array',
+    //         'pricing' => 'nullable|array',
+    //         'seasonal_pricing' => 'nullable|array',
+    //         'group_discounts' => 'nullable|array',
+    //         'early_bird_discount' => 'nullable|array',
+    //         'last_minute_discount' => 'nullable|array',
+    //         'promo_codes' => 'nullable|array',
+    //         'availability' => 'nullable|array',
+    //     ]);
+    //     // dd($request->all());
+    //     try {
+    //         DB::beginTransaction();
+
+    //         // Create or Update Activity
+    //         $activity = Activity::updateOrCreate(
+    //             ['id' => $id], 
+    //             [
+    //                 'name' => $request->name,
+    //                 'slug' => $request->slug,
+    //                 'description' => $request->description,
+    //                 'short_description' => $request->short_description,
+    //                 'featured_images' => json_encode($request->featured_images),
+    //                 'featured_activity' => $request->featured_activity ?? false,
+    //             ]
+    //         );
+
+    //         // Handle Categories
+    //         if ($request->has('categories')) {
+    //             $activity->categories()->delete();
+    //             foreach ($request->categories as $category_id) {
+    //                 ActivityCategory::updateOrCreate([
+    //                     'activity_id' => $activity->id,
+    //                     'category_id' => $category_id,
+    //                 ]);
+    //             }
+    //         }
+
+    //         // Handle Locations
+    //         if ($request->has('locations')) {
+    //             $activity->locations()->delete();
+    //             foreach ($request->locations as $location) {
+    //                 ActivityLocation::updateOrCreate([
+    //                     'activity_id' => $activity->id,
+    //                     'city_id' => $location['city_id'],
+    //                     'location_type' => $location['location_type'],
+    //                     'location_label' => $location['location_label'],
+    //                     'duration' => $location['duration'] ?? null,
+    //                 ]);
+    //             }
+    //         }
+    //         // logger()->info('ATTRIBUTES RECEIVED:', $request->attributes);
+    //         // Handle Attributes
+    //         if ($request->has('attributes')) {
+    //             $activity->attributes()->delete(); 
+            
+    //             $attributes = $request->input('attributes', []); 
+            
+    //             foreach ($attributes as $attribute) {
+    //                 logger()->info('Processing attribute', $attribute);
+    //                 ActivityAttribute::updateOrCreate(
+    //                     [
+    //                         'activity_id' => $activity->id,
+    //                         'attribute_id' => $attribute['attribute_id'],
+    //                     ],
+    //                     [
+    //                         'attribute_value' => $attribute['attribute_value'],
+    //                     ]
+    //                 );
+    //             }
+    //         }
+
+    //         // Handle Pricing
+    //         if ($request->has('pricing')) {
+    //             $pricing = ActivityPricing::updateOrCreate(
+    //                 ['activity_id' => $activity->id],
+    //                 [
+    //                     'regular_price' => $request->pricing['regular_price'],
+    //                     'currency' => $request->pricing['currency'],
+    //                 ]
+    //             );
+
+    //             // Handle Seasonal Pricing
+    //             if ($request->has('seasonal_pricing')) {
+    //                 foreach ($request->seasonal_pricing as $season) {
+    //                     ActivitySeasonalPricing::updateOrCreate(
+    //                         [
+    //                             'activity_id' => $activity->id,
+    //                             'season_name' => $season['season_name'], // Used to avoid duplicates
+    //                         ],
+    //                         [
+    //                             'enable_seasonal_pricing' => true,
+    //                             'season_start' => $season['season_start'],
+    //                             'season_end' => $season['season_end'],
+    //                             'season_price' => $season['season_price'],
+    //                         ]
+    //                     );
+    //                 }
+    //             }
+    //         }
+
+    //         // Handle Group Discounts
+    //         if ($request->has('group_discounts')) {
+    //             $activity->groupDiscounts()->delete();
+    //             foreach ($request->group_discounts as $discount) {
+    //                 ActivityGroupDiscount::updateOrCreate([
+    //                     'activity_id' => $activity->id,
+    //                     'min_people' => $discount['min_people'],
+    //                     'discount_amount' => $discount['discount_amount'],
+    //                     'discount_type' => $discount['discount_type'],
+    //                 ]);
+    //             }
+    //         }
+
+    //         // Handle Early Bird Discount
+    //         if ($request->has('early_bird_discount')) {
+    //             ActivityEarlyBirdDiscount::updateOrCreate(
+    //                 ['activity_id' => $activity->id],
+    //                 [
+    //                     'enable_early_bird_discount' => true,
+    //                     'days_before_start' => $request->early_bird_discount['days_before_start'],
+    //                     'discount_amount' => $request->early_bird_discount['discount_amount'],
+    //                     'discount_type' => $request->early_bird_discount['discount_type'],
+    //                 ]
+    //             );
+    //         }
+
+    //         // Handle Last Minute Discount
+    //         if ($request->has('last_minute_discount')) {
+    //             ActivityLastMinuteDiscount::updateOrCreate(
+    //                 ['activity_id' => $activity->id],
+    //                 [
+    //                     'enable_last_minute_discount' => true,
+    //                     'days_before_start' => $request->last_minute_discount['days_before_start'],
+    //                     'discount_amount' => $request->last_minute_discount['discount_amount'],
+    //                     'discount_type' => $request->last_minute_discount['discount_type'],
+    //                 ]
+    //             );
+    //         }
+
+    //         // Handle Promo Codes
+    //         if ($request->has('promo_codes')) {
+    //             $activity->promoCodes()->delete();
+    //             foreach ($request->promo_codes as $promo) {
+    //                 ActivityPromoCode::updateOrCreate([
+    //                     'activity_id' => $activity->id,
+    //                     'promo_code' => $promo['promo_code'],
+    //                     'max_uses' => $promo['max_uses'],
+    //                     'discount_amount' => $promo['discount_amount'],
+    //                     'discount_type' => $promo['discount_type'],
+    //                     'valid_from' => $promo['valid_from'],
+    //                     'valid_to' => $promo['valid_to'],
+    //                 ]);
+    //             }
+    //         }
+
+    //         // Handle Availability
+    //         if ($request->has('availability')) {
+    //             ActivityAvailability::updateOrCreate(
+    //                 ['activity_id' => $activity->id],
+    //                 [
+    //                     'date_based_activity' => $request->availability['date_based_activity'],
+    //                     'start_date' => $request->availability['start_date'] ?? null,
+    //                     'end_date' => $request->availability['end_date'] ?? null,
+    //                     'quantity_based_activity' => $request->availability['quantity_based_activity'],
+    //                     'max_quantity' => $request->availability['max_quantity'] ?? null,
+    //                 ]
+    //             );
+    //         }
+
+    //         DB::commit();
+    //         return response()->json(['message' => $id ? 'Activity updated successfully' : 'Activity created successfully', 'activity' => $activity], 200);
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return response()->json(['error' => 'Something went wrong', 'details' => $e->getMessage()], 500);
+    //     }
+    // }
     
     /**
      * Display the specified activity.
@@ -476,19 +546,16 @@ class ActivityController extends Controller
     /**
      * Update the specified activity in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        $activity = Activity::find($id);
-        if (!$activity) {
-            return response()->json(['message' => 'Activity not found'], 404);
-        }
+        $activity = Activity::findOrFail($id);
     
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'slug' => 'sometimes|string|unique:activities,slug,' . $id,
+        $rules = [
+            'name' => 'sometimes|required|string|max:255',
+            'slug' => 'sometimes|required|string|unique:activities,slug,' . $activity->id,
             'description' => 'nullable|string',
             'short_description' => 'nullable|string',
-            'featured_images' => 'nullable|json',
+            'featured_images' => 'nullable|array',
             'featured_activity' => 'boolean',
             'categories' => 'nullable|array',
             'locations' => 'nullable|array',
@@ -500,96 +567,105 @@ class ActivityController extends Controller
             'last_minute_discount' => 'nullable|array',
             'promo_codes' => 'nullable|array',
             'availability' => 'nullable|array',
-        ]);
+        ];
     
-        DB::beginTransaction();
+        $request->validate($rules);
+    
         try {
-            // Update activity main details
-            $activity->update($validated);
+            DB::beginTransaction();
     
-            // Update categories (delete & insert new)
-            ActivityCategory::where('activity_id', $id)->delete();
-            if (!empty($request->categories)) {
-                foreach ($request->categories as $category_id) {
-                    ActivityCategory::create(['activity_id' => $id, 'category_id' => $category_id]);
+            $activity->fill($request->only([
+                'name', 'slug', 'description', 'short_description', 'featured_activity'
+            ]));
+    
+            if ($request->has('featured_images')) {
+                $activity->featured_images = json_encode($request->featured_images);
+            }
+    
+            $activity->save();
+    
+            $updateOrCreateRelation = function ($relationName, $data) use ($activity) {
+                $relation = $activity->$relationName();
+                $existing = $relation->pluck('id')->toArray();
+    
+                foreach ($data as $item) {
+                    if (!empty($item['id']) && in_array($item['id'], $existing)) {
+                        $relation->where('id', $item['id'])->update($item);
+                    } else {
+                        $relation->create($item);
+                    }
+                }
+            };
+    
+            foreach (['locations', 'categories'] as $relation) {
+                if ($request->has($relation)) {
+                    $updateOrCreateRelation($relation, $request->$relation);
                 }
             }
     
-            // Update locations (delete & insert new)
-            ActivityLocation::where('activity_id', $id)->delete();
-            if (!empty($request->locations)) {
-                foreach ($request->locations as $location) {
-                    ActivityLocation::create(array_merge($location, ['activity_id' => $id]));
+            if ($request->has('attributes')) {
+                $updateOrCreateRelation('attributes', $request->input('attributes'));
+            }
+    
+            $pricing = $activity->pricing()->first();
+    
+            if ($request->has('pricing')) {
+                $pricing = $activity->pricing()->firstOrCreate([]);
+                $pricing->fill($request->pricing)->save();
+            }
+    
+            $updateOrCreateChild = function ($data, $modelClass, $foreignKey) use ($pricing) {
+                foreach ($data as $item) {
+                    if (!empty($item['id'])) {
+                        $model = $modelClass::find($item['id']);
+                        if ($model) {
+                            $model->fill($item)->save();
+                        }
+                    } else {
+                        $item[$foreignKey] = $pricing->id;
+                        $modelClass::create($item);
+                    }
                 }
+            };
+    
+            if ($request->has('seasonal_pricing')) {
+                $updateOrCreateChild($request->seasonal_pricing, \App\Models\ActivitySeasonalPricing::class, 'base_pricing_id');
             }
     
-            // Update attributes (delete & insert new)
-            ActivityAttribute::where('activity_id', $id)->delete();
-            if (!empty($request->attributes)) {
-                foreach ($request->attributes as $attribute) {
-                    ActivityAttribute::create(array_merge($attribute, ['activity_id' => $id]));
-                }
+            if ($request->has('group_discounts')) {
+                $updateOrCreateChild($request->group_discounts, \App\Models\ActivityGroupDiscount::class, 'base_pricing_id');
             }
     
-            // Update pricing (replace old record)
-            ActivityPricing::where('activity_id', $id)->delete();
-            if (!empty($request->pricing)) {
-                ActivityPricing::create(array_merge($request->pricing, ['activity_id' => $id]));
+            if ($request->has('early_bird_discount')) {
+                $updateOrCreateChild([$request->early_bird_discount], \App\Models\ActivityEarlyBirdDiscount::class, 'base_pricing_id');
             }
     
-            // Update seasonal pricing (delete & insert new)
-            ActivitySeasonalPricing::where('activity_id', $id)->delete();
-            if (!empty($request->seasonal_pricing)) {
-                foreach ($request->seasonal_pricing as $season) {
-                    ActivitySeasonalPricing::create(array_merge($season, ['activity_id' => $id]));
-                }
+            if ($request->has('last_minute_discount')) {
+                $updateOrCreateChild([$request->last_minute_discount], \App\Models\ActivityLastMinuteDiscount::class, 'base_pricing_id');
             }
     
-            // Update group discounts (delete & insert new)
-            ActivityGroupDiscount::where('activity_id', $id)->delete();
-            if (!empty($request->group_discounts)) {
-                foreach ($request->group_discounts as $discount) {
-                    ActivityGroupDiscount::create(array_merge($discount, ['activity_id' => $id]));
-                }
+            if ($request->has('promo_codes')) {
+                $updateOrCreateChild($request->promo_codes, \App\Models\ActivityPromoCode::class, 'base_pricing_id');
             }
     
-            // Update early bird discount (replace old record)
-            ActivityEarlyBirdDiscount::where('activity_id', $id)->delete();
-            if (!empty($request->early_bird_discount)) {
-                ActivityEarlyBirdDiscount::create(array_merge($request->early_bird_discount, ['activity_id' => $id]));
-            }
-    
-            // Update last minute discount (replace old record)
-            ActivityLastMinuteDiscount::where('activity_id', $id)->delete();
-            if (!empty($request->last_minute_discount)) {
-                ActivityLastMinuteDiscount::create(array_merge($request->last_minute_discount, ['activity_id' => $id]));
-            }
-    
-            // Update promo codes (delete & insert new)
-            ActivityPromoCode::where('activity_id', $id)->delete();
-            if (!empty($request->promo_codes)) {
-                foreach ($request->promo_codes as $promo) {
-                    ActivityPromoCode::create(array_merge($promo, ['activity_id' => $id]));
-                }
-            }
-    
-            // Update availability (replace old record)
-            ActivityAvailability::where('activity_id', $id)->delete();
-            if (!empty($request->availability)) {
-                ActivityAvailability::create(array_merge($request->availability, ['activity_id' => $id]));
+            if ($request->has('availability')) {
+                $activity->availability()->updateOrCreate([], $request->availability);
             }
     
             DB::commit();
-            return response()->json($activity->load([
-                'categories', 'locations', 'attributes', 'pricing', 'seasonalPricing',
-                'groupDiscounts', 'earlyBirdDiscount', 'lastMinuteDiscount', 'promoCodes', 'availability'
-            ]), 200);
     
+            return response()->json([
+                'message' => 'Activity updated successfully',
+                'activity' => $activity->fresh()
+            ]);
         } catch (\Exception $e) {
-            DB::rollback();
-            return response()->json(['error' => 'Update failed', 'message' => $e->getMessage()], 500);
+            DB::rollBack();
+            return response()->json([
+                'error' => 'Something went wrong',
+                'details' => $e->getMessage(),
+            ], 500);
         }
-    }
+    }    
 
     /**
      * Remove the specified activity from storage.

@@ -27,8 +27,8 @@ use App\Models\Tag;
 use App\Models\City;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-// use Illuminate\Validation\Rule;
 use Validator;
 
 
@@ -150,55 +150,14 @@ class PackageController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $rules = [
             'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'featured_Package' => 'required|boolean',
-            'private_Package' => 'required|boolean',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 400);
-        }
-
-        $packageData = $request->only(['name', 'description', 'featured_Package', 'private_Package']);
-        $packageData['slug'] = Str::slug($packageData['name']);
-        $package = Package::create($packageData);
-
-        // Create related records (simplified version, expand as needed)
-        PackageLocation::create([
-            'package_id' => $package->id,
-            'city_id' => $request->city_id, // Assuming city_id is part of the request
-        ]);
-
-        // More related models like PackageSchedule, PackageActivity, etc. can be created similarly
-        // Example for schedule creation
-        for ($day = 1; $day <= 3; $day++) {
-            $schedule = PackageSchedule::create([
-                'package_id' => $package->id,
-                'day' => $day,
-            ]);
-            
-            // Add activities or transfers based on your need
-        }
-
-        return response()->json($package, 201);
-    }
-
-
-    /**
-     * Create or Update Package.
-    */
-    public function save(Request $request, $id = null)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|unique:packages,slug,' . $id,
+            'slug' => 'required|string|unique:packages,slug',
             'description' => 'nullable|string',
             'featured_package' => 'boolean',
             'private_package' => 'boolean',
             'locations' => 'nullable|array',
-            'infomration' => 'nullable|array',
+            'information' => 'nullable|array',
             'schedules' => 'nullable|array',
             'activities' => 'nullable|array',
             'transfers' => 'nullable|array',
@@ -214,451 +173,257 @@ class PackageController extends Controller
             'attributes' => 'nullable|array',
             'tags' => 'nullable|array',
             'availability' => 'nullable|array',
-        ]);
+        ];
+    
+        $request->validate($rules);
     
         try {
             DB::beginTransaction();
     
-            $package = Package::updateOrCreate(
-                ['id' => $id], 
-                [
-                    'name' => $request->name,
-                    'slug' => $request->slug,
-                    'description' => $request->description,
-                    'featured_package' => $request->featured_package ?? false,
-                    'private_package' => $request->private_package ?? false,
-                ]
-            );
+            $package = Package::create([
+                'name' => $request->name,
+                'slug' => $request->slug,
+                'description' => $request->description ?? null,
+                'featured_package' => $request->boolean('featured_package'),
+                'private_package' => $request->boolean('private_package'),
+            ]);
     
-            //Information
-            if ($request->has('information') && is_array($request->information)) {
-                $existingInfo = $package->information()->get()->keyBy('id');
-                $incomingInfoIds = [];
-            
+            // === Information ===
+            if ($request->has('information')) {
                 foreach ($request->information as $info) {
-                    $packageInfo = isset($info['id'])
-                        ? PackageInformation::find($info['id']) ?? new PackageInformation()
-                        : new PackageInformation();
-            
-                    $packageInfo->package_id = $package->id;
-                    $packageInfo->section_title = $info['section_title'];
-                    $packageInfo->content = $info['content'];
-                    $packageInfo->save();
-            
-                    $incomingInfoIds[] = $packageInfo->id;
-                }
-            
-                // Delete removed records
-                PackageInformation::where('package_id', $package->id)
-                    ->whereNotIn('id', $incomingInfoIds)
-                    ->delete();
-            }
-            
-            // Locations
-            if ($request->has('locations')) {
-                $existing = $package->locations()->get()->keyBy('city_id');
-                $incoming = collect($request->locations)->pluck('city_id')->toArray();
-    
-                $toDelete = $existing->keys()->diff($incoming);
-                if ($toDelete->count()) {
-                    $package->locations()->whereIn('city_id', $toDelete)->delete();
-                }
-    
-                foreach ($incoming as $city_id) {
-                    PackageLocation::updateOrCreate([
+                    PackageInformation::create([
                         'package_id' => $package->id,
-                        'city_id' => $city_id,
+                        'section_title' => $info['section_title'] ?? '',
+                        'content' => $info['content'] ?? '',
                     ]);
                 }
             }
     
-            // Schedules
+            // === Locations ===
+            if ($request->has('locations')) {
+                foreach ($request->locations as $location) {
+                    PackageLocation::create([
+                        'package_id' => $package->id,
+                        'city_id' => $location['city_id'],
+                    ]);
+                }
+            }
+    
+            // === Schedules ===
             $scheduleMap = [];
-            $existingSchedules = $package->schedules->keyBy('day');
             if ($request->has('schedules')) {
                 foreach ($request->schedules as $schedule) {
-                    $day = $schedule['day'];
-                    if (isset($existingSchedules[$day])) {
-                        $scheduleMap[$day] = $existingSchedules[$day]->id;
-                    } else {
-                        $newSchedule = PackageSchedule::create([
-                            'package_id' => $package->id,
-                            'day' => $day,
-                        ]);
-                        $scheduleMap[$day] = $newSchedule->id;
-                    }
+                    $record = PackageSchedule::create([
+                        'package_id' => $package->id,
+                        'day' => $schedule['day'],
+                    ]);
+                    $scheduleMap[$schedule['day']] = $record->id;
                 }
             }
     
-            // Handle Transfers
+            // === Transfers ===
             if ($request->has('transfers')) {
-                $existing = PackageTransfer::whereHas('schedule', fn($q) => $q->where('package_id', $package->id))->get();
-                $existingMap = $existing->keyBy(fn($item) => $item->schedule_id . '-' . $item->transfer_id);
-                $keepIds = [];
-            
                 foreach ($request->transfers as $transfer) {
                     $scheduleId = $scheduleMap[$transfer['day']] ?? null;
-                    if (!$scheduleId) continue;
-            
-                    $key = $scheduleId . '-' . $transfer['transfer_id'];
-                    $data = [
-                        'schedule_id' => $scheduleId,
-                        'transfer_id' => $transfer['transfer_id'],
-                        'start_time' => $transfer['start_time'],
-                        'end_time' => $transfer['end_time'],
-                        'notes' => $transfer['notes'],
-                        'price' => $transfer['price'],
-                        'include_in_package' => $transfer['include_in_package'],
-                        'pickup_location' => $transfer['pickup_location'] ?? null,
-                        'dropoff_location' => $transfer['dropoff_location'] ?? null,
-                        'pax' => $transfer['pax'] ?? null,
-                    ];
-            
-                    $model = !empty($transfer['id']) ? $existing->firstWhere('id', $transfer['id']) : ($existingMap[$key] ?? null);
-            
-                    if ($model) {
-                        $model->update($data);
-                        $keepIds[] = $model->id;
-                    } else {
-                        $new = PackageTransfer::create($data);
-                        $keepIds[] = $new->id;
+                    if ($scheduleId) {
+                        PackageTransfer::create([
+                            'schedule_id' => $scheduleId,
+                            'transfer_id' => $transfer['transfer_id'],
+                            'start_time' => $transfer['start_time'],
+                            'end_time' => $transfer['end_time'],
+                            'notes' => $transfer['notes'],
+                            'price' => $transfer['price'],
+                            'include_in_package' => $transfer['include_in_package'],
+                            'pickup_location' => $transfer['pickup_location'] ?? null,
+                            'dropoff_location' => $transfer['dropoff_location'] ?? null,
+                            'pax' => $transfer['pax'] ?? null,
+                        ]);
                     }
                 }
-            
-                $toDelete = $existing->pluck('id')->diff($keepIds);
-                if ($toDelete->isNotEmpty()) {
-                    PackageTransfer::whereIn('id', $toDelete)->delete();
-                }
-            }            
-
-            // Handle Activities
+            }
+    
+            // === Activities ===
             if ($request->has('activities')) {
-                $existing = PackageActivity::whereHas('schedule', fn($q) => $q->where('package_id', $package->id))->get();
-                $existingMap = $existing->keyBy(fn($item) => $item->schedule_id . '-' . $item->activity_id);
-                $keepIds = [];
-            
                 foreach ($request->activities as $activity) {
                     $scheduleId = $scheduleMap[$activity['day']] ?? null;
-                    if (!$scheduleId) continue;
-            
-                    $key = $scheduleId . '-' . $activity['activity_id'];
-                    $data = [
-                        'schedule_id' => $scheduleId,
-                        'activity_id' => $activity['activity_id'],
-                        'start_time' => $activity['start_time'],
-                        'end_time' => $activity['end_time'],
-                        'notes' => $activity['notes'],
-                        'price' => $activity['price'],
-                        'include_in_package' => $activity['include_in_package'],
-                    ];
-            
-                    if (!empty($activity['id'])) {
-                        $model = $existing->firstWhere('id', $activity['id']);
-                    } else {
-                        $model = $existingMap[$key] ?? null;
+                    if ($scheduleId) {
+                        PackageActivity::create([
+                            'schedule_id' => $scheduleId,
+                            'activity_id' => $activity['activity_id'],
+                            'start_time' => $activity['start_time'],
+                            'end_time' => $activity['end_time'],
+                            'notes' => $activity['notes'],
+                            'price' => $activity['price'],
+                            'include_in_package' => $activity['include_in_package'],
+                        ]);
                     }
-            
-                    if ($model) {
-                        $model->update($data);
-                        $keepIds[] = $model->id;
-                    } else {
-                        $new = PackageActivity::create($data);
-                        $keepIds[] = $new->id;
-                    }
-                }
-            
-                // Delete records not in request
-                $toDelete = $existing->pluck('id')->diff($keepIds);
-                if ($toDelete->isNotEmpty()) {
-                    PackageActivity::whereIn('id', $toDelete)->delete();
                 }
             }
-        
-
+    
+            // === Itineraries ===
             if ($request->has('itineraries')) {
-                $existing = PackageItinerary::whereHas('schedule', fn($q) => $q->where('package_id', $package->id))->get();
-                $existingMap = $existing->keyBy(fn($item) => $item->schedule_id . '-' . $item->itinerary_id);
-                $keepIds = [];
-            
-                foreach ($request->itineraries as $item) {
-                    $scheduleId = $scheduleMap[$item['day']] ?? null;
-                    if (!$scheduleId) continue;
-            
-                    $key = $scheduleId . '-' . $item['itinerary_id'];
-                    $data = [
-                        'schedule_id' => $scheduleId,
-                        'itinerary_id' => $item['itinerary_id'],
-                        'start_time' => $item['start_time'],
-                        'end_time' => $item['end_time'],
-                        'notes' => $item['notes'],
-                        'price' => $item['price'],
-                        'include_in_package' => $item['include_in_package'],
-                        'pickup_location' => $item['pickup_location'] ?? null,
-                        'dropoff_location' => $item['dropoff_location'] ?? null,
-                        'pax' => $item['pax'] ?? null,
-                    ];
-            
-                    $model = !empty($item['id']) ? $existing->firstWhere('id', $item['id']) : ($existingMap[$key] ?? null);
-            
-                    if ($model) {
-                        $model->update($data);
-                        $keepIds[] = $model->id;
-                    } else {
-                        $new = PackageItinerary::create($data);
-                        $keepIds[] = $new->id;
+                foreach ($request->itineraries as $itinerary) {
+                    $scheduleId = $scheduleMap[$itinerary['day']] ?? null;
+                    if ($scheduleId) {
+                        PackageItinerary::create([
+                            'schedule_id' => $scheduleId,
+                            'itinerary_id' => $itinerary['itinerary_id'],
+                            'start_time' => $itinerary['start_time'],
+                            'end_time' => $itinerary['end_time'],
+                            'notes' => $itinerary['notes'],
+                            'price' => $itinerary['price'],
+                            'include_in_package' => $itinerary['include_in_package'],
+                            'pickup_location' => $itinerary['pickup_location'] ?? null,
+                            'dropoff_location' => $itinerary['dropoff_location'] ?? null,
+                            'pax' => $itinerary['pax'] ?? null,
+                        ]);
                     }
                 }
-            
-                $toDelete = $existing->pluck('id')->diff($keepIds);
-                if ($toDelete->isNotEmpty()) {
-                    PackageItinerary::whereIn('id', $toDelete)->delete();
-                }
             }
-            
     
-            // Pricing
+            // === Pricing ===
             if ($request->has('pricing')) {
-                $basePricing = PackageBasePricing::updateOrCreate(
-                    ['package_id' => $package->id],
-                    [
-                        'currency' => $request->pricing['currency'],
-                        'availability' => $request->pricing['availability'],
-                        'start_date' => $request->pricing['start_date'],
-                        'end_date' => $request->pricing['end_date'],
-                    ]
-                );
+                $basePricing = PackageBasePricing::create([
+                    'package_id' => $package->id,
+                    'currency' => $request->pricing['currency'],
+                    'availability' => $request->pricing['availability'],
+                    'start_date' => $request->pricing['start_date'],
+                    'end_date' => $request->pricing['end_date'],
+                ]);
     
-                // Price Variations
                 if ($request->has('price_variations')) {
-                    $existing = $basePricing->variations()->get()->keyBy('id');
-                    $incoming = collect($request->price_variations);
-                    $incomingIds = $incoming->pluck('id')->filter()->toArray();
-    
-                    $toDelete = array_diff($existing->keys()->toArray(), $incomingIds);
-                    if ($toDelete) PackagePriceVariation::whereIn('id', $toDelete)->delete();
-    
-                    foreach ($incoming as $variation) {
-                        $data = [
+                    foreach ($request->price_variations as $variation) {
+                        PackagePriceVariation::create([
                             'base_pricing_id' => $basePricing->id,
                             'name' => $variation['name'],
                             'regular_price' => $variation['regular_price'],
                             'sale_price' => $variation['sale_price'],
                             'max_guests' => $variation['max_guests'],
                             'description' => $variation['description'],
-                        ];
-    
-                        if (!empty($variation['id']) && isset($existing[$variation['id']])) {
-                            $existing[$variation['id']]->update($data);
-                        } else {
-                            PackagePriceVariation::create($data);
-                        }
+                        ]);
                     }
                 }
     
-                // Blackout Dates
                 if ($request->has('blackout_dates')) {
-                    $existing = $basePricing->blackoutDates()->get()->keyBy('id');
-                    $incoming = collect($request->blackout_dates);
-                    $incomingIds = $incoming->pluck('id')->filter()->toArray();
-    
-                    $toDelete = array_diff($existing->keys()->toArray(), $incomingIds);
-                    if ($toDelete) PackageBlackoutDate::whereIn('id', $toDelete)->delete();
-    
-                    foreach ($incoming as $date) {
-                        $data = [
+                    foreach ($request->blackout_dates as $date) {
+                        PackageBlackoutDate::create([
                             'base_pricing_id' => $basePricing->id,
                             'date' => $date['date'],
                             'reason' => $date['reason'],
-                        ];
-    
-                        if (!empty($date['id']) && isset($existing[$date['id']])) {
-                            $existing[$date['id']]->update($data);
-                        } else {
-                            PackageBlackoutDate::create($data);
-                        }
+                        ]);
                     }
                 }
             }
     
-            // Inclusions/Exclusions
+            // === Inclusions/Exclusions ===
             if ($request->has('inclusions_exclusions')) {
-                $existing = $package->inclusionsExclusions()->get()->keyBy('id');
-                $incoming = collect($request->inclusions_exclusions);
-                $incomingIds = $incoming->pluck('id')->filter()->toArray();
-    
-                $toDelete = array_diff($existing->keys()->toArray(), $incomingIds);
-                if ($toDelete) PackageInclusionExclusion::whereIn('id', $toDelete)->delete();
-    
-                foreach ($incoming as $ie) {
-                    $data = [
+                foreach ($request->inclusions_exclusions as $ie) {
+                    PackageInclusionExclusion::create([
                         'package_id' => $package->id,
                         'type' => $ie['type'],
                         'title' => $ie['title'],
                         'description' => $ie['description'],
                         'include_exclude' => $ie['include_exclude'] === 'include' ? 1 : 0,
-                    ];
-    
-                    if (!empty($ie['id']) && isset($existing[$ie['id']])) {
-                        $existing[$ie['id']]->update($data);
-                    } else {
-                        PackageInclusionExclusion::create($data);
-                    }
+                    ]);
                 }
             }
     
-            // Media Gallery
+            // === Media Gallery ===
             if ($request->has('media_gallery')) {
-                $existing = $package->mediaGallery()->get()->keyBy('id');
-                $incoming = collect($request->media_gallery);
-                $incomingIds = $incoming->pluck('id')->filter()->toArray();
-    
-                $toDelete = array_diff($existing->keys()->toArray(), $incomingIds);
-                if ($toDelete) PackageMediaGallery::whereIn('id', $toDelete)->delete();
-    
-                foreach ($incoming as $media) {
-                    $data = [
+                foreach ($request->media_gallery as $media) {
+                    PackageMediaGallery::create([
                         'package_id' => $package->id,
                         'url' => $media['url'],
-                    ];
-    
-                    if (!empty($media['id']) && isset($existing[$media['id']])) {
-                        $existing[$media['id']]->update($data);
-                    } else {
-                        PackageMediaGallery::create($data);
-                    }
+                    ]);
                 }
             }
     
-
-            // Package FAQs
-            if ($request->has('faqs') && is_array($request->faqs)) {
-                $existingFaqs = $package->faqs()->get()->keyBy('id');
-                $keep = [];
-
+            // === FAQs ===
+            if ($request->has('faqs')) {
                 foreach ($request->faqs as $faq) {
-                    $faqModel = isset($faq['id']) ? PackageFaq::find($faq['id']) : new PackageFaq();
-                    if (!$faqModel) {
-                        $faqModel = new PackageFaq();
-                    }
-
-                    $faqModel->package_id = $package->id;
-                    $faqModel->question_number = $faq['question_number'] ?? null;
-                    $faqModel->question = $faq['question'] ?? '';
-                    $faqModel->answer = $faq['answer'] ?? '';
-                    $faqModel->save();
-
-                    $keep[] = $faqModel->id;
-                }
-
-                // Delete removed
-                if (!empty($keep)) {
-                    PackageFaq::where('package_id', $package->id)->whereNotIn('id', $keep)->delete();
+                    PackageFaq::create([
+                        'package_id' => $package->id,
+                        'question_number' => $faq['question_number'] ?? null,
+                        'question' => $faq['question'],
+                        'answer' => $faq['answer'],
+                    ]);
                 }
             }
-            
-            // SEO
+    
+            // === SEO ===
             if ($request->has('seo')) {
-                PackageSeo::updateOrCreate(
-                    ['package_id' => $package->id],
-                    [
-                        'meta_title' => $request->seo['meta_title'],
-                        'meta_description' => $request->seo['meta_description'],
-                        'keywords' => $request->seo['keywords'],
-                        'og_image_url' => $request->seo['og_image_url'],
-                        'canonical_url' => $request->seo['canonical_url'],
-                        'schema_type' => $request->seo['schema_type'],
-                        'schema_data' => json_encode($request->seo['schema_data']),
-                    ]
-                );
+                PackageSeo::create([
+                    'package_id' => $package->id,
+                    'meta_title' => $request->seo['meta_title'],
+                    'meta_description' => $request->seo['meta_description'],
+                    'keywords' => $request->seo['keywords'],
+                    'og_image_url' => $request->seo['og_image_url'],
+                    'canonical_url' => $request->seo['canonical_url'],
+                    'schema_type' => $request->seo['schema_type'],
+                    'schema_data' => is_array($request->seo['schema_data']) 
+                        ? json_encode($request->seo['schema_data']) 
+                        : $request->seo['schema_data'],
+                ]);
             }
     
-            // Categories
+            // === Categories ===
             if ($request->has('categories')) {
-                $existing = $package->categories()->get()->pluck('category_id')->toArray();
-                $incoming = $request->categories;
-    
-                $toDelete = array_diff($existing, $incoming);
-                if ($toDelete) {
-                    $package->categories()->whereIn('category_id', $toDelete)->delete();
-                }
-    
-                foreach ($incoming as $category_id) {
-                    PackageCategory::updateOrCreate([
+                foreach ($request->categories as $category_id) {
+                    PackageCategory::create([
                         'package_id' => $package->id,
                         'category_id' => $category_id,
                     ]);
                 }
             }
 
-            // Attributes
-            $attributes = $request->input('attributes', []);
-
-            if (is_array($attributes) && count($attributes)) {
-                $existingAttributes = $package->attributes()->get()->keyBy('attribute_id');
-                $sentAttributeIds = [];
-
-                foreach ($attributes as $attribute) {
-                    if (!isset($attribute['attribute_id'])) {
-                        continue;
-                    }
-
-                    $sentAttributeIds[] = $attribute['attribute_id'];
-
-                    $packageAttr = PackageAttribute::firstOrNew([
+            if ($request->has('attributes')) {
+            
+                foreach ($request->input('attributes') as $attribute) {
+                    PackageAttribute::create([
                         'package_id' => $package->id,
                         'attribute_id' => $attribute['attribute_id'],
+                        'attribute_value' => $attribute['attribute_value'],
                     ]);
-
-                    $packageAttr->attribute_value = $attribute['attribute_value'];
-                    $packageAttr->save();
                 }
-
-                PackageAttribute::where('package_id', $package->id)
-                    ->whereNotIn('attribute_id', $sentAttributeIds)
-                    ->delete();
-            }             
+            }
     
-            // Tags
+            // === Tags ===
             if ($request->has('tags')) {
-                $existing = $package->tags()->get()->pluck('tag_id')->toArray();
-                $incoming = $request->tags;
-    
-                $toDelete = array_diff($existing, $incoming);
-                if ($toDelete) {
-                    $package->tags()->whereIn('tag_id', $toDelete)->delete();
-                }
-    
-                foreach ($incoming as $tag_id) {
-                    PackageTag::updateOrCreate([
+                foreach ($request->tags as $tag_id) {
+                    PackageTag::create([
                         'package_id' => $package->id,
                         'tag_id' => $tag_id,
                     ]);
                 }
             }
     
-            // Availability
+            // === Availability ===
             if ($request->has('availability')) {
-                PackageAvailability::updateOrCreate(
-                    ['package_id' => $package->id],
-                    [
-                        'date_based_package' => $request->availability['date_based_package'],
-                        'start_date' => $request->availability['start_date'] ?? null,
-                        'end_date' => $request->availability['end_date'] ?? null,
-                        'quantity_based_package' => $request->availability['quantity_based_package'],
-                        'max_quantity' => $request->availability['max_quantity'] ?? null,
-                    ]
-                );
+                PackageAvailability::create([
+                    'package_id' => $package->id,
+                    'date_based_package' => $request->availability['date_based_package'],
+                    'start_date' => $request->availability['start_date'] ?? null,
+                    'end_date' => $request->availability['end_date'] ?? null,
+                    'quantity_based_package' => $request->availability['quantity_based_package'],
+                    'max_quantity' => $request->availability['max_quantity'] ?? null,
+                ]);
             }
     
             DB::commit();
-            return response()->json(['message' => $id ? 'Package updated' : 'Package created', 'package' => $package], 200);
+    
+            return response()->json([
+                'message' => 'Package created successfully',
+                'package' => $package
+            ], 201);
+    
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['error' => 'Something went wrong', 'details' => $e->getMessage()], 500);
+            return response()->json([
+                'error' => 'Something went wrong',
+                'details' => $e->getMessage(),
+            ], 500);
         }
-    }
-    
-
+    }    
 
     /**
      * Display the specified Package.
@@ -692,218 +457,195 @@ class PackageController extends Controller
     /**
      * Update the specified Package in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        $request->validate([
+        $package = Package::findOrFail($id);
+    
+        $rules = [
             'name' => 'sometimes|string|max:255',
-            'slug' => 'sometimes|string|unique:packages,slug,' . $id,
+            'slug' => 'sometimes|string|unique:packages,slug,' . $package->id,
             'description' => 'nullable|string',
-            'featured_Package' => 'boolean',
-            'private_Package' => 'boolean',
+            'featured_package' => 'boolean',
+            'private_package' => 'boolean',
             'locations' => 'nullable|array',
+            'information' => 'nullable|array',
             'schedules' => 'nullable|array',
             'activities' => 'nullable|array',
             'transfers' => 'nullable|array',
+            'itineraries' => 'nullable|array',
             'pricing' => 'nullable|array',
             'price_variations' => 'nullable|array',
             'blackout_dates' => 'nullable|array',
             'inclusions_exclusions' => 'nullable|array',
             'media_gallery' => 'nullable|array',
+            'faqs' => 'nullable|array',
             'seo' => 'nullable|array',
             'categories' => 'nullable|array',
             'attributes' => 'nullable|array',
             'tags' => 'nullable|array',
             'availability' => 'nullable|array',
-        ]);
-
+        ];
+    
+        $request->validate($rules);
+    
         try {
             DB::beginTransaction();
-
-            // Fetch Package
-            $package = Package::findOrFail($id);
-
-            // Update only provided fields
+    
             $package->fill($request->only([
                 'name', 'slug', 'description', 'featured_package', 'private_package'
             ]));
-
             $package->save();
-
-            // Handle Locations
-            if ($request->has('locations')) {
-                $package->locations()->delete();
-                foreach ($request->locations as $location) {
-                    PackageLocation::updateOrCreate([
-                        'package_id' => $package->id,
-                        'city_id' => $location['city_id'],
-                        'location_type' => $location['location_type'],
-                        'location_label' => $location['location_label'],
-                    ]);
+    
+            $scheduleMap = [];
+    
+            $updateOrCreateRelation = function ($relationName, $data, $extra = []) use ($package) {
+                $relation = $package->$relationName();
+                $existing = $relation->pluck('id')->toArray();
+    
+                foreach ($data as $item) {
+                    $attributes = array_merge($item, $extra);
+                    if (!empty($item['id']) && in_array($item['id'], $existing)) {
+                        $relation->where('id', $item['id'])->update($attributes);
+                    } else {
+                        $relation->create($attributes);
+                    }
+                }
+            };
+    
+            foreach (['information', 'locations', 'faqs', 'inclusionsExclusions', 'mediaGallery'] as $relation) {
+                if ($request->has(Str::snake($relation))) {
+                    $updateOrCreateRelation($relation, $request->{Str::snake($relation)});
                 }
             }
-
-            // Handle Schedules
+    
             if ($request->has('schedules')) {
-                $package->schedules()->delete();
-                foreach ($request->schedules as $schedule) {
-                    PackageSchedule::updateOrCreate([
-                        'package_id' => $package->id,
-                        'day' => $schedule['day'],
-                        'schedule_details' => $schedule['schedule_details'] ?? '',
-                    ]);
+                $updateOrCreateRelation('schedules', $request->schedules);
+                foreach ($package->schedules as $schedule) {
+                    $scheduleMap[$schedule->day] = $schedule->id;
                 }
             }
 
-            // Handle Activities
+            $scheduleMap = $package->schedules()->pluck('id', 'day')->toArray();
+
+            $updateOrCreateSimple = function ($modelClass, $data, $scheduleMap = []) {
+                foreach ($data as $item) {
+                    if (!empty($item['id'])) {
+                        $model = $modelClass::find($item['id']);
+                        if ($model) {
+                            if (isset($item['day']) && empty($item['schedule_id'])) {
+                                $scheduleId = $scheduleMap[$item['day']] ?? null;
+                                if ($scheduleId) {
+                                    $item['schedule_id'] = $scheduleId;
+                                }
+                                unset($item['day']);
+                            }
+
+                            $model->fill($item);
+                            $model->save();
+                        }
+                    }
+                }
+            };
+   
+            
+            
             if ($request->has('activities')) {
-                $package->activities()->delete();
-                foreach ($request->activities as $activity) {
-                    PackageActivity::updateOrCreate([
-                        'package_id' => $package->id,
-                        'activity_id' => $activity['activity_id'],
-                    ]);
-                }
-            }
+                $updateOrCreateSimple(\App\Models\PackageActivity::class, $request->activities, $scheduleMap);
 
-            // Handle Transfers
+            }
+            
             if ($request->has('transfers')) {
-                $package->transfers()->delete();
-                foreach ($request->transfers as $transfer) {
-                    PackageTransfer::updateOrCreate([
-                        'package_id' => $package->id,
-                        'transfer_type' => $transfer['transfer_type'],
-                        'description' => $transfer['description'],
-                    ]);
-                }
+                $updateOrCreateSimple(\App\Models\PackageTransfer::class, $request->transfers, $scheduleMap);
+
+            }
+            
+            if ($request->has('itineraries')) {
+                $updateOrCreateSimple(\App\Models\PackageItinerary::class, $request->itineraries, $scheduleMap);
+
             }
 
-            // Handle Pricing
+            $pricing = $package->basePricing()->first();
+
+            // If pricing is present in request, create or update it
             if ($request->has('pricing')) {
-                PackageBasePricing::updateOrCreate(
-                    ['package_id' => $package->id],
-                    [
-                        'base_price' => $request->pricing['base_price'],
-                        'currency' => $request->pricing['currency'],
-                    ]
-                );
+                $pricing = $package->basePricing()->firstOrCreate([]);
+                $pricing->fill($request->pricing)->save();
             }
 
-            // Handle Price Variations
+            $updateOrCreateChild = function ($relation, $data, $modelClass, $foreignKey) use ($pricing) {
+                foreach ($data as $item) {
+                    if (!empty($item['id'])) {
+                        $model = $modelClass::find($item['id']);
+                        if ($model) {
+                            $model->fill($item);
+                            $model->save();
+                        }
+                    } else {
+                        $item[$foreignKey] = $pricing->id;
+                        $modelClass::create($item);
+                    }
+                }
+            };
+            
             if ($request->has('price_variations')) {
-                $package->priceVariations()->delete();
-                foreach ($request->price_variations as $variation) {
-                    PackagePriceVariation::updateOrCreate([
-                        'package_id' => $package->id,
-                        'variation_name' => $variation['variation_name'],
-                        'price' => $variation['price'],
-                    ]);
-                }
+                $updateOrCreateChild('priceVariations', $request->price_variations, \App\Models\PackagePriceVariation::class, 'base_pricing_id');
             }
-
-            // Handle Blackout Dates
+            
             if ($request->has('blackout_dates')) {
-                $package->blackoutDates()->delete();
-                foreach ($request->blackout_dates as $date) {
-                    PackageBlackoutDate::updateOrCreate([
-                        'package_id' => $package->id,
-                        'blackout_date' => $date['blackout_date'],
-                    ]);
-                }
+                $updateOrCreateChild('blackoutDates', $request->blackout_dates, \App\Models\PackageBlackoutDate::class, 'base_pricing_id');
             }
 
-            // Handle Inclusions & Exclusions
-            if ($request->has('inclusions_exclusions')) {
-                $package->inclusionsExclusions()->delete();
-                foreach ($request->inclusions_exclusions as $ie) {
-                    PackageInclusionExclusion::updateOrCreate([
-                        'package_id' => $package->id,
-                        'type' => $ie['type'],
-                        'description' => $ie['description'],
-                    ]);
-                }
-            }
-
-            // Handle Media Gallery
-            if ($request->has('media_gallery')) {
-                $package->mediaGallery()->delete();
-                foreach ($request->media_gallery as $media) {
-                    PackageMediaGallery::updateOrCreate([
-                        'package_id' => $package->id,
-                        'media_url' => $media['media_url'],
-                    ]);
-                }
-            }
-
-            // Handle SEO
-            if ($request->has('seo')) {
-                PackageSeo::updateOrCreate(
-                    ['package_id' => $package->id],
-                    [
-                        'meta_title' => $request->seo['meta_title'],
-                        'meta_description' => $request->seo['meta_description'],
-                        'meta_keywords' => $request->seo['meta_keywords'],
-                    ]
-                );
-            }
-
-            // Handle Categories
             if ($request->has('categories')) {
-                $package->categories()->delete();
-                foreach ($request->categories as $category_id) {
-                    PackageCategory::updateOrCreate([
-                        'package_id' => $package->id,
-                        'category_id' => $category_id,
-                    ]);
+                foreach ($request->categories as $category) {
+                    if (!empty($category['id'])) {
+                        $package->categories()->where('id', $category['id'])->update(['category_id' => $category['category_id']]);
+                    } else {
+                        $package->categories()->create(['category_id' => $tag['category_id']]);
+                    }
                 }
             }
 
-            // Handle Attributes
-            if ($request->has('attributes')) {
-                $package->attributes()->delete();
-                foreach ($request->attributes as $attribute) {
-                    PackageAttribute::updateOrCreate(
-                        [
-                            'package_id' => $package->id,
-                            'attribute_id' => $attribute['attribute_id'],
-                        ],
-                        [
-                            'attribute_value' => $attribute['attribute_value'],
-                        ]
-                    );
-                }
-            }
-
-            // Handle Tags
             if ($request->has('tags')) {
-                $package->tags()->delete();
-                foreach ($request->tags as $tag_id) {
-                    PackageTag::updateOrCreate([
-                        'package_id' => $package->id,
-                        'tag_id' => $tag_id,
-                    ]);
+                foreach ($request->tags as $tag) {
+                    if (!empty($tag['id'])) {
+                        $package->tags()->where('id', $tag['id'])->update(['tag_id' => $tag['tag_id']]);
+                    } else {
+                        $package->tags()->create(['tag_id' => $tag['tag_id']]);
+                    }
                 }
             }
-
-            // Handle Availability
-            if ($request->has('availability')) {
-                PackageAvailability::updateOrCreate(
-                    ['package_id' => $package->id],
-                    [
-                        'date_based' => $request->availability['date_based'],
-                        'start_date' => $request->availability['start_date'] ?? null,
-                        'end_date' => $request->availability['end_date'] ?? null,
-                        'max_quantity' => $request->availability['max_quantity'] ?? null,
-                    ]
-                );
+    
+            if ($request->has('attributes')) {
+                $updateOrCreateRelation('attributes', $request->input('attributes'));
             }
-
+    
+            if ($request->has('availability')) {
+                $package->availability()->updateOrCreate([], $request->availability);
+            }
+    
+            if ($request->has('seo')) {
+                $seoData = $request->seo;
+                if (isset($seoData['schema_data']) && is_array($seoData['schema_data'])) {
+                    $seoData['schema_data'] = json_encode($seoData['schema_data']);
+                }
+                $package->seo()->updateOrCreate([], $seoData);
+            }
+    
             DB::commit();
-            return response()->json(['message' => 'Package updated successfully', 'Package' => $package], 200);
+    
+            return response()->json([
+                'message' => 'Package updated successfully',
+                'package' => $package->fresh()
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['error' => 'Something went wrong', 'details' => $e->getMessage()], 500);
+            return response()->json([
+                'error' => 'Something went wrong',
+                'details' => $e->getMessage(),
+            ], 500);
         }
-    }
+    }    
+
 
     /**
      * Remove the specified Package from storage.
