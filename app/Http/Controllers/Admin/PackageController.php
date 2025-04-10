@@ -451,7 +451,46 @@ class PackageController extends Controller
             return response()->json(['message' => 'Package not found'], 404);
         }
 
-        return response()->json($package);
+        // Transform response
+        $packageData = $package->toArray();
+    
+        // Replace location city object with just `city_name`
+        $packageData['locations'] = collect($package->locations)->map(function ($location) {
+            return [
+                'id' => $location->id,
+                'package_id' => $location->package_id,
+                'city_id' => $location->city_id,
+                'city_name' => $location->city->name ?? null,
+            ];
+        });
+    
+        // Replace attributes with just `attribute_name`
+        $packageData['attributes'] = collect($package->attributes)->map(function ($attribute) {
+            return [
+                'id' => $attribute->id,
+                'attribute_id' => $attribute->attribute_id,
+                'attribute_name' => $attribute->attribute->name ?? null,
+                'attribute_value' => $attribute->attribute_value,
+            ];
+        });
+    
+        // Replace categories with just `category_name`
+        $packageData['categories'] = collect($package->categories)->map(function ($category) {
+            return [
+                'id' => $category->id,
+                'category_id' => $category->category_id,
+                'category_name' => $category->category->name ?? null,
+            ];
+        });
+        $packageData['tags'] = collect($package->tags)->map(function ($tag) {
+            return [
+                'id' => $tag->id,
+                'tag_id' => $tag->tag_id,
+                'tag_name' => $tag->tag->name ?? null,
+            ];
+        });
+
+        return response()->json($packageData);
     }
 
     /**

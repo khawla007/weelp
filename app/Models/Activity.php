@@ -29,6 +29,11 @@ class Activity extends Model {
         return $this->hasMany(ActivityAttribute::class);
     }
 
+    public function tags()
+    {
+        return $this->hasMany(ActivityTag::class);
+    }
+
     public function pricing() {
         return $this->hasOne(ActivityPricing::class);
     }

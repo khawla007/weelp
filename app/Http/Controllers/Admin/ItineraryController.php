@@ -717,7 +717,47 @@ class ItineraryController extends Controller
             return response()->json(['message' => 'Itinerary not found'], 404);
         }
 
-        return response()->json($itinerary);
+
+        // Transform response
+        $itineraryData = $itinerary->toArray();
+    
+        // Replace location city object with just `city_name`
+        $itineraryData['locations'] = collect($itinerary->locations)->map(function ($location) {
+            return [
+                'id' => $location->id,
+                'itinerary_id' => $location->itinerary_id,
+                'city_id' => $location->city_id,
+                'city_name' => $location->city->name ?? null,
+            ];
+        });
+    
+        // Replace attributes with just `attribute_name`
+        $itineraryData['attributes'] = collect($itinerary->attributes)->map(function ($attribute) {
+            return [
+                'id' => $attribute->id,
+                'attribute_id' => $attribute->attribute_id,
+                'attribute_name' => $attribute->attribute->name ?? null,
+                'attribute_value' => $attribute->attribute_value,
+            ];
+        });
+    
+        // Replace categories with just `category_name`
+        $itineraryData['categories'] = collect($itinerary->categories)->map(function ($category) {
+            return [
+                'id' => $category->id,
+                'category_id' => $category->category_id,
+                'category_name' => $category->category->name ?? null,
+            ];
+        });
+        $itineraryData['tags'] = collect($itinerary->tags)->map(function ($tag) {
+            return [
+                'id' => $tag->id,
+                'tag_id' => $tag->tag_id,
+                'tag_name' => $tag->tag->name ?? null,
+            ];
+        });
+
+        return response()->json($itineraryData);
     }
 
     /**

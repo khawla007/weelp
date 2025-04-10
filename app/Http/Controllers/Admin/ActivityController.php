@@ -51,7 +51,7 @@ class ActivityController extends Controller
         $query = Activity::query()
             ->select('activities.*')  // Select all fields from activities
             ->join('activity_pricing', 'activity_pricing.activity_id', '=', 'activities.id') // Join with activity_pricing table
-            ->with(['categories.category', 'locations.city', 'pricing', 'attributes']) // Eager load relationships
+            ->with(['categories.category', 'tags.tag', 'locations.city', 'pricing', 'attributes']) // Eager load relationships
             ->when($categoryId, fn($query) => 
                 $query->whereHas('categories', fn($q) => 
                     $q->where('category_id', $categoryId)
@@ -142,6 +142,7 @@ class ActivityController extends Controller
             'featured_images' => 'nullable|array',
             'featured_activity' => 'boolean',
             'categories' => 'nullable|array',
+            'tags' => 'nullable|array',
             'locations' => 'nullable|array',
             'attributes' => 'nullable|array',
             'pricing' => 'nullable|array',
@@ -171,6 +172,16 @@ class ActivityController extends Controller
                     ActivityCategory::create([
                         'activity_id' => $activity->id,
                         'category_id' => $category_id,
+                    ]);
+                }
+            }
+
+            // Tags
+            if ($request->has('tags')) {
+                foreach ($request->tags as $tag_id) {
+                    ActivityTag::create([
+                        'activity_id' => $activity->id,
+                        'tag_id' => $tag_id,
                     ]);
                 }
             }
@@ -494,6 +505,7 @@ class ActivityController extends Controller
             'categories', 
             'locations.city', 
             'attributes.attribute',
+            'tags.tag',
             'pricing', 'seasonalPricing', 
             'groupDiscounts', 'earlyBirdDiscount', 
             'lastMinuteDiscount', 'promoCodes', 'availability'
@@ -539,6 +551,13 @@ class ActivityController extends Controller
                 'category_name' => $category->category->name ?? null, // Get category name
             ];
         });
+        $activityData['tags'] = collect($activity->tags)->map(function ($tag) {
+            return [
+                'id' => $tag->id,
+                'tag_id' => $tag->tag_id,
+                'tag_name' => $tag->tag->name ?? null, // Get tag name
+            ];
+        });
     
         return response()->json($activityData, 200);
     }
@@ -558,6 +577,7 @@ class ActivityController extends Controller
             'featured_images' => 'nullable|array',
             'featured_activity' => 'boolean',
             'categories' => 'nullable|array',
+            'tags' => 'nullable|array',
             'locations' => 'nullable|array',
             'attributes' => 'nullable|array',
             'pricing' => 'nullable|array',
@@ -597,7 +617,7 @@ class ActivityController extends Controller
                 }
             };
     
-            foreach (['locations', 'categories'] as $relation) {
+            foreach (['locations', 'categories', 'tags'] as $relation) {
                 if ($request->has($relation)) {
                     $updateOrCreateRelation($relation, $request->$relation);
                 }
@@ -648,10 +668,25 @@ class ActivityController extends Controller
                 $updateOrCreateChild($request->promo_codes, \App\Models\ActivityPromoCode::class, 'base_pricing_id');
             }
     
+            // if ($request->has('availability')) {
+            //     $activity->availability()->updateOrCreate([], $request->availability);
+            // }
             if ($request->has('availability')) {
-                $activity->availability()->updateOrCreate([], $request->availability);
+                $availabilityData = $request->availability;
+            
+                // Only nullify if explicitly set to false
+                if (array_key_exists('date_based_activity', $availabilityData) && $availabilityData['date_based_activity'] === false) {
+                    $availabilityData['start_date'] = null;
+                    $availabilityData['end_date'] = null;
+                }
+            
+                if (array_key_exists('quantity_based_activity', $availabilityData) && $availabilityData['quantity_based_activity'] === false) {
+                    $availabilityData['max_quantity'] = null;
+                }
+            
+                $activity->availability()->updateOrCreate([], $availabilityData);
             }
-    
+
             DB::commit();
     
             return response()->json([

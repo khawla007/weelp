@@ -5,9 +5,10 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Activity;
 use App\Models\ActivityCategory;
+use App\Models\ActivityAttribute;
+use App\Models\ActivityTag;
 use App\Models\ActivityLocation;
 use App\Models\Attribute;
-use App\Models\ActivityAttribute;
 use App\Models\ActivityPricing;
 use App\Models\ActivitySeasonalPricing;
 use App\Models\ActivityGroupDiscount;
@@ -96,6 +97,26 @@ class ActivitySeeder extends Seeder {
                 'activity_id' => $activity->id,
                 'category_id' => rand(2, 4) 
             ]);
+            ActivityAttribute::create([
+                'activity_id' => $activity->id,
+                'attribute_id' => rand(1, 2),
+                'attribute_value' => '1 Hour'
+            ]);
+            ActivityAttribute::create([
+                'activity_id' => $activity->id,
+                'attribute_id' => rand(3, 4),
+                'attribute_value' => '1 Hour'
+            ]);
+
+            ActivityTag::create([
+                'activity_id' => $activity->id,
+                'tag_id' => rand(1, 2),
+            ]);
+
+            ActivityTag::create([
+                'activity_id' => $activity->id,
+                'tag_id' => rand(3, 4),
+            ]);
 
             ActivityLocation::create([
                 'activity_id' => $activity->id,
@@ -113,36 +134,24 @@ class ActivitySeeder extends Seeder {
                 'duration' => rand(5, 20)
             ]);
 
-            // 🏷 Assign Multiple Attributes
-            // ActivityAttribute::create([
-            //     'activity_id' => $activity->id,
-            //     'attribute_id' => rand(1, 4),
-            //     'attribute_value' => '1 Hour'
-            // ]);
-            // ActivityAttribute::create([
-            //     'activity_id' => $activity->id,
-            //     'attribute_id' => rand(3, 4),
-            //     'attribute_value' => 'Easy'
-            // ]);
-
             // Fetch all attributes
-            $attribute = Attribute::inRandomOrder()->first();
+            // $attribute = Attribute::inRandomOrder()->first();
             
-            if (!$attribute || empty($attribute->values)) {
-                continue; // Skip if no attribute or empty values
-            }
+            // if (!$attribute || empty($attribute->values)) {
+            //     continue; // Skip if no attribute or empty values
+            // }
 
-            // Decode JSON values and pick a random one
-            $attributeValues = json_decode($attribute->values, true);
-            $randomValue = is_array($attributeValues) ? $attributeValues[array_rand($attributeValues)] : null;
+            // // Decode JSON values and pick a random one
+            // $attributeValues = json_decode($attribute->values, true);
+            // $randomValue = is_array($attributeValues) ? $attributeValues[array_rand($attributeValues)] : null;
 
-            if ($randomValue) {
-                ActivityAttribute::create([
-                    'activity_id' => $activity->id,
-                    'attribute_id' => $attribute->id,
-                    'attribute_value' => $randomValue, // Use a value from JSON
-                ]);
-            }
+            // if ($randomValue) {
+            //     ActivityAttribute::create([
+            //         'activity_id' => $activity->id,
+            //         'attribute_id' => $attribute->id,
+            //         'attribute_value' => $randomValue, // Use a value from JSON
+            //     ]);
+            // }
 
             // Pricing
             $pricing = ActivityPricing::create([
