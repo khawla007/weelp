@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Activity;
 use App\Models\ActivityCategory;
+use App\Models\ActivityTag;
 use App\Models\ActivityLocation;
 use App\Models\ActivityAttribute;
 use App\Models\ActivityPricing;
@@ -14,8 +15,10 @@ use App\Models\ActivityGroupDiscount;
 use App\Models\ActivityEarlyBirdDiscount;
 use App\Models\ActivityLastMinuteDiscount;
 use App\Models\ActivityPromoCode;
+use App\Models\ActivityMediaGallery;
 use App\Models\ActivityAvailability;
 use App\Models\Category;
+use App\Models\Tag;
 use App\Models\Attribute;
 use App\Models\City;
 use Illuminate\Support\Facades\DB;
@@ -51,7 +54,7 @@ class ActivityController extends Controller
         $query = Activity::query()
             ->select('activities.*')  // Select all fields from activities
             ->join('activity_pricing', 'activity_pricing.activity_id', '=', 'activities.id') // Join with activity_pricing table
-            ->with(['categories.category', 'tags.tag', 'locations.city', 'pricing', 'attributes']) // Eager load relationships
+            ->with(['categories.category', 'tags.tag', 'locations.city', 'pricing', 'attributes', 'mediaGallery']) // Eager load relationships
             ->when($categoryId, fn($query) => 
                 $query->whereHas('categories', fn($q) => 
                     $q->where('category_id', $categoryId)
@@ -139,7 +142,6 @@ class ActivityController extends Controller
             'slug' => 'required|string|unique:activities,slug',
             'description' => 'nullable|string',
             'short_description' => 'nullable|string',
-            'featured_images' => 'nullable|array',
             'featured_activity' => 'boolean',
             'categories' => 'nullable|array',
             'tags' => 'nullable|array',
@@ -148,9 +150,11 @@ class ActivityController extends Controller
             'pricing' => 'nullable|array',
             'seasonal_pricing' => 'nullable|array',
             'group_discounts' => 'nullable|array',
+            // 'group_discounts.*.discount_type' => 'required|string|in:percentage,fixed',
             'early_bird_discount' => 'nullable|array',
             'last_minute_discount' => 'nullable|array',
             'promo_codes' => 'nullable|array',
+            'media_gallery' => 'nullable|array',
             'availability' => 'nullable|array',
         ]);
     
@@ -162,7 +166,6 @@ class ActivityController extends Controller
                 'slug' => $request->slug,
                 'description' => $request->description,
                 'short_description' => $request->short_description,
-                'featured_images' => $request->featured_images ? json_encode($request->featured_images) : null,
                 'featured_activity' => $request->featured_activity ?? false,
             ]);
     
@@ -235,6 +238,7 @@ class ActivityController extends Controller
     
             // Group Discounts
             if ($request->has('group_discounts')) {
+                // dd($request->group_discounts);
                 foreach ($request->group_discounts as $discount) {
                     ActivityGroupDiscount::create([
                         'activity_id' => $activity->id,
@@ -278,6 +282,16 @@ class ActivityController extends Controller
                         'discount_type' => $promo['discount_type'],
                         'valid_from' => $promo['valid_from'],
                         'valid_to' => $promo['valid_to'],
+                    ]);
+                }
+            }
+
+            // Media Gallery 
+            if ($request->has('media_gallery')) {
+                foreach ($request->media_gallery as $media) {
+                    ActivityMediaGallery::create([
+                        'activity_id' => $activity->id,
+                        'url' => $media['url'],
                     ]);
                 }
             }
@@ -508,7 +522,8 @@ class ActivityController extends Controller
             'tags.tag',
             'pricing', 'seasonalPricing', 
             'groupDiscounts', 'earlyBirdDiscount', 
-            'lastMinuteDiscount', 'promoCodes', 'availability'
+            'lastMinuteDiscount', 'promoCodes', 
+            'mediaGallery', 'availability'
         ])->find($id);
     
         if (!$activity) {
@@ -574,7 +589,6 @@ class ActivityController extends Controller
             'slug' => 'sometimes|required|string|unique:activities,slug,' . $activity->id,
             'description' => 'nullable|string',
             'short_description' => 'nullable|string',
-            'featured_images' => 'nullable|array',
             'featured_activity' => 'boolean',
             'categories' => 'nullable|array',
             'tags' => 'nullable|array',
@@ -586,6 +600,7 @@ class ActivityController extends Controller
             'early_bird_discount' => 'nullable|array',
             'last_minute_discount' => 'nullable|array',
             'promo_codes' => 'nullable|array',
+            'media_gallery' => 'nullable|array',
             'availability' => 'nullable|array',
         ];
     
@@ -617,7 +632,7 @@ class ActivityController extends Controller
                 }
             };
     
-            foreach (['locations', 'categories', 'tags'] as $relation) {
+            foreach (['locations', 'categories', 'tags', 'mediaGallery'] as $relation) {
                 if ($request->has($relation)) {
                     $updateOrCreateRelation($relation, $request->$relation);
                 }

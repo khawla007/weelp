@@ -12,7 +12,8 @@ return new class extends Migration {
             $table->string('promo_code');
             $table->integer('max_uses');
             $table->decimal('discount_amount', 10, 2);
-            $table->enum('discount_type', ['percentage', 'fixed']);
+            // $table->enum('discount_type', ['percentage', 'fixed']);
+            $table->string('discount_type');
             $table->date('valid_from');
             $table->date('valid_to');
             $table->timestamps();

@@ -11,7 +11,8 @@ return new class extends Migration {
             $table->foreignId('activity_id')->constrained('activities')->onDelete('cascade');
             $table->integer('min_people');
             $table->decimal('discount_amount', 10, 2);
-            $table->enum('discount_type', ['percentage', 'fixed']);
+            // $table->enum('discount_type', ['percentage', 'fixed']);
+            $table->string('discount_type');
             $table->timestamps();
         });
     }

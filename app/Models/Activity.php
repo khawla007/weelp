@@ -9,7 +9,7 @@ class Activity extends Model {
     use HasFactory;
 
     protected $fillable = [
-        'name', 'slug', 'description', 'item_type', 'short_description', 'featured_images', 'featured_activity'
+        'name', 'slug', 'description', 'item_type', 'short_description', 'featured_activity'
     ];
 
     protected $casts = [
@@ -61,6 +61,11 @@ class Activity extends Model {
     public function availability()
     {
         return $this->hasOne(ActivityAvailability::class);
+    }
+
+    public function mediaGallery()
+    {
+        return $this->hasMany(ActivityMediaGallery::class);
     }
 
     public function itineraryActivity() {

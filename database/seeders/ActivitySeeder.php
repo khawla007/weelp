@@ -15,6 +15,7 @@ use App\Models\ActivityGroupDiscount;
 use App\Models\ActivityEarlyBirdDiscount;
 use App\Models\ActivityLastMinuteDiscount;
 use App\Models\ActivityPromoCode;
+use App\Models\ActivityMediaGallery;
 use App\Models\ActivityAvailability;
 
 class ActivitySeeder extends Seeder {
@@ -25,7 +26,6 @@ class ActivitySeeder extends Seeder {
                 'slug' => 'desert-safari-adventure',
                 'description' => 'Experience the thrill of a desert safari with dune bashing and camel rides.',
                 'short_description' => 'Desert safari with dune bashing and camel rides.',
-                'featured_images' => json_encode(['desert1.jpg', 'desert2.jpg']),
                 'featured_activity' => true,
             ],
             [
@@ -33,7 +33,6 @@ class ActivitySeeder extends Seeder {
                 'slug' => 'sky-diving-experience',
                 'description' => 'Jump from a plane at 13,000 feet and enjoy the ultimate adrenaline rush.',
                 'short_description' => 'Sky diving at 13,000 feet.',
-                'featured_images' => json_encode(['skydiving1.jpg', 'skydiving2.jpg']),
                 'featured_activity' => false,
             ],
             [
@@ -41,7 +40,6 @@ class ActivitySeeder extends Seeder {
                 'slug' => 'scuba-diving-tour',
                 'description' => 'Explore the underwater world with our professional scuba diving instructors.',
                 'short_description' => 'Scuba diving with professional guides.',
-                'featured_images' => json_encode(['scuba1.jpg', 'scuba2.jpg']),
                 'featured_activity' => true,
             ],
             [
@@ -49,7 +47,6 @@ class ActivitySeeder extends Seeder {
                 'slug' => 'scuba-diving',
                 'description' => 'Explore the underwater world with our professional scuba diving instructors.',
                 'short_description' => 'Scuba diving with professional guides.',
-                'featured_images' => json_encode(['scuba1.jpg', 'scuba2.jpg']),
                 'featured_activity' => true,
             ],
             [
@@ -57,7 +54,6 @@ class ActivitySeeder extends Seeder {
                 'slug' => 'nero-diving-tour',
                 'description' => 'Explore the underwater world with our professional scuba diving instructors.',
                 'short_description' => 'Scuba diving with professional guides.',
-                'featured_images' => json_encode(['scuba1.jpg', 'scuba2.jpg']),
                 'featured_activity' => true,
             ],
             [
@@ -65,7 +61,6 @@ class ActivitySeeder extends Seeder {
                 'slug' => 'deep-diving-tour',
                 'description' => 'Explore the underwater world with our professional scuba diving instructors.',
                 'short_description' => 'Scuba diving with professional guides.',
-                'featured_images' => json_encode(['scuba1.jpg', 'scuba2.jpg']),
                 'featured_activity' => true,
             ],
             [
@@ -73,7 +68,6 @@ class ActivitySeeder extends Seeder {
                 'slug' => 'sea-diving-tour',
                 'description' => 'Explore the underwater world with our professional scuba diving instructors.',
                 'short_description' => 'Scuba diving with professional guides.',
-                'featured_images' => json_encode(['scuba1.jpg', 'scuba2.jpg']),
                 'featured_activity' => true,
             ],
             [
@@ -81,7 +75,6 @@ class ActivitySeeder extends Seeder {
                 'slug' => 'lake-diving-tour',
                 'description' => 'Explore the underwater world with our professional scuba diving instructors.',
                 'short_description' => 'Scuba diving with professional guides.',
-                'featured_images' => json_encode(['scuba1.jpg', 'scuba2.jpg']),
                 'featured_activity' => true,
             ],
         ];
@@ -226,6 +219,10 @@ class ActivitySeeder extends Seeder {
                 'discount_type' => 'fixed',
                 'valid_from' => '2025-06-01',
                 'valid_to' => '2025-08-31',
+            ]);
+            ActivityMediaGallery::create([
+                'activity_id' => $activity->id,
+                'url' => 'https://example.com/sample-image.jpg',
             ]);
             ActivityAvailability::create([
                 'activity_id' => $activity->id,

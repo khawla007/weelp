@@ -13,7 +13,6 @@ return new class extends Migration {
             $table->text('description')->nullable();
             $table->string('item_type')->default('activity'); // Fixed value 'package'
             $table->text('short_description')->nullable();
-            $table->json('featured_images')->nullable();
             $table->boolean('featured_activity')->default(false);
             $table->timestamps();
         });

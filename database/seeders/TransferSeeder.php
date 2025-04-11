@@ -45,7 +45,7 @@ class TransferSeeder extends Seeder
                 'description' => 'Full day city tour with private guide',
                 'transfer_type' => 'Round-trip',
                 'vendor_id' => 2,
-                'route_id' => 2,
+                'route_id' => 4,
                 'pricing_tier_id' => 2,
                 'availability_id' => 2,
                 'media' => [
@@ -71,7 +71,7 @@ class TransferSeeder extends Seeder
                 'description' => 'Hotel to Train Station transfer service',
                 'transfer_type' => 'One-way',
                 'vendor_id' => 3,
-                'route_id' => 3,
+                'route_id' => 5,
                 'pricing_tier_id' => 3,
                 'availability_id' => 3,
                 'media' => [
@@ -97,7 +97,7 @@ class TransferSeeder extends Seeder
                 'description' => 'Mountain hiking trip with professional guide',
                 'transfer_type' => 'Round-trip',
                 'vendor_id' => 4,
-                'route_id' => 4,
+                'route_id' => 7,
                 'pricing_tier_id' => 4,
                 'availability_id' => 4,
                 'media' => [

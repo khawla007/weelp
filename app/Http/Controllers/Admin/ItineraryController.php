@@ -65,7 +65,8 @@ class ItineraryController extends Controller
                 'categories.category', 
                 'locations.city', 
                 'basePricing.variations', 
-                'attributes.attribute:id,name'
+                'attributes.attribute:id,name',
+                'mediaGallery'
             ])
             ->when($categoryId, fn($query) => 
                 $query->whereHas('categories', fn($q) => 
