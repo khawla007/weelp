@@ -12,7 +12,8 @@ return new class extends Migration {
             $table->boolean('enable_early_bird_discount')->default(false);
             $table->integer('days_before_start');
             $table->decimal('discount_amount', 10, 2);
-            $table->enum('discount_type', ['percentage', 'fixed']);
+            // $table->enum('discount_type', ['percentage', 'fixed']);
+            $table->string('discount_type');
             $table->timestamps();
         });
     }

@@ -619,28 +619,76 @@ class ActivityController extends Controller
     
             $activity->save();
     
+            // // Handle relations that need a complete update (delete old and create new)
+            // $fullDeleteRelations = ['categories', 'tags', 'mediaGallery', 'attributes'];
+
+            // foreach ($fullDeleteRelations as $relation) {
+            //     if ($request->has($relation)) {
+            //         // Delete old relations first
+            //         $activity->$relation()->delete();
+
+            //         // Create new relations
+            //         foreach ($request->$relation as $item) {
+            //             $activity->$relation()->create($item);
+            //         }
+            //     }
+            // }
+            $fullDeleteRelations = [
+                'categories' => 'category_id',
+                'tags' => 'tag_id',
+                'mediaGallery' => 'media_id',
+            ];
+            
+            foreach ($fullDeleteRelations as $relation => $foreignKey) {
+                if ($request->has($relation)) {
+                    // Delete old relations first
+                    $activity->$relation()->delete();
+            
+                    // Create new relations
+                    foreach ($request->$relation as $id) {
+                        $activity->$relation()->create([
+                            $foreignKey => $id
+                        ]);
+                    }
+                }
+            }
+
+            // Handle attributes (requires full object)
+            if ($request->has('attributes')) {
+                $activity->attributes()->delete();
+            
+                $attributes = collect($request->attributes)->map(function ($attr) use ($activity) {
+                    return array_merge($attr, ['activity_id' => $activity->id]);
+                })->toArray();
+            
+                $activity->attributes()->createMany($attributes);
+            }
+
             $updateOrCreateRelation = function ($relationName, $data) use ($activity) {
                 $relation = $activity->$relationName();
-                $existing = $relation->pluck('id')->toArray();
-    
+                $relatedModel = $relation->getRelated();
+            
                 foreach ($data as $item) {
-                    if (!empty($item['id']) && in_array($item['id'], $existing)) {
-                        $relation->where('id', $item['id'])->update($item);
+                    if (!empty($item['id'])) {
+                        $relatedModel->where('id', $item['id'])
+                                     ->where('activity_id', $activity->id) // safety check
+                                     ->update($item);
                     } else {
                         $relation->create($item);
                     }
                 }
             };
     
-            foreach (['locations', 'categories', 'tags', 'mediaGallery'] as $relation) {
+            // foreach (['locations', 'categories', 'tags', 'mediaGallery'] as $relation) {
+            foreach (['locations', 'seasonal_pricing', 'group_discounts', 'early_bird_discount', 'last_minute_discount', 'promo_codes', 'availability'] as $relation) {
                 if ($request->has($relation)) {
                     $updateOrCreateRelation($relation, $request->$relation);
                 }
             }
     
-            if ($request->has('attributes')) {
-                $updateOrCreateRelation('attributes', $request->input('attributes'));
-            }
+            // if ($request->has('attributes')) {
+            //     $updateOrCreateRelation('attributes', $request->input('attributes'));
+            // }
     
             $pricing = $activity->pricing()->first();
     
@@ -649,58 +697,55 @@ class ActivityController extends Controller
                 $pricing->fill($request->pricing)->save();
             }
     
-            $updateOrCreateChild = function ($data, $modelClass, $foreignKey) use ($pricing) {
-                foreach ($data as $item) {
-                    if (!empty($item['id'])) {
-                        $model = $modelClass::find($item['id']);
-                        if ($model) {
-                            $model->fill($item)->save();
-                        }
-                    } else {
-                        $item[$foreignKey] = $pricing->id;
-                        $modelClass::create($item);
-                    }
-                }
-            };
+            // $updateOrCreateChild = function ($data, $modelClass, $foreignKey) use ($pricing) {
+            //     foreach ($data as $item) {
+            //         if (!empty($item['id'])) {
+            //             $model = $modelClass::find($item['id']);
+            //             if ($model) {
+            //                 $model->fill($item)->save();
+            //             }
+            //         } else {
+            //             $item[$foreignKey] = $pricing->id;
+            //             $modelClass::create($item);
+            //         }
+            //     }
+            // };
     
-            if ($request->has('seasonal_pricing')) {
-                $updateOrCreateChild($request->seasonal_pricing, \App\Models\ActivitySeasonalPricing::class, 'base_pricing_id');
-            }
+            // if ($request->has('seasonal_pricing')) {
+            //     $updateOrCreateChild($request->seasonal_pricing, \App\Models\ActivitySeasonalPricing::class, 'base_pricing_id');
+            // }
     
-            if ($request->has('group_discounts')) {
-                $updateOrCreateChild($request->group_discounts, \App\Models\ActivityGroupDiscount::class, 'base_pricing_id');
-            }
+            // if ($request->has('group_discounts')) {
+            //     $updateOrCreateChild($request->group_discounts, \App\Models\ActivityGroupDiscount::class, 'base_pricing_id');
+            // }
     
-            if ($request->has('early_bird_discount')) {
-                $updateOrCreateChild([$request->early_bird_discount], \App\Models\ActivityEarlyBirdDiscount::class, 'base_pricing_id');
-            }
+            // if ($request->has('early_bird_discount')) {
+            //     $updateOrCreateChild([$request->early_bird_discount], \App\Models\ActivityEarlyBirdDiscount::class, 'base_pricing_id');
+            // }
     
-            if ($request->has('last_minute_discount')) {
-                $updateOrCreateChild([$request->last_minute_discount], \App\Models\ActivityLastMinuteDiscount::class, 'base_pricing_id');
-            }
+            // if ($request->has('last_minute_discount')) {
+            //     $updateOrCreateChild([$request->last_minute_discount], \App\Models\ActivityLastMinuteDiscount::class, 'base_pricing_id');
+            // }
     
-            if ($request->has('promo_codes')) {
-                $updateOrCreateChild($request->promo_codes, \App\Models\ActivityPromoCode::class, 'base_pricing_id');
-            }
+            // if ($request->has('promo_codes')) {
+            //     $updateOrCreateChild($request->promo_codes, \App\Models\ActivityPromoCode::class, 'base_pricing_id');
+            // }
     
             // if ($request->has('availability')) {
-            //     $activity->availability()->updateOrCreate([], $request->availability);
+            //     $availabilityData = $request->availability;
+            
+            //     // Only nullify if explicitly set to false
+            //     if (array_key_exists('date_based_activity', $availabilityData) && $availabilityData['date_based_activity'] === false) {
+            //         $availabilityData['start_date'] = null;
+            //         $availabilityData['end_date'] = null;
+            //     }
+            
+            //     if (array_key_exists('quantity_based_activity', $availabilityData) && $availabilityData['quantity_based_activity'] === false) {
+            //         $availabilityData['max_quantity'] = null;
+            //     }
+            
+            //     $activity->availability()->updateOrCreate([], $availabilityData);
             // }
-            if ($request->has('availability')) {
-                $availabilityData = $request->availability;
-            
-                // Only nullify if explicitly set to false
-                if (array_key_exists('date_based_activity', $availabilityData) && $availabilityData['date_based_activity'] === false) {
-                    $availabilityData['start_date'] = null;
-                    $availabilityData['end_date'] = null;
-                }
-            
-                if (array_key_exists('quantity_based_activity', $availabilityData) && $availabilityData['quantity_based_activity'] === false) {
-                    $availabilityData['max_quantity'] = null;
-                }
-            
-                $activity->availability()->updateOrCreate([], $availabilityData);
-            }
 
             DB::commit();
     
@@ -720,7 +765,7 @@ class ActivityController extends Controller
     /**
      * Remove the specified activity from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
         $activity = Activity::find($id);
         if (!$activity) {
@@ -729,26 +774,145 @@ class ActivityController extends Controller
 
         DB::beginTransaction();
         try {
-            // Delete related records
-            ActivityCategory::where('activity_id', $id)->delete();
-            ActivityLocation::where('activity_id', $id)->delete();
-            ActivityAttribute::where('activity_id', $id)->delete();
-            ActivityPricing::where('activity_id', $id)->delete();
-            ActivitySeasonalPricing::where('activity_id', $id)->delete();
-            ActivityGroupDiscount::where('activity_id', $id)->delete();
-            ActivityEarlyBirdDiscount::where('activity_id', $id)->delete();
-            ActivityLastMinuteDiscount::where('activity_id', $id)->delete();
-            ActivityPromoCode::where('activity_id', $id)->delete();
-            ActivityAvailability::where('activity_id', $id)->delete();
+            // Define which relations can be deleted partially and the key used in request
+            $deletableRelations = [
+                'categories' => [ActivityCategory::class, 'category_id'],
+                'tags' => [ActivityTag::class, 'tag_id'],
+                'locations' => [ActivityLocation::class, 'id'], // assuming deleting by id
+                'attributes' => [ActivityAttribute::class, 'attribute_id'],
+                'promo_codes' => [ActivityPromoCode::class, 'id'],
+                'group_discounts' => [ActivityGroupDiscount::class, 'id'],
+                'seasonal_pricing' => [ActivitySeasonalPricing::class, 'id'],
+                'media_gallery' => [ActivityMediaGallery::class, 'id'],
+            ];
 
-            // Delete activity
-            $activity->delete();
+            $hasPartialDeletes = false;
+
+            foreach ($deletableRelations as $key => [$modelClass, $fieldKey]) {
+                if ($request->has($key)) {
+                    $hasPartialDeletes = true;
+                    foreach ($request->$key as $item) {
+                        $modelClass::where('activity_id', $id)
+                            ->where($fieldKey, $item[$fieldKey])
+                            ->delete();
+                    }
+                }
+            }
+
+            // If no partial delete requested, then do full delete
+            if (!$hasPartialDeletes) {
+                // Delete all related data
+                foreach ($deletableRelations as [$modelClass, $_]) {
+                    $modelClass::where('activity_id', $id)->delete();
+                }
+
+                // Delete hasOne relations
+                ActivityPricing::where('activity_id', $id)->delete();
+                ActivityEarlyBirdDiscount::where('activity_id', $id)->delete();
+                ActivityLastMinuteDiscount::where('activity_id', $id)->delete();
+                ActivityAvailability::where('activity_id', $id)->delete();
+
+                // Delete main activity
+                $activity->delete();
+            }
 
             DB::commit();
-            return response()->json(['message' => 'Activity deleted successfully'], 200);
+
+            return response()->json([
+                'message' => $hasPartialDeletes ? 'Selected relation items deleted successfully' : 'Activity deleted successfully'
+            ], 200);
+
         } catch (\Exception $e) {
             DB::rollback();
-            return response()->json(['error' => 'Failed to delete activity', 'message' => $e->getMessage()], 500);
+            return response()->json(['error' => 'Failed to delete', 'message' => $e->getMessage()], 500);
         }
     }
+
+    // public function destroy(string $id)
+    // {
+    //     $activity = Activity::find($id);
+    //     if (!$activity) {
+    //         return response()->json(['message' => 'Activity not found'], 404);
+    //     }
+
+    //     DB::beginTransaction();
+    //     try {
+    //         // Delete related records
+    //         ActivityCategory::where('activity_id', $id)->delete();
+    //         ActivityLocation::where('activity_id', $id)->delete();
+    //         ActivityAttribute::where('activity_id', $id)->delete();
+    //         ActivityPricing::where('activity_id', $id)->delete();
+    //         ActivitySeasonalPricing::where('activity_id', $id)->delete();
+    //         ActivityGroupDiscount::where('activity_id', $id)->delete();
+    //         ActivityEarlyBirdDiscount::where('activity_id', $id)->delete();
+    //         ActivityLastMinuteDiscount::where('activity_id', $id)->delete();
+    //         ActivityPromoCode::where('activity_id', $id)->delete();
+    //         ActivityAvailability::where('activity_id', $id)->delete();
+
+    //         // Delete activity
+    //         $activity->delete();
+
+    //         DB::commit();
+    //         return response()->json(['message' => 'Activity deleted successfully'], 200);
+    //     } catch (\Exception $e) {
+    //         DB::rollback();
+    //         return response()->json(['error' => 'Failed to delete activity', 'message' => $e->getMessage()], 500);
+    //     }
+    // }
+
+    // public function partialDelete(Request $request, $activityId)
+    // {
+    //     $activity = Activity::find($activityId);
+    //     if (!$activity) {
+    //         return response()->json(['message' => 'Activity not found'], 404);
+    //     }
+
+    //     DB::beginTransaction();
+    //     try {
+    //         // Activity Categories
+    //         if ($request->has('categories_to_delete')) {
+    //             ActivityCategory::where('activity_id', $activityId)
+    //                 ->whereIn('id', $request->categories_to_delete)
+    //                 ->delete();
+    //         }
+
+    //         // Tags
+    //         if ($request->has('tags_to_delete')) {
+    //             ActivityTag::where('activity_id', $activityId)
+    //                 ->whereIn('id', $request->tags_to_delete)
+    //                 ->delete();
+    //         }
+
+    //         // Locations
+    //         if ($request->has('locations_to_delete')) {
+    //             ActivityLocation::where('activity_id', $activityId)
+    //                 ->whereIn('id', $request->locations_to_delete)
+    //                 ->delete();
+    //         }
+
+    //         // Attributes
+    //         if ($request->has('attributes_to_delete')) {
+    //             ActivityAttribute::where('activity_id', $activityId)
+    //                 ->whereIn('id', $request->attributes_to_delete)
+    //                 ->delete();
+    //         }
+
+    //         // Promo Codes
+    //         if ($request->has('promo_codes_to_delete')) {
+    //             ActivityPromoCode::where('activity_id', $activityId)
+    //                 ->whereIn('id', $request->promo_codes_to_delete)
+    //                 ->delete();
+    //         }
+
+    //         DB::commit();
+    //         return response()->json(['message' => 'Selected items deleted successfully'], 200);
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return response()->json([
+    //             'error' => 'Failed to delete selected items',
+    //             'message' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
 }

@@ -30,14 +30,15 @@ return new class extends Migration {
         Schema::create('activity_locations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('activity_id')->constrained('activities')->onDelete('cascade');
-            $table->enum('location_type', ['primary', 'additional']);
+            // $table->enum('location_type', ['primary', 'additional']);
+            $table->enum('location_type', ['primary', 'additional'])->default('additional');
             $table->foreignId('city_id')->constrained('cities')->onDelete('cascade');
-            $table->string('location_label')->nullable(); // Dynamic label ke liye string use kiya
-            $table->integer('duration')->nullable(); // Sirf additional ke liye hoga
+            $table->string('location_label')->nullable(); 
+            $table->integer('duration')->nullable(); 
             $table->timestamps();
         
             // Ek activity ke liye ek hi primary location allow karne ke liye unique constraint
-            $table->unique(['activity_id', 'location_type'], 'unique_primary_location')->where('location_type', 'primary');
+            // $table->unique(['activity_id', 'location_type'], 'unique_primary_location')->where('location_type', 'primary');
         });
     }
 
