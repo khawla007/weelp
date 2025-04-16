@@ -47,11 +47,11 @@ class Activity extends Model {
     }
 
     public function earlyBirdDiscount() {
-        return $this->hasMany(ActivityEarlyBirdDiscount::class, 'activity_id');
+        return $this->hasOne(ActivityEarlyBirdDiscount::class, 'activity_id');
     }
 
     public function lastMinuteDiscount() {
-        return $this->hasMany(ActivityLastMinuteDiscount::class, 'activity_id');
+        return $this->hasOne(ActivityLastMinuteDiscount::class, 'activity_id');
     }
 
     public function promoCodes() {

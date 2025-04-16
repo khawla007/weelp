@@ -253,7 +253,7 @@ class ActivityController extends Controller
             if ($request->has('early_bird_discount')) {
                 ActivityEarlyBirdDiscount::create([
                     'activity_id' => $activity->id,
-                    'enable_early_bird_discount' => true,
+                    'enabled' => $request->last_minute_discount['enabled'],
                     'days_before_start' => $request->early_bird_discount['days_before_start'],
                     'discount_amount' => $request->early_bird_discount['discount_amount'],
                     'discount_type' => $request->early_bird_discount['discount_type'],
@@ -264,7 +264,7 @@ class ActivityController extends Controller
             if ($request->has('last_minute_discount')) {
                 ActivityLastMinuteDiscount::create([
                     'activity_id' => $activity->id,
-                    'enable_last_minute_discount' => true,
+                    'enabled' => $request->last_minute_discount['enabled'],
                     'days_before_start' => $request->last_minute_discount['days_before_start'],
                     'discount_amount' => $request->last_minute_discount['discount_amount'],
                     'discount_type' => $request->last_minute_discount['discount_type'],
@@ -619,24 +619,9 @@ class ActivityController extends Controller
     
             $activity->save();
     
-            // // Handle relations that need a complete update (delete old and create new)
-            // $fullDeleteRelations = ['categories', 'tags', 'mediaGallery', 'attributes'];
-
-            // foreach ($fullDeleteRelations as $relation) {
-            //     if ($request->has($relation)) {
-            //         // Delete old relations first
-            //         $activity->$relation()->delete();
-
-            //         // Create new relations
-            //         foreach ($request->$relation as $item) {
-            //             $activity->$relation()->create($item);
-            //         }
-            //     }
-            // }
             $fullDeleteRelations = [
                 'categories' => 'category_id',
                 'tags' => 'tag_id',
-                'mediaGallery' => 'media_id',
             ];
             
             foreach ($fullDeleteRelations as $relation => $foreignKey) {
@@ -657,11 +642,22 @@ class ActivityController extends Controller
             if ($request->has('attributes')) {
                 $activity->attributes()->delete();
             
-                $attributes = collect($request->attributes)->map(function ($attr) use ($activity) {
+                $attributes = collect($request->input('attributes'))->map(function ($attr) use ($activity) {
                     return array_merge($attr, ['activity_id' => $activity->id]);
                 })->toArray();
             
                 $activity->attributes()->createMany($attributes);
+            }  
+            
+            // Handle Media (requires full object)
+            if ($request->has('media_gallery')) {
+                $activity->mediaGallery()->delete();
+            
+                $mediaGallery = collect($request->input('media_gallery'))->map(function ($item) use ($activity) {
+                    return array_merge($item, ['activity_id' => $activity->id]);
+                })->toArray();
+            
+                $activity->mediaGallery()->createMany($mediaGallery);
             }
 
             $updateOrCreateRelation = function ($relationName, $data) use ($activity) {
@@ -679,16 +675,12 @@ class ActivityController extends Controller
                 }
             };
     
-            // foreach (['locations', 'categories', 'tags', 'mediaGallery'] as $relation) {
-            foreach (['locations', 'seasonal_pricing', 'group_discounts', 'early_bird_discount', 'last_minute_discount', 'promo_codes', 'availability'] as $relation) {
+            foreach (['locations'] as $relation) {
+            // foreach (['locations', 'seasonalPricing', 'group_discounts', 'early_bird_discount', 'last_minute_discount', 'promo_codes', 'availability'] as $relation) {
                 if ($request->has($relation)) {
                     $updateOrCreateRelation($relation, $request->$relation);
                 }
             }
-    
-            // if ($request->has('attributes')) {
-            //     $updateOrCreateRelation('attributes', $request->input('attributes'));
-            // }
     
             $pricing = $activity->pricing()->first();
     
@@ -697,27 +689,29 @@ class ActivityController extends Controller
                 $pricing->fill($request->pricing)->save();
             }
     
-            // $updateOrCreateChild = function ($data, $modelClass, $foreignKey) use ($pricing) {
-            //     foreach ($data as $item) {
-            //         if (!empty($item['id'])) {
-            //             $model = $modelClass::find($item['id']);
-            //             if ($model) {
-            //                 $model->fill($item)->save();
-            //             }
-            //         } else {
-            //             $item[$foreignKey] = $pricing->id;
-            //             $modelClass::create($item);
-            //         }
-            //     }
-            // };
+            $updateOrCreateChild = function ($data, $modelClass, $foreignKey) use ($pricing, $activity) {
+                foreach ($data as $item) {
+                    if (!empty($item['id'])) {
+                        $model = $modelClass::find($item['id']);
+                        if ($model) {
+                            $model->fill($item)->save();
+                        }
+                    } else {
+                        $item[$foreignKey] = $pricing->id;
+                        $item['activity_id'] = $activity->id;
+                        $modelClass::create($item);
+                    }
+                }
+            };
     
-            // if ($request->has('seasonal_pricing')) {
-            //     $updateOrCreateChild($request->seasonal_pricing, \App\Models\ActivitySeasonalPricing::class, 'base_pricing_id');
-            // }
-    
-            // if ($request->has('group_discounts')) {
-            //     $updateOrCreateChild($request->group_discounts, \App\Models\ActivityGroupDiscount::class, 'base_pricing_id');
-            // }
+            
+            if ($request->has('seasonal_pricing')) {
+                $updateOrCreateChild($request->seasonal_pricing, \App\Models\ActivitySeasonalPricing::class, 'base_pricing_id');
+            }
+            
+            if ($request->has('group_discounts')) {
+                $updateOrCreateChild($request->group_discounts, \App\Models\ActivityGroupDiscount::class, 'base_pricing_id');
+            }
     
             // if ($request->has('early_bird_discount')) {
             //     $updateOrCreateChild([$request->early_bird_discount], \App\Models\ActivityEarlyBirdDiscount::class, 'base_pricing_id');
@@ -726,26 +720,38 @@ class ActivityController extends Controller
             // if ($request->has('last_minute_discount')) {
             //     $updateOrCreateChild([$request->last_minute_discount], \App\Models\ActivityLastMinuteDiscount::class, 'base_pricing_id');
             // }
+
+            // Early Bird Discount
+            if ($request->has('early_bird_discount')) {
+                $earlyBird = $activity->earlyBirdDiscount()->firstOrCreate([]);
+                $earlyBird->fill($request->early_bird_discount)->save();
+            }
+
+            // Last Minute Discount
+            if ($request->has('last_minute_discount')) {
+                $lastMinute = $activity->lastMinuteDiscount()->firstOrCreate([]);
+                $lastMinute->fill($request->last_minute_discount)->save();
+            }
     
-            // if ($request->has('promo_codes')) {
-            //     $updateOrCreateChild($request->promo_codes, \App\Models\ActivityPromoCode::class, 'base_pricing_id');
-            // }
+            if ($request->has('promo_codes')) {
+                $updateOrCreateChild($request->promo_codes, \App\Models\ActivityPromoCode::class, 'base_pricing_id');
+            }
     
-            // if ($request->has('availability')) {
-            //     $availabilityData = $request->availability;
+            if ($request->has('availability')) {
+                $availabilityData = $request->availability;
             
-            //     // Only nullify if explicitly set to false
-            //     if (array_key_exists('date_based_activity', $availabilityData) && $availabilityData['date_based_activity'] === false) {
-            //         $availabilityData['start_date'] = null;
-            //         $availabilityData['end_date'] = null;
-            //     }
+                // Only nullify if explicitly set to false
+                if (array_key_exists('date_based_activity', $availabilityData) && $availabilityData['date_based_activity'] === false) {
+                    $availabilityData['start_date'] = null;
+                    $availabilityData['end_date'] = null;
+                }
             
-            //     if (array_key_exists('quantity_based_activity', $availabilityData) && $availabilityData['quantity_based_activity'] === false) {
-            //         $availabilityData['max_quantity'] = null;
-            //     }
+                if (array_key_exists('quantity_based_activity', $availabilityData) && $availabilityData['quantity_based_activity'] === false) {
+                    $availabilityData['max_quantity'] = null;
+                }
             
-            //     $activity->availability()->updateOrCreate([], $availabilityData);
-            // }
+                $activity->availability()->updateOrCreate([], $availabilityData);
+            }
 
             DB::commit();
     

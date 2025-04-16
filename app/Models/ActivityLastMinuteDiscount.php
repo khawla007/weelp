@@ -8,10 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class ActivityLastMinuteDiscount extends Model {
     use HasFactory;
 
-    protected $fillable = ['activity_id', 'enable_last_minute_discount', 'days_before_start', 'discount_amount', 'discount_type'];
+    protected $fillable = ['activity_id', 'enabled', 'days_before_start', 'discount_amount', 'discount_type'];
 
     protected $casts = [
-        'enable_last_minute_discount' => 'boolean'
+        'enabled' => 'boolean'
     ];
 
     public function activity() {

@@ -183,7 +183,7 @@ class ActivitySeeder extends Seeder {
             // if ($pricing->enable_early_bird_discount) {
                 ActivityEarlyBirdDiscount::create([
                     'activity_id' => $activity->id,
-                    'enable_early_bird_discount' => true,
+                    'enabled' => true,
                     'days_before_start' => rand(10, 30),
                     'discount_amount' => rand(5, 20),
                     'discount_type' => 'percentage'
@@ -194,7 +194,7 @@ class ActivitySeeder extends Seeder {
             // if ($pricing->enable_last_minute_discount) {
                 ActivityLastMinuteDiscount::create([
                     'activity_id' => $activity->id,
-                    'enable_last_minute_discount' => true,
+                    'enabled' => true,
                     'days_before_start' => rand(1, 5),
                     'discount_amount' => rand(5, 15),
                     'discount_type' => 'fixed'

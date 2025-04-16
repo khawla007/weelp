@@ -152,7 +152,7 @@ class ItineraryController extends Controller
     {
         $rules = [
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|unique:Itinerarys,slug',
+            'slug' => 'required|string|unique:Itineraries,slug',
             'description' => 'nullable|string',
             'featured_itinerary' => 'boolean',
             'private_itinerary' => 'boolean',
@@ -199,11 +199,19 @@ class ItineraryController extends Controller
             }
     
             // === Locations ===
+            // if ($request->has('locations')) {
+            //     foreach ($request->locations as $location) {
+            //         ItineraryLocation::create([
+            //             'itinerary_id' => $itinerary->id,
+            //             'city_id' => $location['city_id'],
+            //         ]);
+            //     }
+            // }
             if ($request->has('locations')) {
-                foreach ($request->locations as $location) {
+                foreach ($request->locations as $cityId) {
                     ItineraryLocation::create([
                         'itinerary_id' => $itinerary->id,
-                        'city_id' => $location['city_id'],
+                        'city_id' => $cityId,
                     ]);
                 }
             }
@@ -211,12 +219,15 @@ class ItineraryController extends Controller
             // === Schedules ===
             $scheduleMap = [];
             if ($request->has('schedules')) {
-                foreach ($request->schedules as $schedule) {
+                // foreach ($request->schedules as $schedule) {
+                foreach ($request->schedules as $day) {
                     $record = ItinerarySchedule::create([
                         'itinerary_id' => $itinerary->id,
-                        'day' => $schedule['day'],
+                        // 'day' => $schedule['day'],
+                        'day' => $day,
                     ]);
-                    $scheduleMap[$schedule['day']] = $record->id;
+                    // $scheduleMap[$schedule['day']] = $record->id;
+                    $scheduleMap[$day] = $record->id;
                 }
             }
     
@@ -770,7 +781,7 @@ class ItineraryController extends Controller
     
         $rules = [
             'name' => 'sometimes|string|max:255',
-            'slug' => 'sometimes|string|unique:itinerarys,slug,' . $itinerary->id,
+            'slug' => 'sometimes|string|unique:itineraries,slug,' . $itinerary->id,
             'description' => 'nullable|string',
             'featured_itinerary' => 'boolean',
             'private_itinerary' => 'boolean',
