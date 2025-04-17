@@ -178,6 +178,6 @@ class VendorSeeder extends Seeder {
         }
 
 
-        echo "✅ Vendor Seeder Successfully Executed!\n";
+        echo "Vendor Seeder Successfully Executed!\n";
     }
 }

@@ -198,15 +198,6 @@ class ItineraryController extends Controller
                 }
             }
     
-            // === Locations ===
-            // if ($request->has('locations')) {
-            //     foreach ($request->locations as $location) {
-            //         ItineraryLocation::create([
-            //             'itinerary_id' => $itinerary->id,
-            //             'city_id' => $location['city_id'],
-            //         ]);
-            //     }
-            // }
             if ($request->has('locations')) {
                 foreach ($request->locations as $cityId) {
                     ItineraryLocation::create([

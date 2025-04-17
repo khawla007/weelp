@@ -128,9 +128,9 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
 
     // Admin Side vendors route
     Route::prefix('/vendors')->group(function () {
-        Route::post('/', [VendorController::class, 'save']); // Create
-        Route::put('/{id}', [VendorController::class, 'save']); // Update
-        Route::patch('/{id}', [VendorController::class, 'save']); // Partial Update
+        Route::post('/', [VendorController::class, 'store']); // Create
+        Route::put('/{id}', [VendorController::class, 'update']); // Update
+        Route::patch('/{id}', [VendorController::class, 'update']); // Partial Update
         Route::get('/', [VendorController::class, 'index']);      // List vendors
         Route::get('/{id}', [VendorController::class, 'show']); // Show a vendor
         Route::delete('/{id}', [VendorController::class, 'destroy']);  // Delete vendor
