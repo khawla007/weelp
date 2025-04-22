@@ -128,12 +128,15 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
 
     // Admin Side vendors route
     Route::prefix('/vendors')->group(function () {
-        Route::post('/', [VendorController::class, 'store']); // Create
-        Route::put('/{id}', [VendorController::class, 'update']); // Update
-        Route::patch('/{id}', [VendorController::class, 'update']); // Partial Update
+        // Route::post('/', [VendorController::class, 'store']); // Create
+        // Route::put('/{id}', [VendorController::class, 'update']); // Update
+        // Route::patch('/{id}', [VendorController::class, 'update']); // Partial Update
         Route::get('/', [VendorController::class, 'index']);      // List vendors
         Route::get('/{id}', [VendorController::class, 'show']); // Show a vendor
         Route::delete('/{id}', [VendorController::class, 'destroy']);  // Delete vendor
+        Route::post('/store/{request_type}', [VendorController::class, 'store']);
+        Route::put('/update/{request_type}/{id}', [VendorController::class, 'update']);
+        // Route::delete('/relation/{request-type}/{id}', [VendorController::class, 'destroy']);
     });
 
     // Admin Side Transfer route

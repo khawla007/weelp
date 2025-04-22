@@ -95,147 +95,508 @@ class VendorController extends Controller
 
     /**
      * Store a newly created vendors in storage.
-     */
-    public function store(Request $request)
+    */
+    // public function store(Request $request)
+    // {
+    //     $rules = [
+    //         'name' => 'required|string|max:255',
+    //         'description' => 'nullable|string',
+    //         'email' => 'required|email|unique:vendors,email',
+    //         'phone' => 'nullable|string',
+    //         'address' => 'nullable|string',
+    //         'status' => 'nullable|string',
+    
+    //         'routes' => 'nullable|array',
+    //         'pricing_tiers' => 'nullable|array',
+    //         'vehicles' => 'nullable|array',
+    //         'drivers' => 'nullable|array',
+    //         'driver_schedules' => 'nullable|array',
+    //         'availability_time_slots' => 'nullable|array',
+    //     ];
+    
+    //     $request->validate($rules);
+    
+    //     try {
+    //         DB::beginTransaction();
+    
+    //         $vendor = Vendor::create([
+    //             'name' => $request->name,
+    //             'description' => $request->description,
+    //             'email' => $request->email,
+    //             'phone' => $request->phone,
+    //             'address' => $request->address,
+    //             'status' => $request->status ?? 'Active',
+    //         ]);
+    
+    //         // === Routes ===
+    //         foreach ($request->routes ?? [] as $route) {
+    //             VendorRoute::create([
+    //                 'vendor_id' => $vendor->id,
+    //                 'name' => $route['name'],
+    //                 'description' => $route['description'] ?? null,
+    //                 'start_point' => $route['start_point'],
+    //                 'end_point' => $route['end_point'],
+    //                 'base_price' => $route['base_price'],
+    //                 'price_per_km' => $route['price_per_km'],
+    //                 'status' => $route['status'] ?? 'Active',
+    //             ]);
+    //         }
+    
+    //         // === Pricing Tiers ===
+    //         foreach ($request->pricing_tiers ?? [] as $tier) {
+    //             VendorPricingTier::create([
+    //                 'vendor_id' => $vendor->id,
+    //                 'name' => $tier['name'],
+    //                 'description' => $tier['description'] ?? null,
+    //                 'base_price' => $tier['base_price'],
+    //                 'price_per_km' => $tier['price_per_km'],
+    //                 'min_distance' => $tier['min_distance'],
+    //                 'waiting_charge' => $tier['waiting_charge'],
+    //                 'night_charge_multiplier' => $tier['night_charge_multiplier'],
+    //                 'peak_hour_multiplier' => $tier['peak_hour_multiplier'],
+    //                 'status' => $tier['status'] ?? 'Active',
+    //             ]);
+    //         }
+    
+    //         // === Vehicles ===
+    //         foreach ($request->vehicles ?? [] as $vehicle) {
+    //             $vehicleModel = VendorVehicle::create([
+    //                 'vendor_id' => $vendor->id,
+    //                 'vehicle_type' => $vehicle['vehicle_type'],
+    //                 'capacity' => $vehicle['capacity'],
+    //                 'make' => $vehicle['make'],
+    //                 'model' => $vehicle['model'],
+    //                 'year' => $vehicle['year'],
+    //                 'license_plate' => $vehicle['license_plate'],
+    //                 'features' => $vehicle['features'] ?? null,
+    //                 'status' => $vehicle['status'] ?? 'Active',
+    //                 'last_maintenance' => $vehicle['last_maintenance'] ?? now(),
+    //                 'next_maintenance' => $vehicle['next_maintenance'] ?? now()->addMonth(),
+    //             ]);
+    //         }
+    
+    //         // === Driver (Global, not vehicle specific) ===
+    //         foreach ($request->drivers ?? [] as $driver) {
+    //             VendorDriver::create([
+    //                 'vendor_id' => $vendor->id,
+    //                 'first_name' => $driver['first_name'], // make sure this ID exists
+    //                 'last_name' => $driver['last_name'],
+    //                 'email' => $driver['email'],
+    //                 'phone' => $driver['phone'],
+    //                 'license_number' => $driver['license_number'],
+    //                 'license_expiry' => $driver['license_expiry'],
+    //                 'status' => $driver['status'],
+    //                 'assigned_vehicle_id' => $driver['assigned_vehicle_id'],
+    //                 'languages' => $driver['languages'],
+    //             ]);
+    //         }
+
+    //         // === Driver Schedule (Global, not vehicle specific) ===
+    //         foreach ($request->driver_schedules ?? [] as $schedule) {
+    //             VendorDriverSchedule::create([
+    //                 'driver_id' => $schedule['driver_id'], 
+    //                 'vehicle_id' => $schedule['vehicle_id'],
+    //                 'date' => $schedule['date'],
+    //                 'shift' => $schedule['shift'],
+    //                 'time' => $schedule['time'],
+    //             ]);
+    //         }
+
+    //         // === Availability Time Slots (Global, not vehicle specific) ===
+    //         foreach ($request->availability_time_slots ?? [] as $slot) {
+    //             VendorAvailabilityTimeSlot::create([
+    //                 'vendor_id' => $vendor->id,
+    //                 'vehicle_id' => $slot['vehicle_id'], // make sure this ID exists
+    //                 'date' => $slot['date'],
+    //                 'start_time' => $slot['start_time'],
+    //                 'end_time' => $slot['end_time'],
+    //                 'max_bookings' => $slot['max_bookings'],
+    //                 'price_multiplier' => $slot['price_multiplier'],
+    //             ]);
+    //         }
+    
+    //         DB::commit();
+    
+    //         return response()->json([
+    //             'message' => 'Vendor created successfully',
+    //             'vendor' => $vendor
+    //         ], 201);
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return response()->json([
+    //             'error' => 'Something went wrong',
+    //             'details' => $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }    
+
+    public function store(Request $request, $requestType)
     {
-        $rules = [
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'email' => 'required|email|unique:vendors,email',
-            'phone' => 'nullable|string',
-            'address' => 'nullable|string',
-            'status' => 'nullable|string',
-    
-            'routes' => 'nullable|array',
-            'pricing_tiers' => 'nullable|array',
-            'vehicles' => 'nullable|array',
-            'drivers' => 'nullable|array',
-            'driver_schedules' => 'nullable|array',
-            'availability_time_slots' => 'nullable|array',
-        ];
-    
-        $request->validate($rules);
-    
-        try {
-            DB::beginTransaction();
-    
-            $vendor = Vendor::create([
-                'name' => $request->name,
-                'description' => $request->description,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'address' => $request->address,
-                'status' => $request->status ?? 'Active',
-            ]);
-    
-            // === Routes ===
-            foreach ($request->routes ?? [] as $route) {
-                VendorRoute::create([
-                    'vendor_id' => $vendor->id,
-                    'name' => $route['name'],
-                    'description' => $route['description'] ?? null,
-                    'start_point' => $route['start_point'],
-                    'end_point' => $route['end_point'],
-                    'base_price' => $route['base_price'],
-                    'price_per_km' => $route['price_per_km'],
-                    'status' => $route['status'] ?? 'Active',
-                ]);
-            }
-    
-            // === Pricing Tiers ===
-            foreach ($request->pricing_tiers ?? [] as $tier) {
-                VendorPricingTier::create([
-                    'vendor_id' => $vendor->id,
-                    'name' => $tier['name'],
-                    'description' => $tier['description'] ?? null,
-                    'base_price' => $tier['base_price'],
-                    'price_per_km' => $tier['price_per_km'],
-                    'min_distance' => $tier['min_distance'],
-                    'waiting_charge' => $tier['waiting_charge'],
-                    'night_charge_multiplier' => $tier['night_charge_multiplier'],
-                    'peak_hour_multiplier' => $tier['peak_hour_multiplier'],
-                    'status' => $tier['status'] ?? 'Active',
-                ]);
-            }
-    
-            // === Vehicles ===
-            foreach ($request->vehicles ?? [] as $vehicle) {
-                $vehicleModel = VendorVehicle::create([
-                    'vendor_id' => $vendor->id,
-                    'vehicle_type' => $vehicle['vehicle_type'],
-                    'capacity' => $vehicle['capacity'],
-                    'make' => $vehicle['make'],
-                    'model' => $vehicle['model'],
-                    'year' => $vehicle['year'],
-                    'license_plate' => $vehicle['license_plate'],
-                    'features' => $vehicle['features'] ?? null,
-                    'status' => $vehicle['status'] ?? 'Active',
-                    'last_maintenance' => $vehicle['last_maintenance'] ?? now(),
-                    'next_maintenance' => $vehicle['next_maintenance'] ?? now()->addMonth(),
-                ]);
-            }
-    
-            // === Driver (Global, not vehicle specific) ===
-            foreach ($request->drivers ?? [] as $driver) {
-                VendorDriver::create([
-                    'vendor_id' => $vendor->id,
-                    'first_name' => $driver['first_name'], // make sure this ID exists
-                    'last_name' => $driver['last_name'],
-                    'email' => $driver['email'],
-                    'phone' => $driver['phone'],
-                    'license_number' => $driver['license_number'],
-                    'license_expiry' => $driver['license_expiry'],
-                    'status' => $driver['status'],
-                    'assigned_vehicle_id' => $driver['assigned_vehicle_id'],
-                    'languages' => $driver['languages'],
-                ]);
-            }
-
-            // === Driver Schedule (Global, not vehicle specific) ===
-            foreach ($request->driver_schedules ?? [] as $schedule) {
-                VendorDriverSchedule::create([
-                    'driver_id' => $schedule['driver_id'], 
-                    'vehicle_id' => $schedule['vehicle_id'],
-                    'date' => $schedule['date'],
-                    'shift' => $schedule['shift'],
-                    'time' => $schedule['time'],
-                ]);
-            }
-
-            // === Availability Time Slots (Global, not vehicle specific) ===
-            foreach ($request->availability_time_slots ?? [] as $slot) {
-                VendorAvailabilityTimeSlot::create([
-                    'vendor_id' => $vendor->id,
-                    'vehicle_id' => $slot['vehicle_id'], // make sure this ID exists
-                    'date' => $slot['date'],
-                    'start_time' => $slot['start_time'],
-                    'end_time' => $slot['end_time'],
-                    'max_bookings' => $slot['max_bookings'],
-                    'price_multiplier' => $slot['price_multiplier'],
-                ]);
-            }
-    
-            DB::commit();
-    
-            return response()->json([
-                'message' => 'Vendor created successfully',
-                'vendor' => $vendor
-            ], 201);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'error' => 'Something went wrong',
-                'details' => $e->getMessage(),
-            ], 500);
+        $type = str_replace('-', '_', $requestType);
+        switch ($type) {
+            case 'vendor':
+                return $this->storeVendor($request);
+            case 'route':
+                return $this->storeRoute($request);
+            case 'pricing_tier':
+                return $this->storePricingTier($request);
+            case 'vehicle':
+                return $this->storeVehicle($request);
+            case 'driver':
+                return $this->storeDriver($request);
+            case 'schedule':
+                return $this->storeSchedule($request);
+            case 'availability_time_slot':
+                return $this->storeAvailabilityTimeSlot($request);
+            default:
+                return response()->json(['error' => 'Invalid type'], 400);
         }
-    }    
+    }
+
+    // === Store Methods ===
+    // Vendor Base table store
+    private function storeVendor($request)
+    {
+        $vendor = Vendor::create([
+            'name' => $request->name,
+            'description' => $request->description,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'address' => $request->address,
+            'status' => $request->status ?? 'Active',
+        ]);
+
+        return response()->json([
+            'message' => 'Vendor created successfully',
+            'data' => $vendor
+        ], 201); // 201 = Created
+    }
+
+    // Pricing Tier store
+    private function storePricingTier($request)
+    {
+        $vendorPricingTier = VendorPricingTier::create([
+            'vendor_id' => $request->vendor_id,
+            'name' => $request->name,
+            'description' => $request->description,
+            'base_price' => $request->base_price,
+            'price_per_km' => $request->price_per_km,
+            'min_distance' => $request->min_distance,
+            'waiting_charge' => $request->waiting_charge,
+            'night_charge_multiplier' => $request->night_charge_multiplier,
+            'peak_hour_multiplier' => $request->peak_hour_multiplier,
+            'status' => $request->status ?? 'Active',
+        ]);
+
+        return response()->json([
+            'message' => 'Vendor Pricing Tier created successfully',
+            'data' => $vendorPricingTier
+        ], 201); // 201 = Created
+    }
+
+    // Route store
+    private function storeRoute($request)
+    {
+        $vendorRoute = VendorRoute::create([
+            'vendor_id' => $request->vendor_id,
+            'name' => $request->name,
+            'description' => $request->description ?? null,
+            'start_point' => $request->start_point,
+            'end_point' => $request->end_point,
+            'base_price' => $request->base_price,
+            'price_per_km' => $request->price_per_km,
+            'status' => $request->status ?? 'Active',
+        ]);
+
+        return response()->json([
+            'message' => 'Vendor Route created successfully',
+            'data' => $vendorRoute
+        ], 201); // 201 = Created
+    }
+
+    // Vehicle store
+    private function storeVehicle($request)
+    {
+        $vendorVehicle = VendorVehicle::create([
+            'vendor_id' => $request->vendor_id,
+            'vehicle_type' => $request->vehicle_type,
+            'capacity' => $request->capacity,
+            'make' => $request->make,
+            'model' => $request->model,
+            'year' => $request->year,
+            'license_plate' => $request->license_plate,
+            'features' => $request->features ?? null,
+            'status' => $request->status ?? 'Active',
+            'last_maintenance' => $request->last_maintenance ?? now(),
+            'next_maintenance' => $request->next_maintenance ?? now()->addMonth(),
+        ]);
+
+        return response()->json([
+            'message' => 'Vendor Vehicle created successfully',
+            'data' => $vendorVehicle
+        ], 201);
+    }
+
+    // Driver store
+    private function storeDriver($request)
+    {
+        $vendorDriver = VendorDriver::create([
+            'vendor_id' => $request->vendor_id,
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'license_number' => $request->license_number,
+            'license_expiry' => $request->license_expiry,
+            'status' => $request->status ?? 'Active',
+            'assigned_vehicle_id' => $request->assigned_vehicle_id,
+            'languages' => $request->languages,
+        ]);
+
+        return response()->json([
+            'message' => 'Vendor Driver created successfully',
+            'data' => $vendorDriver
+        ], 201); // 201 = Created
+    }
+
+    // Schedule store
+    private function storeSchedule($request)
+    {
+        $vendorDriverSchedule = VendorDriverSchedule::create([
+            'driver_id' => $request->driver_id,
+            'vehicle_id' => $request->vehicle_id,
+            'date' => $request->date,
+            'shift' => $request->shift,
+            'time' => $request->time,
+        ]);
+
+        return response()->json([
+            'message' => 'Vendor Driver Schedule created successfully',
+            'data' => $vendorDriverSchedule
+        ], 201); // 201 = Created
+    }
+
+    // Availability Time Slot store
+    private function storeAvailabilityTimeSlot($request)
+    {
+        $vendorAvailabilityTimeSlot = VendorAvailabilityTimeSlot::create([
+            'vendor_id' => $request->vendor_id,
+            'vehicle_id' => $request->vehicle_id,
+            'date' => $request->date,
+            'start_time' => $request->start_time,
+            'end_time' => $request->end_time,
+            'max_bookings' => $request->max_bookings,
+            'price_multiplier' => $request->price_multiplier,
+        ]);
+
+        return response()->json([
+            'message' => 'Vendor Availability Time Slot created successfully',
+            'data' => $vendorAvailabilityTimeSlot
+        ], 201); // 201 = Created
+    }
+
+    // === Update function ===
+    public function update(Request $request, $requestType, $id)
+    {
+        $type = str_replace('-', '_', $requestType);
+        switch ($type) {
+            case 'vendor':
+                return $this->updateVendor($request, $id);
+            case 'route':
+                return $this->updateRoute($request, $id);
+            case 'pricing_tier':
+                return $this->updatePricingTiers($request);
+            case 'vehicle':
+                return $this->updateVehicle($request, $id);
+            case 'driver':
+                return $this->updateDriver($request, $id);
+            case 'schedule':
+                return $this->updateSchedule($request, $id);
+            case 'availability_time_slot':
+                return $this->updateAvailabilityTimeSlot($request);
+            default:
+                return response()->json(['error' => 'Invalid type'], 400);
+        }
+    }
+
+    // === Update Methods ===
+    // Vendor Base table update
+    private function updateVendor($request, $id)
+    {
+        $vendor = Vendor::findOrFail($id);
+
+        $vendor->update([
+            'name' => $request->name ?? $vendor->name,
+            'description' => $request->description ?? $vendor->description,
+            'email' => $request->email ?? $vendor->email,
+            'phone' => $request->phone ?? $vendor->phone,
+            'address' => $request->address ?? $vendor->address,
+            'status' => $request->status ?? $vendor->status,
+        ]);
+
+        return response()->json([
+            'message' => 'Vendor updated successfully',
+            'data' => $vendor
+        ]);
+    }
+
+    private function updateRoute(Request $request, $id)
+    {
+        $route = VendorRoute::findOrFail($id);
+
+        $route->update([
+            'vendor_id' => $request->vendor_id ?? $route->vendor_id,
+            'name' => $request->name ?? $route->name,
+            'description' => $request->description ?? $route->description,
+            'start_point' => $request->start_point ?? $route->start_point,
+            'end_point' => $request->end_point ?? $route->end_point,
+            'base_price' => $request->base_price ?? $route->base_price,
+            'price_per_km' => $request->price_per_km ?? $route->price_per_km,
+            'status' => $request->status ?? $route->status,
+        ]);
+
+        return response()->json([
+            'message' => 'Vendor Route updated successfully',
+            'data' => $route
+        ]);
+    }
+
+    private function updatePricingTiers(Request $request, $id)
+    {
+        $tier = VendorPricingTier::findOrFail($id);
+    
+        $tier->update([
+            'vendor_id' => $request->vendor_id ?? $tier->vendor_id,
+            'name' => $request->name ?? $tier->name,
+            'description' => $request->description ?? $tier->description,
+            'base_price' => $request->base_price ?? $tier->base_price,
+            'price_per_km' => $request->price_per_km ?? $tier->price_per_km,
+            'min_distance' => $request->min_distance ?? $tier->min_distance,
+            'waiting_charge' => $request->waiting_charge ?? $tier->waiting_charge,
+            'night_charge_multiplier' => $request->night_charge_multiplier ?? $tier->night_charge_multiplier,
+            'peak_hour_multiplier' => $request->peak_hour_multiplier ?? $tier->peak_hour_multiplier,
+            'status' => $request->status ?? $tier->status,
+        ]);
+    
+        return response()->json([
+            'message' => 'Vendor Pricing Tier updated successfully',
+            'data' => $tier
+        ]);
+    }
+    
+    private function updateVehicle(Request $request, $id)
+    {
+        $vehicle = VendorVehicle::findOrFail($id);
+    
+        $vehicle->update([
+            'vendor_id' => $request->vendor_id ?? $vehicle->vendor_id,
+            'vehicle_type' => $request->vehicle_type ?? $vehicle->vehicle_type,
+            'capacity' => $request->capacity ?? $vehicle->capacity,
+            'make' => $request->make ?? $vehicle->make,
+            'model' => $request->model ?? $vehicle->model,
+            'year' => $request->year ?? $vehicle->year,
+            'license_plate' => $request->license_plate ?? $vehicle->license_plate,
+            'features' => $request->features ?? $vehicle->features,
+            'status' => $request->status ?? $vehicle->status,
+            'last_maintenance' => $request->last_maintenance ?? $vehicle->last_maintenance,
+            'next_maintenance' => $request->next_maintenance ?? $vehicle->next_maintenance,
+        ]);
+    
+        return response()->json([
+            'message' => 'Vendor Vehicle updated successfully',
+            'data' => $vehicle
+        ]);
+    }
+
+    private function updateDriver(Request $request, $id)
+    {
+        $driver = VendorDriver::findOrFail($id);
+    
+        $driver->update([
+            'vendor_id' => $request->vendor_id ?? $driver->vendor_id,
+            'first_name' => $request->first_name ?? $driver->first_name,
+            'last_name' => $request->last_name ?? $driver->last_name,
+            'email' => $request->email ?? $driver->email,
+            'phone' => $request->phone ?? $driver->phone,
+            'license_number' => $request->license_number ?? $driver->license_number,
+            'license_expiry' => $request->license_expiry ?? $driver->license_expiry,
+            'status' => $request->status ?? $driver->status,
+            'assigned_vehicle_id' => $request->assigned_vehicle_id ?? $driver->assigned_vehicle_id,
+            'languages' => $request->languages ?? $driver->languages,
+        ]);
+    
+        return response()->json([
+            'message' => 'Vendor Driver updated successfully',
+            'data' => $driver
+        ]);
+    }
+
+    private function updateSchedule(Request $request, $id)
+    {
+        $schedule = VendorDriverSchedule::findOrFail($id);
+    
+        $schedule->update([
+            'driver_id' => $request->driver_id ?? $schedule->driver_id,
+            'vehicle_id' => $request->vehicle_id ?? $schedule->vehicle_id,
+            'date' => $request->date ?? $schedule->date,
+            'shift' => $request->shift ?? $schedule->shift,
+            'time' => $request->time ?? $schedule->time,
+        ]);
+    
+        return response()->json([
+            'message' => 'Vendor Driver Schedule updated successfully',
+            'data' => $schedule
+        ]);
+    }
+
+    private function updateAvailabilityTimeSlot(Request $request, $id)
+    {
+        $slot = VendorAvailabilityTimeSlot::findOrFail($id);
+    
+        $slot->update([
+            'vendor_id' => $request->vendor_id ?? $slot->vendor_id,
+            'vehicle_id' => $request->vehicle_id ?? $slot->vehicle_id,
+            'date' => $request->date ?? $slot->date,
+            'start_time' => $request->start_time ?? $slot->start_time,
+            'end_time' => $request->end_time ?? $slot->end_time,
+            'max_bookings' => $request->max_bookings ?? $slot->max_bookings,
+            'price_multiplier' => $request->price_multiplier ?? $slot->price_multiplier,
+        ]);
+    
+        return response()->json([
+            'message' => 'Vendor Availability Time Slot updated successfully',
+            'data' => $slot
+        ]);
+    }
+    
+    // public function destroy($requestType, $id)
+    // {
+    //     switch ($requestType) {
+    //         case 'vendor':
+    //             return Vendors::destroy($id);
+    //         case 'route':
+    //             return VendorRoute::destroy($id);
+    //         case 'pricing_tier':
+    //             return VendorPricingTiers::destroy($id);
+    //         case 'vehicle':
+    //             return VendorVehicle::destroy($id);
+    //         case 'driver':
+    //             return VendorDriver::destroy($id);
+    //         case 'schedule':
+    //             return VendorSchedule::destroy($id);
+    //         case 'availability_time_slot':
+    //             return VendorAvilabilityTimeSlot::destroy($id);
+    //         default:
+    //             return response()->json(['error' => 'Invalid type'], 400);
+    //     }
+    // }
 
     /**
      * Display the specified vendors.
      */
     public function show(string $id)
     {
-        $vendor = Vendor::with(['routes', 'pricingTiers', 'vehicles', 'drivers'])->find($id);
+        $vendor = Vendor::with(['routes', 'pricingTiers', 'vehicles', 'drivers', 'availabilityTimeSlots'])->find($id);
 
         if (!$vendor) {
             return response()->json(['message' => 'Vendor not found'], 404);
@@ -248,281 +609,164 @@ class VendorController extends Controller
      * Update the specified vendors in storage.
      */
     // public function update(Request $request, string $id)
-    public function update(Request $request, $id)
-    {
-        $vendor = Vendor::findOrFail($id);
-    
-        $rules = [
-            'name' => 'sometimes|required|string|max:255',
-            'description' => 'nullable|string',
-            'email' => 'sometimes|required|email|unique:vendors,email,' . $vendor->id,
-            'phone' => 'nullable|string',
-            'address' => 'nullable|string',
-            'status' => 'nullable|string',
-    
-            'routes' => 'nullable|array',
-            'pricing_tiers' => 'nullable|array',
-            'vehicles' => 'nullable|array',
-            'availability_time_slots' => 'nullable|array',
-        ];
-    
-        $request->validate($rules);
-    
-        try {
-            DB::beginTransaction();
-    
-            // === Update Vendor fields ===
-            $vendor->update($request->only([
-                'name', 'description', 'email', 'phone', 'address', 'status'
-            ]));
-    
-            // === Routes Partial Update or Create ===
-            foreach ($request->routes ?? [] as $route) {
-                if (isset($route['id'])) {
-                    VendorRoute::where('id', $route['id'])->update([
-                        'name' => $route['name'],
-                        'description' => $route['description'] ?? null,
-                        'start_point' => $route['start_point'],
-                        'end_point' => $route['end_point'],
-                        'base_price' => $route['base_price'],
-                        'price_per_km' => $route['price_per_km'],
-                        'status' => $route['status'] ?? 'Active',
-                    ]);
-                } else {
-                    VendorRoute::create([
-                        'vendor_id' => $vendor->id,
-                        'name' => $route['name'],
-                        'description' => $route['description'] ?? null,
-                        'start_point' => $route['start_point'],
-                        'end_point' => $route['end_point'],
-                        'base_price' => $route['base_price'],
-                        'price_per_km' => $route['price_per_km'],
-                        'status' => $route['status'] ?? 'Active',
-                    ]);
-                }
-            }
-    
-            // === Pricing Tiers Partial Update or Create ===
-            foreach ($request->pricing_tiers ?? [] as $tier) {
-                if (isset($tier['id'])) {
-                    VendorPricingTier::where('id', $tier['id'])->update([
-                        'name' => $tier['name'],
-                        'description' => $tier['description'] ?? null,
-                        'base_price' => $tier['base_price'],
-                        'price_per_km' => $tier['price_per_km'],
-                        'min_distance' => $tier['min_distance'],
-                        'waiting_charge' => $tier['waiting_charge'],
-                        'night_charge_multiplier' => $tier['night_charge_multiplier'],
-                        'peak_hour_multiplier' => $tier['peak_hour_multiplier'],
-                        'status' => $tier['status'] ?? 'Active',
-                    ]);
-                } else {
-                    VendorPricingTier::create([
-                        'vendor_id' => $vendor->id,
-                        'name' => $tier['name'],
-                        'description' => $tier['description'] ?? null,
-                        'base_price' => $tier['base_price'],
-                        'price_per_km' => $tier['price_per_km'],
-                        'min_distance' => $tier['min_distance'],
-                        'waiting_charge' => $tier['waiting_charge'],
-                        'night_charge_multiplier' => $tier['night_charge_multiplier'],
-                        'peak_hour_multiplier' => $tier['peak_hour_multiplier'],
-                        'status' => $tier['status'] ?? 'Active',
-                    ]);
-                }
-            }
-    
-            // === Vehicles Partial Update or Create ===
-            foreach ($request->vehicles ?? [] as $vehicle) {
-                if (isset($vehicle['id'])) {
-                    VendorVehicle::where('id', $vehicle['id'])->update([
-                        'vehicle_type' => $vehicle['vehicle_type'],
-                        'capacity' => $vehicle['capacity'],
-                        'make' => $vehicle['make'],
-                        'model' => $vehicle['model'],
-                        'year' => $vehicle['year'],
-                        'license_plate' => $vehicle['license_plate'],
-                        'features' => $vehicle['features'] ?? null,
-                        'status' => $vehicle['status'] ?? 'Active',
-                        'last_maintenance' => $vehicle['last_maintenance'] ?? now(),
-                        'next_maintenance' => $vehicle['next_maintenance'] ?? now()->addMonth(),
-                    ]);
-                } else {
-                    VendorVehicle::create([
-                        'vendor_id' => $vendor->id,
-                        'vehicle_type' => $vehicle['vehicle_type'],
-                        'capacity' => $vehicle['capacity'],
-                        'make' => $vehicle['make'],
-                        'model' => $vehicle['model'],
-                        'year' => $vehicle['year'],
-                        'license_plate' => $vehicle['license_plate'],
-                        'features' => $vehicle['features'] ?? null,
-                        'status' => $vehicle['status'] ?? 'Active',
-                        'last_maintenance' => $vehicle['last_maintenance'] ?? now(),
-                        'next_maintenance' => $vehicle['next_maintenance'] ?? now()->addMonth(),
-                    ]);
-                }
-            }
-    
-            // === Availability Time Slots Partial Update or Create ===
-            foreach ($request->availability_time_slots ?? [] as $slot) {
-                if (isset($slot['id'])) {
-                    VendorAvailabilityTimeSlot::where('id', $slot['id'])->update([
-                        'vehicle_id' => $slot['vehicle_id'],
-                        'date' => $slot['date'],
-                        'start_time' => $slot['start_time'],
-                        'end_time' => $slot['end_time'],
-                        'max_bookings' => $slot['max_bookings'],
-                        'price_multiplier' => $slot['price_multiplier'],
-                    ]);
-                } else {
-                    VendorAvailabilityTimeSlot::create([
-                        'vendor_id' => $vendor->id,
-                        'vehicle_id' => $slot['vehicle_id'],
-                        'date' => $slot['date'],
-                        'start_time' => $slot['start_time'],
-                        'end_time' => $slot['end_time'],
-                        'max_bookings' => $slot['max_bookings'],
-                        'price_multiplier' => $slot['price_multiplier'],
-                    ]);
-                }
-            }
-    
-            DB::commit();
-    
-            return response()->json([
-                'message' => 'Vendor updated successfully',
-                'vendor' => $vendor
-            ], 200);
-    
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'error' => 'Something went wrong',
-                'details' => $e->getMessage(),
-            ], 500);
-        }
-    }    
-
-
-    /**
-     * Create & Update the specified vendors in storage.
-     */
-    // public function save(Request $request)
+    // public function update(Request $request, $id)
     // {
-    //     DB::beginTransaction();
-
+    //     $vendor = Vendor::findOrFail($id);
+    
+    //     $rules = [
+    //         'name' => 'sometimes|required|string|max:255',
+    //         'description' => 'nullable|string',
+    //         'email' => 'sometimes|required|email|unique:vendors,email,' . $vendor->id,
+    //         'phone' => 'nullable|string',
+    //         'address' => 'nullable|string',
+    //         'status' => 'nullable|string',
+    
+    //         'routes' => 'nullable|array',
+    //         'pricing_tiers' => 'nullable|array',
+    //         'vehicles' => 'nullable|array',
+    //         'availability_time_slots' => 'nullable|array',
+    //     ];
+    
+    //     $request->validate($rules);
+    
     //     try {
-    //         $data = $request->all();
-
-    //         // Check if updating or creating
-    //         $vendor = isset($data['id']) 
-    //             ? Vendor::findOrFail($data['id']) 
-    //             : new Vendor();
-
-    //         $vendor->fill($data);
-    //         $vendor->save();
-
-    //         $vendorId = $vendor->id;
-
-    //         // Sync Routes
-    //         if (isset($data['routes'])) {
-    //             foreach ($data['routes'] as $routeData) {
-    //                 $route = isset($routeData['id']) 
-    //                     ? VendorRoute::where('vendor_id', $vendorId)->find($routeData['id']) 
-    //                     : new VendorRoute();
-
-    //                 $route->fill(array_merge($routeData, ['vendor_id' => $vendorId]));
-    //                 $route->save();
+    //         DB::beginTransaction();
+    
+    //         // === Update Vendor fields ===
+    //         $vendor->update($request->only([
+    //             'name', 'description', 'email', 'phone', 'address', 'status'
+    //         ]));
+    
+    //         // === Routes Partial Update or Create ===
+    //         foreach ($request->routes ?? [] as $route) {
+    //             if (isset($route['id'])) {
+    //                 VendorRoute::where('id', $route['id'])->update([
+    //                     'name' => $route['name'],
+    //                     'description' => $route['description'] ?? null,
+    //                     'start_point' => $route['start_point'],
+    //                     'end_point' => $route['end_point'],
+    //                     'base_price' => $route['base_price'],
+    //                     'price_per_km' => $route['price_per_km'],
+    //                     'status' => $route['status'] ?? 'Active',
+    //                 ]);
+    //             } else {
+    //                 VendorRoute::create([
+    //                     'vendor_id' => $vendor->id,
+    //                     'name' => $route['name'],
+    //                     'description' => $route['description'] ?? null,
+    //                     'start_point' => $route['start_point'],
+    //                     'end_point' => $route['end_point'],
+    //                     'base_price' => $route['base_price'],
+    //                     'price_per_km' => $route['price_per_km'],
+    //                     'status' => $route['status'] ?? 'Active',
+    //                 ]);
     //             }
     //         }
-
-    //         // Sync Pricing Tiers
-    //         if (isset($data['pricing_tiers'])) {
-    //             foreach ($data['pricing_tiers'] as $tierData) {
-    //                 $tier = isset($tierData['id']) 
-    //                     ? VendorPricingTier::where('vendor_id', $vendorId)->find($tierData['id']) 
-    //                     : new VendorPricingTier();
-
-    //                 $tier->fill(array_merge($tierData, ['vendor_id' => $vendorId]));
-    //                 $tier->save();
+    
+    //         // === Pricing Tiers Partial Update or Create ===
+    //         foreach ($request->pricing_tiers ?? [] as $tier) {
+    //             if (isset($tier['id'])) {
+    //                 VendorPricingTier::where('id', $tier['id'])->update([
+    //                     'name' => $tier['name'],
+    //                     'description' => $tier['description'] ?? null,
+    //                     'base_price' => $tier['base_price'],
+    //                     'price_per_km' => $tier['price_per_km'],
+    //                     'min_distance' => $tier['min_distance'],
+    //                     'waiting_charge' => $tier['waiting_charge'],
+    //                     'night_charge_multiplier' => $tier['night_charge_multiplier'],
+    //                     'peak_hour_multiplier' => $tier['peak_hour_multiplier'],
+    //                     'status' => $tier['status'] ?? 'Active',
+    //                 ]);
+    //             } else {
+    //                 VendorPricingTier::create([
+    //                     'vendor_id' => $vendor->id,
+    //                     'name' => $tier['name'],
+    //                     'description' => $tier['description'] ?? null,
+    //                     'base_price' => $tier['base_price'],
+    //                     'price_per_km' => $tier['price_per_km'],
+    //                     'min_distance' => $tier['min_distance'],
+    //                     'waiting_charge' => $tier['waiting_charge'],
+    //                     'night_charge_multiplier' => $tier['night_charge_multiplier'],
+    //                     'peak_hour_multiplier' => $tier['peak_hour_multiplier'],
+    //                     'status' => $tier['status'] ?? 'Active',
+    //                 ]);
     //             }
     //         }
-
-    //         // Sync Vehicles
-    //         if (isset($data['vehicles'])) {
-    //             foreach ($data['vehicles'] as $vehicleData) {
-    //                 $vehicle = isset($vehicleData['id']) 
-    //                     ? VendorVehicle::where('vendor_id', $vendorId)->find($vehicleData['id']) 
-    //                     : new VendorVehicle();
-
-    //                 $vehicle->fill(array_merge($vehicleData, ['vendor_id' => $vendorId]));
-    //                 $vehicle->save();
-
-    //                 // Sync Availability Slots
-    //                 if (isset($vehicleData['availability_time_slots'])) {
-    //                     foreach ($vehicleData['availability_time_slots'] as $slotData) {
-    //                         $slot = isset($slotData['id']) 
-    //                             ? VendorAvailabilityTimeSlot::where('vendor_id', $vendorId)->where('vehicle_id', $vehicle->id)->find($slotData['id']) 
-    //                             : new VendorAvailabilityTimeSlot();
-
-    //                         $slot->fill(array_merge($slotData, [
-    //                             'vendor_id' => $vendorId,
-    //                             'vehicle_id' => $vehicle->id
-    //                         ]));
-    //                         $slot->save();
-    //                     }
-    //                 }
-
-    //                 // Sync Drivers
-    //                 if (isset($vehicleData['drivers'])) {
-    //                     foreach ($vehicleData['drivers'] as $driverData) {
-    //                         $driver = isset($driverData['id']) 
-    //                             ? VendorDriver::where('vendor_id', $vendorId)->find($driverData['id']) 
-    //                             : new VendorDriver();
-
-    //                         $driver->fill(array_merge($driverData, [
-    //                             'vendor_id' => $vendorId,
-    //                             'assigned_vehicle_id' => $vehicle->id,
-    //                         ]));
-    //                         $driver->save();
-
-    //                         // Sync Driver Schedules
-    //                         if (isset($driverData['schedules'])) {
-    //                             foreach ($driverData['schedules'] as $scheduleData) {
-    //                                 $schedule = isset($scheduleData['id']) 
-    //                                     ? VendorDriverSchedule::where('driver_id', $driver->id)->where('vehicle_id', $vehicle->id)->find($scheduleData['id']) 
-    //                                     : new VendorDriverSchedule();
-
-    //                                 $schedule->fill(array_merge($scheduleData, [
-    //                                     'driver_id' => $driver->id,
-    //                                     'vehicle_id' => $vehicle->id,
-    //                                 ]));
-    //                                 $schedule->save();
-    //                             }
-    //                         }
-    //                     }
-    //                 }
+    
+    //         // === Vehicles Partial Update or Create ===
+    //         foreach ($request->vehicles ?? [] as $vehicle) {
+    //             if (isset($vehicle['id'])) {
+    //                 VendorVehicle::where('id', $vehicle['id'])->update([
+    //                     'vehicle_type' => $vehicle['vehicle_type'],
+    //                     'capacity' => $vehicle['capacity'],
+    //                     'make' => $vehicle['make'],
+    //                     'model' => $vehicle['model'],
+    //                     'year' => $vehicle['year'],
+    //                     'license_plate' => $vehicle['license_plate'],
+    //                     'features' => $vehicle['features'] ?? null,
+    //                     'status' => $vehicle['status'] ?? 'Active',
+    //                     'last_maintenance' => $vehicle['last_maintenance'] ?? now(),
+    //                     'next_maintenance' => $vehicle['next_maintenance'] ?? now()->addMonth(),
+    //                 ]);
+    //             } else {
+    //                 VendorVehicle::create([
+    //                     'vendor_id' => $vendor->id,
+    //                     'vehicle_type' => $vehicle['vehicle_type'],
+    //                     'capacity' => $vehicle['capacity'],
+    //                     'make' => $vehicle['make'],
+    //                     'model' => $vehicle['model'],
+    //                     'year' => $vehicle['year'],
+    //                     'license_plate' => $vehicle['license_plate'],
+    //                     'features' => $vehicle['features'] ?? null,
+    //                     'status' => $vehicle['status'] ?? 'Active',
+    //                     'last_maintenance' => $vehicle['last_maintenance'] ?? now(),
+    //                     'next_maintenance' => $vehicle['next_maintenance'] ?? now()->addMonth(),
+    //                 ]);
     //             }
     //         }
-
+    
+    //         // === Availability Time Slots Partial Update or Create ===
+    //         foreach ($request->availability_time_slots ?? [] as $slot) {
+    //             if (isset($slot['id'])) {
+    //                 VendorAvailabilityTimeSlot::where('id', $slot['id'])->update([
+    //                     'vehicle_id' => $slot['vehicle_id'],
+    //                     'date' => $slot['date'],
+    //                     'start_time' => $slot['start_time'],
+    //                     'end_time' => $slot['end_time'],
+    //                     'max_bookings' => $slot['max_bookings'],
+    //                     'price_multiplier' => $slot['price_multiplier'],
+    //                 ]);
+    //             } else {
+    //                 VendorAvailabilityTimeSlot::create([
+    //                     'vendor_id' => $vendor->id,
+    //                     'vehicle_id' => $slot['vehicle_id'],
+    //                     'date' => $slot['date'],
+    //                     'start_time' => $slot['start_time'],
+    //                     'end_time' => $slot['end_time'],
+    //                     'max_bookings' => $slot['max_bookings'],
+    //                     'price_multiplier' => $slot['price_multiplier'],
+    //                 ]);
+    //             }
+    //         }
+    
     //         DB::commit();
-
+    
     //         return response()->json([
-    //             'success' => true,
-    //             'message' => isset($data['id']) ? 'Vendor updated successfully.' : 'Vendor created successfully.',
-    //             'vendor_id' => $vendorId
-    //         ]);
+    //             'message' => 'Vendor updated successfully',
+    //             'vendor' => $vendor
+    //         ], 200);
+    
     //     } catch (\Exception $e) {
     //         DB::rollBack();
-
     //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Something went wrong.',
-    //             'error' => $e->getMessage(),
+    //             'error' => 'Something went wrong',
+    //             'details' => $e->getMessage(),
     //         ], 500);
     //     }
-    // }
+    // }    
+
+
+
 
 
     /**
