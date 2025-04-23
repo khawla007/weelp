@@ -14,6 +14,10 @@ class ItineraryInclusionExclusion extends Model
         'description', 'include_exclude'
     ];
 
+    protected $casts = [
+        'include_exclude' => 'boolean'
+    ];
+
     public function itinerary()
     {
         return $this->belongsTo(Itinerary::class);

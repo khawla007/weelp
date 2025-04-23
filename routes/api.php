@@ -126,6 +126,15 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::delete('/{id}', [CityController::class, 'destroy']);
     });
 
+    // Admin Side media route
+    Route::prefix('media')->group(function () {
+        Route::get('/', [MediaController::class, 'index']);
+        Route::get('/{id}', [MediaController::class, 'show']);
+        Route::post('/store', [MediaController::class, 'store']);
+        Route::put('/update/{id}', [MediaController::class, 'update']);
+        Route::delete('/delete/{id}', [MediaController::class, 'destroy']);
+    });
+
     // Admin Side vendors route
     Route::prefix('/vendors')->group(function () {
         // Route::post('/', [VendorController::class, 'store']); // Create

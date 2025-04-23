@@ -11,7 +11,9 @@ class ItineraryTransfer extends Model
         'notes', 'price', 'include_in_package', 
         'pickup_location', 'dropoff_location', 'pax'
     ];
-
+    protected $casts = [
+        'include_in_package' => 'boolean'
+    ];
     public function schedule()
     {
         return $this->belongsTo(ItinerarySchedule::class, 'schedule_id');

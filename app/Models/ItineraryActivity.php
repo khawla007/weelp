@@ -10,7 +10,9 @@ class ItineraryActivity extends Model
         'schedule_id', 'activity_id', 'start_time', 'end_time', 
         'notes', 'price', 'include_in_package'
     ];
-
+    protected $casts = [
+        'include_in_package' => 'boolean'
+    ];
     public function schedule()
     {
         return $this->belongsTo(ItinerarySchedule::class, 'schedule_id');

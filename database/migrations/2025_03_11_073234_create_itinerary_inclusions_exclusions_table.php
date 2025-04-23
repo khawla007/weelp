@@ -13,7 +13,7 @@ return new class extends Migration {
             $table->string('type', 255);
             $table->string('title', 255);
             $table->text('description')->nullable();
-            $table->boolean('include_exclude');
+            $table->boolean('include_exclude')->default(false);
             $table->timestamps();
         });
     }
