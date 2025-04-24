@@ -57,6 +57,26 @@ return [
             'throw' => false,
         ],
 
+        // 'upcloud' => [
+        //     'driver' => 's3',
+        //     'key' => env('UP_CLOUD_KEY'),
+        //     'secret' => env('UP_CLOUD_SECRET'),
+        //     'region' => env('UP_CLOUD_REGION'),
+        //     'bucket' => env('UP_CLOUD_BUCKET'),
+        //     'endpoint' => env('UP_CLOUD_ENDPOINT'),
+        //     'use_path_style_endpoint' => true,
+        // ],
+
+        'wasabi' => [
+            'driver' => 's3',
+            'key' => env('WASABI_KEY'),
+            'secret' => env('WASABI_SECRET'),
+            'region' => env('WASABI_REGION'),
+            'bucket' => env('WASABI_BUCKET'),
+            'endpoint' => env('WASABI_ENDPOINT'),
+            'use_path_style_endpoint' => true,
+        ],
+
     ],
 
     /*
@@ -73,5 +93,6 @@ return [
     'links' => [
         public_path('storage') => storage_path('app/public'),
     ],
+
 
 ];

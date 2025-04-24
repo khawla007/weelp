@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Media;
 
 class MediaController extends Controller
@@ -13,16 +14,44 @@ class MediaController extends Controller
         return response()->json(Media::all());
     }
 
+
     public function store(Request $request)
     {
-        $media = Media::create([
-            'name' => $request->name,
-            'alt_text' => $request->alt_text,
-            'url' => $request->url,
+        // dd($request->all());
+        $request->validate([
+            'file' => 'required|array',
+            'file.*' => 'file|mimes:jpg,jpeg,png,pdf,doc|max:2048',
         ]);
 
-        return response()->json(['message' => 'Media created successfully', 'data' => $media], 201);
+        if ($request->hasFile('file')) {
+            $uploadedMedia = [];
+            foreach ($request->file('file') as $file) {
+
+               
+                $filePath = $file->store('media', 'wasabi', 'public');
+        
+                $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                
+                $media = new Media();
+                $media->name = $originalName;
+                $media->alt_text = $originalName;
+                $media->url = Storage::disk('wasabi')->url($filePath);
+                $media->save();
+
+                $uploadedMedia[] = $media;
+
+            }
+            return response()->json([
+                'message' => 'Media uploaded successfully!',
+                'data' => $uploadedMedia
+            ], 201);
+        }
+        
+        return response()->json([
+            'message' => 'No file was uploaded.'
+        ], 400);
     }
+    
 
     public function show($id)
     {
@@ -32,15 +61,18 @@ class MediaController extends Controller
 
     public function update(Request $request, $id)
     {
+        // dd($request->all());
         $media = Media::findOrFail($id);
-
+    
         $media->update([
-            'name' => $request->name ?? $media->name,
-            'alt_text' => $request->alt_text ?? $media->alt_text,
-            'url' => $request->url ?? $media->url,
+            'name' => $request->has('name') ? $request->name : $media->name,
+            'alt_text' => $request->has('alt_text') ? $request->alt_text : $media->alt_text,
         ]);
-
-        return response()->json(['message' => 'Media updated successfully', 'data' => $media]);
+    
+        return response()->json([
+            'message' => 'Media updated successfully',
+            'data' => $media
+        ]);
     }
 
     public function destroy($id)

@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\TransferController;
 use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\ItineraryController;
 use App\Http\Controllers\Admin\PackageController;
+use App\Http\Controllers\Admin\MediaController;
 
 
 // Public
