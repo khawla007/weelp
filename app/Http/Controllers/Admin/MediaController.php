@@ -28,14 +28,23 @@ class MediaController extends Controller
             foreach ($request->file('file') as $file) {
 
                
-                $filePath = $file->store('media', 'wasabi', 'public');
-        
+                // $filePath = $file->store('media', 'minio', 'public');
+                $filePath = $file->store('media', 'minio');
+
+                // Check if filePath is valid and then generate URL
+                if (!$filePath) {
+                    return response()->json([
+                        'message' => 'File upload failed.'
+                    ], 500);
+                }
+
+                // dd($filePath);
                 $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
                 
                 $media = new Media();
                 $media->name = $originalName;
                 $media->alt_text = $originalName;
-                $media->url = Storage::disk('wasabi')->url($filePath);
+                $media->url = Storage::disk('minio')->url($filePath);
                 $media->save();
 
                 $uploadedMedia[] = $media;

@@ -67,13 +67,23 @@ return [
         //     'use_path_style_endpoint' => true,
         // ],
 
-        'wasabi' => [
+        // 'wasabi' => [
+        //     'driver' => 's3',
+        //     'key' => env('WASABI_KEY'),
+        //     'secret' => env('WASABI_SECRET'),
+        //     'region' => env('WASABI_REGION'),
+        //     'bucket' => env('WASABI_BUCKET'),
+        //     'endpoint' => env('WASABI_ENDPOINT'),
+        //     'use_path_style_endpoint' => true,
+        // ],
+
+        'minio' => [
             'driver' => 's3',
-            'key' => env('WASABI_KEY'),
-            'secret' => env('WASABI_SECRET'),
-            'region' => env('WASABI_REGION'),
-            'bucket' => env('WASABI_BUCKET'),
-            'endpoint' => env('WASABI_ENDPOINT'),
+            'key' => env('MINIO_KEY'),
+            'secret' => env('MINIO_SECRET'),
+            'region' => env('MINIO_REGION'),
+            'bucket' => env('MINIO_BUCKET'),
+            'endpoint' => env('MINIO_ENDPOINT'),
             'use_path_style_endpoint' => true,
         ],
 
