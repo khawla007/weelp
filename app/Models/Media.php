@@ -9,4 +9,10 @@ class Media extends Model
     protected $table = 'media';
 
     protected $fillable = ['name', 'alt_text', 'url'];
+
+    public function blogs()
+    {
+        return $this->hasMany(Blog::class, 'featured_image');
+    }
+    
 }

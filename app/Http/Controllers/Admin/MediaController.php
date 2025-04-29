@@ -31,6 +31,7 @@ class MediaController extends Controller
                 // $filePath = $file->store('media', 'minio', 'public');
                 $filePath = $file->store('media', 'minio');
 
+                // dd($filePath);
                 // Check if filePath is valid and then generate URL
                 if (!$filePath) {
                     return response()->json([
@@ -38,7 +39,6 @@ class MediaController extends Controller
                     ], 500);
                 }
 
-                // dd($filePath);
                 $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
                 
                 $media = new Media();

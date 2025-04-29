@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\ItineraryController;
 use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\BlogController;
 
 
 // Public
@@ -193,7 +194,13 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::delete('/{id}', [PackageController::class, 'destroy']); // Delete
     });
 
-
+    Route::prefix('blogs')->group(function () {
+        Route::get('/', [BlogController::class, 'index']); // List all blogs
+        Route::get('{id}', [BlogController::class, 'show']); // Show a single blog
+        Route::post('/', [BlogController::class, 'store']); // Store a new blog
+        Route::put('{id}', [BlogController::class, 'update']); // Update an existing blog
+        Route::delete('{id}', [BlogController::class, 'destroy']); // Delete a blog
+    });
 
 });
 

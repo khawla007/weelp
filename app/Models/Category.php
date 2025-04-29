@@ -44,4 +44,9 @@ class Category extends Model
     {
         return $this->hasManyThrough(Package::class, PackageCategoryMapping::class, 'category_id', 'id', 'id', 'package_id');
     }
+
+    public function blogs()
+    {
+        return $this->hasMany(Blog::class);
+    }
 }

@@ -23,4 +23,9 @@ class Tag extends Model
     {
         return $this->belongsToMany(Itinerary::class, 'itinerary_tags');
     }
+
+    public function blogs()
+    {
+        return $this->hasMany(Blog::class);
+    }
 }
