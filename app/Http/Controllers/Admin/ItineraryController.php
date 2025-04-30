@@ -38,24 +38,24 @@ class ItineraryController extends Controller
     */
     public function index(Request $request)
     {
-        $perPage = 3; 
-        $page = $request->get('page', 1); 
+        $perPage        = 3; 
+        $page           = $request->get('page', 1); 
 
-        $categorySlug = $request->get('category');
-        $difficulty = $request->get('difficulty_level');
-        $duration = $request->get('duration');
-        $ageGroup = $request->get('age_restriction');
-        $season = $request->get('season');
-        $minPrice = $request->get('min_price', 0);
-        $maxPrice = $request->get('max_price');
-        $sortBy = $request->get('sort_by', 'id_desc'); // Default: Newest First
+        $categorySlug   = $request->get('category');
+        $difficulty     = $request->get('difficulty_level');
+        $duration       = $request->get('duration');
+        $ageGroup       = $request->get('age_restriction');
+        $season         = $request->get('season');
+        $minPrice       = $request->get('min_price', 0);
+        $maxPrice       = $request->get('max_price');
+        $sortBy         = $request->get('sort_by', 'id_desc'); // Default: Newest First
 
-        $category = $categorySlug ? Category::where('slug', $categorySlug)->first() : null;
-        $categoryId = $category ? $category->id : null;
+        $category       = $categorySlug ? Category::where('slug', $categorySlug)->first() : null;
+        $categoryId     = $category ? $category->id : null;
 
         $difficultyAttr = Attribute::where('slug', 'difficulty-level')->first();
-        $durationAttr = Attribute::where('slug', 'duration')->first();
-        $ageGroupAttr = Attribute::where('slug', 'age-restriction')->first();
+        $durationAttr   = Attribute::where('slug', 'duration')->first();
+        $ageGroupAttr   = Attribute::where('slug', 'age-restriction')->first();
 
         $query = Itinerary::query()
             ->select('itineraries.*')  
@@ -132,15 +132,15 @@ class ItineraryController extends Controller
                 break;
         }
 
-        $allItems = $query->get();
+        $allItems       = $query->get();
         $paginatedItems = $allItems->forPage($page, $perPage);
 
         return response()->json([
-            'success' => true,
-            'data' => $paginatedItems->values(),
+            'success'      => true,
+            'data'         => $paginatedItems->values(),
             'current_page' => (int) $page,
-            'per_page' => $perPage,
-            'total' => $allItems->count(),
+            'per_page'     => $perPage,
+            'total'        => $allItems->count(),
         ], 200);
     }
 
@@ -151,27 +151,27 @@ class ItineraryController extends Controller
     public function store(Request $request)
     {
         $rules = [
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|unique:Itineraries,slug',
-            'description' => 'nullable|string',
-            'featured_itinerary' => 'boolean',
-            'private_itinerary' => 'boolean',
-            'locations' => 'nullable|array',
-            'information' => 'nullable|array',
-            'schedules' => 'nullable|array',
-            'activities' => 'nullable|array',
-            'transfers' => 'nullable|array',
-            'pricing' => 'nullable|array',
-            'price_variations' => 'nullable|array',
-            'blackout_dates' => 'nullable|array',
+            'name'                  => 'required|string|max:255',
+            'slug'                  => 'required|string|unique:Itineraries,slug',
+            'description'           => 'nullable|string',
+            'featured_itinerary'    => 'boolean',
+            'private_itinerary'     => 'boolean',
+            'locations'             => 'nullable|array',
+            'information'           => 'nullable|array',
+            'schedules'             => 'nullable|array',
+            'activities'            => 'nullable|array',
+            'transfers'             => 'nullable|array',
+            'pricing'               => 'nullable|array',
+            'price_variations'      => 'nullable|array',
+            'blackout_dates'        => 'nullable|array',
             'inclusions_exclusions' => 'nullable|array',
-            'media_gallery' => 'nullable|array',
-            'faqs' => 'nullable|array',
-            'seo' => 'nullable|array',
-            'categories' => 'nullable|array',
-            'attributes' => 'nullable|array',
-            'tags' => 'nullable|array',
-            'availability' => 'nullable|array',
+            'media_gallery'         => 'nullable|array',
+            'faqs'                  => 'nullable|array',
+            'seo'                   => 'nullable|array',
+            'categories'            => 'nullable|array',
+            'attributes'            => 'nullable|array',
+            'tags'                  => 'nullable|array',
+            'availability'          => 'nullable|array',
         ];
     
         $request->validate($rules);
@@ -180,20 +180,20 @@ class ItineraryController extends Controller
             DB::beginTransaction();
     
             $itinerary = Itinerary::create([
-                'name' => $request->name,
-                'slug' => $request->slug,
-                'description' => $request->description ?? null,
+                'name'               => $request->name,
+                'slug'               => $request->slug,
+                'description'        => $request->description ?? null,
                 'featured_itinerary' => $request->boolean('featured_itinerary'),
-                'private_itinerary' => $request->boolean('private_itinerary'),
+                'private_itinerary'  => $request->boolean('private_itinerary'),
             ]);
     
             // === Information ===
             if ($request->has('information')) {
                 foreach ($request->information as $info) {
                     ItineraryInformation::create([
-                        'itinerary_id' => $itinerary->id,
+                        'itinerary_id'  => $itinerary->id,
                         'section_title' => $info['section_title'] ?? '',
-                        'content' => $info['content'] ?? '',
+                        'content'       => $info['content'] ?? '',
                     ]);
                 }
             }
@@ -202,7 +202,7 @@ class ItineraryController extends Controller
                 foreach ($request->locations as $cityId) {
                     ItineraryLocation::create([
                         'itinerary_id' => $itinerary->id,
-                        'city_id' => $cityId,
+                        'city_id'      => $cityId,
                     ]);
                 }
             }
@@ -214,11 +214,11 @@ class ItineraryController extends Controller
                 foreach ($request->schedules as $day) {
                     $record = ItinerarySchedule::create([
                         'itinerary_id' => $itinerary->id,
-                        // 'day' => $schedule['day'],
-                        'day' => $day,
+                        // 'day'          => $schedule['day'],
+                        'day'          => $day,
                     ]);
                     // $scheduleMap[$schedule['day']] = $record->id;
-                    $scheduleMap[$day] = $record->id;
+                    $scheduleMap[$day]             = $record->id;
                 }
             }
     
@@ -228,16 +228,16 @@ class ItineraryController extends Controller
                     $scheduleId = $scheduleMap[$transfer['day']] ?? null;
                     if ($scheduleId) {
                         ItineraryTransfer::create([
-                            'schedule_id' => $scheduleId,
-                            'transfer_id' => $transfer['transfer_id'],
-                            'start_time' => $transfer['start_time'],
-                            'end_time' => $transfer['end_time'],
-                            'notes' => $transfer['notes'],
-                            'price' => $transfer['price'],
+                            'schedule_id'          => $scheduleId,
+                            'transfer_id'          => $transfer['transfer_id'],
+                            'start_time'           => $transfer['start_time'],
+                            'end_time'             => $transfer['end_time'],
+                            'notes'                => $transfer['notes'],
+                            'price'                => $transfer['price'],
                             'include_in_itinerary' => $transfer['include_in_itinerary'],
-                            'pickup_location' => $transfer['pickup_location'] ?? null,
-                            'dropoff_location' => $transfer['dropoff_location'] ?? null,
-                            'pax' => $transfer['pax'] ?? null,
+                            'pickup_location'      => $transfer['pickup_location'] ?? null,
+                            'dropoff_location'     => $transfer['dropoff_location'] ?? null,
+                            'pax'                  => $transfer['pax'] ?? null,
                         ]);
                     }
                 }
@@ -249,12 +249,12 @@ class ItineraryController extends Controller
                     $scheduleId = $scheduleMap[$activity['day']] ?? null;
                     if ($scheduleId) {
                         ItineraryActivity::create([
-                            'schedule_id' => $scheduleId,
-                            'activity_id' => $activity['activity_id'],
-                            'start_time' => $activity['start_time'],
-                            'end_time' => $activity['end_time'],
-                            'notes' => $activity['notes'],
-                            'price' => $activity['price'],
+                            'schedule_id'          => $scheduleId,
+                            'activity_id'          => $activity['activity_id'],
+                            'start_time'           => $activity['start_time'],
+                            'end_time'             => $activity['end_time'],
+                            'notes'                => $activity['notes'],
+                            'price'                => $activity['price'],
                             'include_in_itinerary' => $activity['include_in_itinerary'],
                         ]);
                     }
@@ -265,21 +265,21 @@ class ItineraryController extends Controller
             if ($request->has('pricing')) {
                 $basePricing = ItineraryBasePricing::create([
                     'itinerary_id' => $itinerary->id,
-                    'currency' => $request->pricing['currency'],
+                    'currency'     => $request->pricing['currency'],
                     'availability' => $request->pricing['availability'],
-                    'start_date' => $request->pricing['start_date'],
-                    'end_date' => $request->pricing['end_date'],
+                    'start_date'   => $request->pricing['start_date'],
+                    'end_date'     => $request->pricing['end_date'],
                 ]);
     
                 if ($request->has('price_variations')) {
                     foreach ($request->price_variations as $variation) {
                         ItineraryPriceVariation::create([
                             'base_pricing_id' => $basePricing->id,
-                            'name' => $variation['name'],
-                            'regular_price' => $variation['regular_price'],
-                            'sale_price' => $variation['sale_price'],
-                            'max_guests' => $variation['max_guests'],
-                            'description' => $variation['description'],
+                            'name'            => $variation['name'],
+                            'regular_price'   => $variation['regular_price'],
+                            'sale_price'      => $variation['sale_price'],
+                            'max_guests'      => $variation['max_guests'],
+                            'description'     => $variation['description'],
                         ]);
                     }
                 }
@@ -288,8 +288,8 @@ class ItineraryController extends Controller
                     foreach ($request->blackout_dates as $date) {
                         ItineraryBlackoutDate::create([
                             'base_pricing_id' => $basePricing->id,
-                            'date' => $date['date'],
-                            'reason' => $date['reason'],
+                            'date'            => $date['date'],
+                            'reason'          => $date['reason'],
                         ]);
                     }
                 }
@@ -299,10 +299,10 @@ class ItineraryController extends Controller
             if ($request->has('inclusions_exclusions')) {
                 foreach ($request->inclusions_exclusions as $ie) {
                     ItineraryInclusionExclusion::create([
-                        'itinerary_id' => $itinerary->id,
-                        'type' => $ie['type'],
-                        'title' => $ie['title'],
-                        'description' => $ie['description'],
+                        'itinerary_id'    => $itinerary->id,
+                        'type'            => $ie['type'],
+                        'title'           => $ie['title'],
+                        'description'     => $ie['description'],
                         'include_exclude' => $ie['include_exclude'] === 'include' ? 1 : 0,
                     ]);
                 }
@@ -313,7 +313,7 @@ class ItineraryController extends Controller
                 foreach ($request->media_gallery as $media) {
                     ItineraryMediaGallery::create([
                         'itinerary_id' => $itinerary->id,
-                        'url' => $media['url'],
+                        'url'          => $media['url'],
                     ]);
                 }
             }
@@ -322,10 +322,10 @@ class ItineraryController extends Controller
             if ($request->has('faqs')) {
                 foreach ($request->faqs as $faq) {
                     ItineraryFaq::create([
-                        'itinerary_id' => $itinerary->id,
+                        'itinerary_id'    => $itinerary->id,
                         'question_number' => $faq['question_number'] ?? null,
-                        'question' => $faq['question'],
-                        'answer' => $faq['answer'],
+                        'question'        => $faq['question'],
+                        'answer'          => $faq['answer'],
                     ]);
                 }
             }
@@ -333,14 +333,14 @@ class ItineraryController extends Controller
             // === SEO ===
             if ($request->has('seo')) {
                 ItinerarySeo::create([
-                    'itinerary_id' => $itinerary->id,
-                    'meta_title' => $request->seo['meta_title'],
+                    'itinerary_id'     => $itinerary->id,
+                    'meta_title'       => $request->seo['meta_title'],
                     'meta_description' => $request->seo['meta_description'],
-                    'keywords' => $request->seo['keywords'],
-                    'og_image_url' => $request->seo['og_image_url'],
-                    'canonical_url' => $request->seo['canonical_url'],
-                    'schema_type' => $request->seo['schema_type'],
-                    'schema_data' => is_array($request->seo['schema_data']) 
+                    'keywords'         => $request->seo['keywords'],
+                    'og_image_url'     => $request->seo['og_image_url'],
+                    'canonical_url'    => $request->seo['canonical_url'],
+                    'schema_type'      => $request->seo['schema_type'],
+                    'schema_data'      => is_array($request->seo['schema_data']) 
                         ? json_encode($request->seo['schema_data']) 
                         : $request->seo['schema_data'],
                 ]);
@@ -351,7 +351,7 @@ class ItineraryController extends Controller
                 foreach ($request->categories as $category_id) {
                     ItineraryCategory::create([
                         'itinerary_id' => $itinerary->id,
-                        'category_id' => $category_id,
+                        'category_id'  => $category_id,
                     ]);
                 }
             }
@@ -360,8 +360,8 @@ class ItineraryController extends Controller
             
                 foreach ($request->input('attributes') as $attribute) {
                     ItineraryAttribute::create([
-                        'itinerary_id' => $itinerary->id,
-                        'attribute_id' => $attribute['attribute_id'],
+                        'itinerary_id'    => $itinerary->id,
+                        'attribute_id'    => $attribute['attribute_id'],
                         'attribute_value' => $attribute['attribute_value'],
                     ]);
                 }
@@ -372,7 +372,7 @@ class ItineraryController extends Controller
                 foreach ($request->tags as $tag_id) {
                     ItineraryTag::create([
                         'itinerary_id' => $itinerary->id,
-                        'tag_id' => $tag_id,
+                        'tag_id'       => $tag_id,
                     ]);
                 }
             }
@@ -380,26 +380,26 @@ class ItineraryController extends Controller
             // === Availability ===
             if ($request->has('availability')) {
                 ItineraryAvailability::create([
-                    'itinerary_id' => $itinerary->id,
-                    'date_based_itinerary' => $request->availability['date_based_itinerary'],
-                    'start_date' => $request->availability['start_date'] ?? null,
-                    'end_date' => $request->availability['end_date'] ?? null,
+                    'itinerary_id'             => $itinerary->id,
+                    'date_based_itinerary'     => $request->availability['date_based_itinerary'],
+                    'start_date'               => $request->availability['start_date'] ?? null,
+                    'end_date'                 => $request->availability['end_date'] ?? null,
                     'quantity_based_itinerary' => $request->availability['quantity_based_itinerary'],
-                    'max_quantity' => $request->availability['max_quantity'] ?? null,
+                    'max_quantity'             => $request->availability['max_quantity'] ?? null,
                 ]);
             }
     
             DB::commit();
     
             return response()->json([
-                'message' => 'Itinerary created successfully',
+                'message'   => 'Itinerary created successfully',
                 'itinerary' => $itinerary
             ], 201);
     
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
-                'error' => 'Something went wrong',
+                'error'   => 'Something went wrong',
                 'details' => $e->getMessage(),
             ], 500);
         }
@@ -707,8 +707,8 @@ class ItineraryController extends Controller
             'categories.category',
             'attributes.attribute',
             'tags.tag',
-            'schedules.transfers',
-            'schedules.activities',
+            'schedules.transfers.transfer',
+            'schedules.activities.activity',
             'basePricing',
             'inclusionsExclusions',
             'mediaGallery',
@@ -729,8 +729,8 @@ class ItineraryController extends Controller
             return [
                 'id' => $location->id,
                 'itinerary_id' => $location->itinerary_id,
-                'city_id' => $location->city_id,
-                'city_name' => $location->city->name ?? null,
+                'city_id'      => $location->city_id,
+                'city_name'    => $location->city->name ?? null,
             ];
         });
     
@@ -738,8 +738,8 @@ class ItineraryController extends Controller
         $itineraryData['attributes'] = collect($itinerary->attributes)->map(function ($attribute) {
             return [
                 'id' => $attribute->id,
-                'attribute_id' => $attribute->attribute_id,
-                'attribute_name' => $attribute->attribute->name ?? null,
+                'attribute_id'    => $attribute->attribute_id,
+                'attribute_name'  => $attribute->attribute->name ?? null,
                 'attribute_value' => $attribute->attribute_value,
             ];
         });
@@ -748,14 +748,14 @@ class ItineraryController extends Controller
         $itineraryData['categories'] = collect($itinerary->categories)->map(function ($category) {
             return [
                 'id' => $category->id,
-                'category_id' => $category->category_id,
+                'category_id'   => $category->category_id,
                 'category_name' => $category->category->name ?? null,
             ];
         });
         $itineraryData['tags'] = collect($itinerary->tags)->map(function ($tag) {
             return [
-                'id' => $tag->id,
-                'tag_id' => $tag->tag_id,
+                'id'       => $tag->id,
+                'tag_id'   => $tag->tag_id,
                 'tag_name' => $tag->tag->name ?? null,
             ];
         });
@@ -771,28 +771,28 @@ class ItineraryController extends Controller
         $itinerary = Itinerary::findOrFail($id);
     
         $rules = [
-            'name' => 'sometimes|string|max:255',
-            'slug' => 'sometimes|string|unique:itineraries,slug,' . $itinerary->id,
-            'description' => 'nullable|string',
-            'featured_itinerary' => 'boolean',
-            'private_itinerary' => 'boolean',
-            'locations' => 'nullable|array',
-            'information' => 'nullable|array',
-            'schedules' => 'nullable|array',
-            'activities' => 'nullable|array',
-            'transfers' => 'nullable|array',
-            'itineraries' => 'nullable|array',
-            'pricing' => 'nullable|array',
-            'price_variations' => 'nullable|array',
-            'blackout_dates' => 'nullable|array',
+            'name'                  => 'sometimes|string|max:255',
+            'slug'                  => 'sometimes|string|unique:itineraries,slug,' . $itinerary->id,
+            'description'           => 'nullable|string',
+            'featured_itinerary'    => 'boolean',
+            'private_itinerary'     => 'boolean',
+            'locations'             => 'nullable|array',
+            'information'           => 'nullable|array',
+            'schedules'             => 'nullable|array',
+            'activities'            => 'nullable|array',
+            'transfers'             => 'nullable|array',
+            'itineraries'           => 'nullable|array',
+            'pricing'               => 'nullable|array',
+            'price_variations'      => 'nullable|array',
+            'blackout_dates'        => 'nullable|array',
             'inclusions_exclusions' => 'nullable|array',
-            'media_gallery' => 'nullable|array',
-            'faqs' => 'nullable|array',
-            'seo' => 'nullable|array',
-            'categories' => 'nullable|array',
-            'attributes' => 'nullable|array',
-            'tags' => 'nullable|array',
-            'availability' => 'nullable|array',
+            'media_gallery'         => 'nullable|array',
+            'faqs'                  => 'nullable|array',
+            'seo'                   => 'nullable|array',
+            'categories'            => 'nullable|array',
+            'attributes'            => 'nullable|array',
+            'tags'                  => 'nullable|array',
+            'availability'          => 'nullable|array',
         ];
     
         $request->validate($rules);
