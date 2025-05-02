@@ -8,10 +8,10 @@ class ItineraryActivity extends Model
 {
     protected $fillable = [
         'schedule_id', 'activity_id', 'start_time', 'end_time', 
-        'notes', 'price', 'include_in_package'
+        'notes', 'price', 'included'
     ];
     protected $casts = [
-        'include_in_package' => 'boolean'
+        'included' => 'boolean'
     ];
     public function schedule()
     {

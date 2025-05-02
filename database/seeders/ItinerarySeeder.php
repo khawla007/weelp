@@ -123,22 +123,22 @@ class ItinerarySeeder extends Seeder
 
                 ItineraryActivity::create([
                     'schedule_id' => $schedule->id,
-                    'activity_id' => 1,
+                    'activity_id' => rand(1, 8),
                     'start_time' => '09:00:00',
                     'end_time' => '11:00:00',
                     'notes' => 'Sample activity note',
                     'price' => 100.00,
-                    'include_in_package' => true,
+                    'included' => true,
                 ]);
 
                 ItineraryTransfer::create([
                     'schedule_id' => $schedule->id,
-                    'transfer_id' => 1,
+                    'transfer_id' => rand(1, 4),
                     'start_time' => '12:00:00',
                     'end_time' => '14:00:00',
                     'notes' => 'Sample transfer note',
                     'price' => 50.00,
-                    'include_in_package' => true,
+                    'included' => true,
                     'pickup_location' => 'Airport',
                     'dropoff_location' => 'Hotel',
                     'pax' => 2,
@@ -173,12 +173,12 @@ class ItinerarySeeder extends Seeder
                 'type' => 'Meal',
                 'title' => 'Breakfast included',
                 'description' => 'Breakfast included in the package',
-                'include_exclude' => true,
+                'included' => true,
             ]);
 
             ItineraryMediaGallery::create([
                 'itinerary_id' => $itinerary->id,
-                'url' => 'https://example.com/sample-image.jpg',
+                'media_id' => rand(1, 5),
             ]);
 
             ItinerarySeo::create([

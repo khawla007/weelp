@@ -11,11 +11,11 @@ class ItineraryInclusionExclusion extends Model
 
     protected $fillable = [
         'itinerary_id', 'type', 'title', 
-        'description', 'include_exclude'
+        'description', 'included'
     ];
 
     protected $casts = [
-        'include_exclude' => 'boolean'
+        'included' => 'boolean'
     ];
 
     public function itinerary()

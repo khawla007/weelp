@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Itinerary extends Model
 {
+    protected $table = 'itineraries';
     protected $fillable = [
         'name', 'slug', 'description', 'featured_itinerary', 'private_itinerary'
     ];

@@ -11,12 +11,17 @@ class TransferMedia extends Model
     protected $fillable = [
         'transfer_id',
         'media_type',
-        'media_url',
+        'media_id',
     ];
 
     // Relationship with Transfer
     public function transfer()
     {
         return $this->belongsTo(Transfer::class);
+    }
+
+    public function media()
+    {
+        return $this->belongsTo(Media::class, 'media_id');
     }
 }

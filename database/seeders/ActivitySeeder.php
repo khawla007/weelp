@@ -222,7 +222,7 @@ class ActivitySeeder extends Seeder {
             ]);
             ActivityMediaGallery::create([
                 'activity_id' => $activity->id,
-                'url' => 'https://example.com/sample-image.jpg',
+                'media_id' => rand(1, 5),
             ]);
             ActivityAvailability::create([
                 'activity_id' => $activity->id,

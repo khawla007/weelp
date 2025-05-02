@@ -9,11 +9,16 @@ class ActivityMediaGallery extends Model
     protected $table = 'activity_media_gallery';
 
     protected $fillable = [
-        'activity_id', 'url'
+        'activity_id', 'media_id'
     ];
 
     public function activity()
     {
         return $this->belongsTo(Activity::class);
+    }
+
+    public function media()
+    {
+        return $this->belongsTo(Media::class, 'media_id');
     }
 }

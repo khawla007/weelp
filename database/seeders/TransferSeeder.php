@@ -146,7 +146,8 @@ class TransferSeeder extends Seeder
                 TransferMedia::create([
                     'transfer_id' => $transfer->id,
                     'media_type' => $media['media_type'],
-                    'media_url' => $media['media_url'],
+                    // 'media_url' => $media['media_url'],
+                    'media_id' => rand(1, 5),
                 ]);
             }
 

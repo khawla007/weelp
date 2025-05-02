@@ -8,11 +8,11 @@ class ItineraryTransfer extends Model
 {
     protected $fillable = [
         'schedule_id', 'transfer_id', 'start_time', 'end_time', 
-        'notes', 'price', 'include_in_package', 
+        'notes', 'price', 'included', 
         'pickup_location', 'dropoff_location', 'pax'
     ];
     protected $casts = [
-        'include_in_package' => 'boolean'
+        'included' => 'boolean'
     ];
     public function schedule()
     {

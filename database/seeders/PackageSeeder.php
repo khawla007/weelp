@@ -199,7 +199,7 @@ class PackageSeeder extends Seeder
 
             PackageMediaGallery::create([
                 'package_id' => $package->id,
-                'url' => 'https://example.com/sample-image.jpg',
+                'media_id' => rand(1, 5),
             ]);
 
             $packageId = $package->id;

@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('transfer_id')->constrained('transfers')->onDelete('cascade');
             $table->enum('media_type', ['photo', 'video']);
-            $table->string('media_url');
+            // $table->string('media_url');
+            $table->foreignId('media_id')->constrained('media')->onDelete('cascade');
             $table->timestamps();
         });
     }
