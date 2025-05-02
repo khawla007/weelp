@@ -291,7 +291,7 @@ class ActivityController extends Controller
                 foreach ($request->media_gallery as $media) {
                     ActivityMediaGallery::create([
                         'activity_id' => $activity->id,
-                        'url' => $media['url'],
+                        'media_id' => $media['media_id'],
                     ]);
                 }
             }

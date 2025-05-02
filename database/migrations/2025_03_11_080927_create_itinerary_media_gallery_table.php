@@ -11,7 +11,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('itinerary_id')->constrained('itineraries')->onDelete('cascade');
             // $table->text('url');
-            $table->foreignId('media_id')->constrained('media')->onDelete('cascade');
+            $table->foreignId('media_id')->constrained('media')->onDelete('cascade')->nullable();;
             $table->timestamps();
         });
     }

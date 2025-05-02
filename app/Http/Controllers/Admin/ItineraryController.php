@@ -354,7 +354,7 @@ class ItineraryController extends Controller
                 foreach ($request->media_gallery as $media) {
                     ItineraryMediaGallery::create([
                         'itinerary_id' => $itinerary->id,
-                        'url'          => $media['url'],
+                        'media_id'          => $media['media_id'],
                     ]);
                 }
             }

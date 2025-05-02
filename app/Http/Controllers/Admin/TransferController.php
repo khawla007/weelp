@@ -135,7 +135,7 @@ class TransferController extends Controller
                 TransferMedia::create([
                     'transfer_id' => $transfer->id,
                     'media_type' => $media['media_type'],
-                    'media_url' => $media['media_url'],
+                    'media_id' => $media['media_id'],
                 ]);
             }
         }

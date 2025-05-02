@@ -334,7 +334,7 @@ class PackageController extends Controller
                 foreach ($request->media_gallery as $media) {
                     PackageMediaGallery::create([
                         'package_id' => $package->id,
-                        'url' => $media['url'],
+                        'media_id' => $media['media_id'],
                     ]);
                 }
             }
