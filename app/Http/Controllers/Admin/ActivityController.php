@@ -54,7 +54,7 @@ class ActivityController extends Controller
         $query = Activity::query()
             ->select('activities.*')  // Select all fields from activities
             ->join('activity_pricing', 'activity_pricing.activity_id', '=', 'activities.id') // Join with activity_pricing table
-            ->with(['categories.category', 'tags.tag', 'locations.city', 'pricing', 'attributes', 'mediaGallery']) // Eager load relationships
+            ->with(['categories.category', 'tags.tag', 'locations.city', 'pricing', 'attributes', 'mediaGallery.media']) // Eager load relationships
             ->when($categoryId, fn($query) => 
                 $query->whereHas('categories', fn($q) => 
                     $q->where('category_id', $categoryId)
@@ -121,9 +121,59 @@ class ActivityController extends Controller
         
         $paginatedItems = $allItems->forPage($page, $perPage);
         
+
+        $transformed = $paginatedItems->map(function ($activity) {
+            $data = $activity->toArray(); // keep all original fields
+        
+            // Replace transformed fields
+            $data['locations'] = collect($activity->locations)->map(function ($location) {
+                return [
+                    'id'         => $location->id,
+                    'city_id'    => $location->city_id,
+                    'city_name'  => $location->city->name ?? null,
+                ];
+            });
+        
+            $data['media_gallery'] = collect($activity->mediaGallery)->map(function ($media) {
+                return [
+                    'id'         => $media->id,
+                    'media_id'   => $media->media_id,
+                    'name'       => $media->media->name ?? null,
+                    'alt_text'   => $media->media->alt_text ?? null,
+                    'url'        => $media->media->url ?? null,
+                ];
+            });
+        
+            $data['attributes'] = collect($activity->attributes)->map(function ($attribute) {
+                return [
+                    'id'              => $attribute->id,
+                    'attribute_id'    => $attribute->attribute_id,
+                    'attribute_name'  => $attribute->attribute->name ?? null,
+                    'attribute_value' => $attribute->attribute_value,
+                ];
+            });
+        
+            $data['categories'] = collect($activity->categories)->map(function ($category) {
+                return [
+                    'id'            => $category->id,
+                    'category_id'   => $category->category_id,
+                    'category_name' => $category->category->name ?? null,
+                ];
+            });
+            $data['tags'] = collect($activity->tags)->map(function ($tag) {
+                return [
+                    'id'            => $tag->id,
+                    'tag_id'   => $tag->tag_id,
+                    'tag_name' => $tag->tag->name ?? null,
+                ];
+            });
+        
+            return $data;
+        });
+
         return response()->json([
             'success' => true,
-            'data' => $paginatedItems->values(),
+            'data' => $transformed->values(),
             'current_page' => (int) $page,
             'per_page' => $perPage,
             'total' => $allItems->count(),
@@ -523,7 +573,7 @@ class ActivityController extends Controller
             'pricing', 'seasonalPricing', 
             'groupDiscounts', 'earlyBirdDiscount', 
             'lastMinuteDiscount', 'promoCodes', 
-            'mediaGallery', 'availability'
+            'mediaGallery.media', 'availability'
         ])->find($id);
     
         if (!$activity) {
@@ -571,6 +621,15 @@ class ActivityController extends Controller
                 'id' => $tag->id,
                 'tag_id' => $tag->tag_id,
                 'tag_name' => $tag->tag->name ?? null, // Get tag name
+            ];
+        });
+
+        $activityData['media_gallery'] = collect($activity->mediaGallery)->map(function ($media) {
+            return [
+                'id'       => $media->id,
+                'media_id' => $media->media_id,
+                'name'     => $media->media->name ?? null,
+                'url'      => $media->media->url ?? null,
             ];
         });
     

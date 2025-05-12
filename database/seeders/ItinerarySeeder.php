@@ -170,7 +170,7 @@ class ItinerarySeeder extends Seeder
 
             ItineraryInclusionExclusion::create([
                 'itinerary_id' => $itinerary->id,
-                'type' => 'Meal',
+                'type' => 'meal',
                 'title' => 'Breakfast included',
                 'description' => 'Breakfast included in the package',
                 'included' => true,
