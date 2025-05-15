@@ -181,6 +181,7 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::get('/', [ItineraryController::class, 'index']); // Get all
         Route::get('/{id}', [ItineraryController::class, 'show']); // Get single
         Route::delete('/{id}', [ItineraryController::class, 'destroy']); // Delete
+        Route::delete('/{id}/partial-delete', [ItineraryController::class, 'partialDelete']); //partialDelete
     });
 
     // Admin Side Package route

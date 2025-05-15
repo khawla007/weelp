@@ -354,7 +354,7 @@ class ItineraryController extends Controller
                 foreach ($request->media_gallery as $media) {
                     ItineraryMediaGallery::create([
                         'itinerary_id' => $itinerary->id,
-                        'media_id'          => $media['media_id'],
+                        'media_id'     => $media['media_id'],
                     ]);
                 }
             }
@@ -459,7 +459,7 @@ class ItineraryController extends Controller
             'categories.category',
             'attributes.attribute',
             'tags.tag',
-            'schedules.transfers.transfer.media.media',
+            'schedules.transfers.transfer.mediaGallery.media',
             'schedules.activities.activity.mediaGallery.media',
             // 'basePricing.variations',
             'inclusionsExclusions',
@@ -505,13 +505,14 @@ class ItineraryController extends Controller
         })->values();
 
         $itineraryData['base_pricing']       = $basePricing;
-        $itineraryData['pricing_variations'] = $basePricingVariations;
+        $itineraryData['price_variations'] = $basePricingVariations;
         $itineraryData['blackout_dates']     = $blackoutDates;
 
 
         // Schedules flat (only day)
         $itineraryData['schedules'] = collect($itinerary->schedules)->map(function ($schedule) {
             return [
+                'id'  => $schedule->id,
                 'day' => $schedule->day,
             ];
         });
@@ -545,7 +546,7 @@ class ItineraryController extends Controller
         // Flatten transfers with day
         $itineraryData['transfers'] = collect($itinerary->schedules)->flatMap(function ($schedule) {
             return collect($schedule->transfers)->map(function ($transfer) use ($schedule) {
-                $mediaItems = collect($transfer->transfer->media ?? [])->map(function ($media) {
+                $mediaItems = collect($transfer->transfer->mediaGallery ?? [])->map(function ($media) {
                     return [
                         'name'      => $media->media->name ?? null,
                         'alt_text'  => $media->media->alt_text ?? null,
@@ -797,6 +798,10 @@ class ItineraryController extends Controller
             //         }
             //     }
             // }
+    
+            // if ($request->has('attributes')) {
+            //     $updateOrCreateRelation('attributes', $request->input('attributes'));
+            // }
 
             // Handle locations [1, 2, 3]
             if ($request->has('locations')) {
@@ -840,10 +845,6 @@ class ItineraryController extends Controller
                 }
             }
     
-            // if ($request->has('attributes')) {
-            //     $updateOrCreateRelation('attributes', $request->input('attributes'));
-            // }
-    
             if ($request->has('availability')) {
                 $itinerary->availability()->updateOrCreate([], $request->availability);
             }
@@ -873,7 +874,7 @@ class ItineraryController extends Controller
 
     /**
      * Remove the specified Itinerary from storage.
-     */
+    */
     public function destroy(string $id)
     {
         $itinerary = Itinerary::find($id);
@@ -881,16 +882,113 @@ class ItineraryController extends Controller
         if (!$itinerary) {
             return response()->json(['message' => 'Itinerary not found'], 404);
         }
-
-        // Optionally, you can delete related records before deleting the itinerary
-        $itinerary->itineraryLocations()->delete();
-        $itinerary->itinerarySchedules()->delete();
-        $itinerary->itineraryActivities()->delete();
-        $itinerary->itineraryTransfers()->delete();
-        // Continue for other related models...
         
         $itinerary->delete();
 
         return response()->json(['message' => 'Itinerary deleted successfully']);
     }
+
+    public function partialDelete(Request $request, string $id)
+    {
+        $itinerary = Itinerary::with('schedules.activities', 'schedules.transfers', 'basePricing.variations', 'basePricing.blackoutDates')->find($id);
+
+        if (!$itinerary) {
+            return response()->json(['message' => 'Itinerary not found'], 404);
+        }
+
+        // Delete selected activities via schedules
+        if ($request->has('deleted_activity_ids')) {
+            foreach ($itinerary->schedules as $schedule) {
+                $schedule->activities()
+                    ->whereIn('id', $request->deleted_activity_ids)
+                    ->delete();
+            }
+        }
+
+        // Delete selected transfers via schedules
+        if ($request->has('deleted_transfer_ids')) {
+            foreach ($itinerary->schedules as $schedule) {
+                $schedule->transfers()
+                    ->whereIn('id', $request->deleted_transfer_ids)
+                    ->delete();
+            }
+        }
+
+        // Delete selected schedules directly
+        if ($request->has('deleted_schedule_ids')) {
+            $itinerary->schedules()
+                ->whereIn('id', $request->deleted_schedule_ids)
+                ->delete();
+        }
+
+        // Delete selected price variation directly
+        if ($request->has('deleted_price_variation_ids') && $itinerary->basePricing) {
+            $itinerary->basePricing->variations()
+                ->whereIn('id', $request->deleted_price_variation_ids)
+                ->delete();
+        }
+
+        // Delete selected blackout dates directly
+        if ($request->has('deleted_blackout_date_ids') && $itinerary->basePricing) {
+            $itinerary->basePricing->blackoutDates()
+                ->whereIn('id', $request->deleted_blackout_date_ids)
+                ->delete();
+        }
+
+        // Delete selected inclusion exclusion directly
+        if ($request->has('deleted_inclusion_exclusion_ids')) {
+            $itinerary->inclusionsExclusions()
+                ->whereIn('id', $request->deleted_inclusion_exclusion_ids)
+                ->delete();
+        }
+
+        return response()->json(['message' => 'Selected items deleted successfully']);
+    }
+
+    // public function destroy(Request $request, string $id)
+    // {
+    //     $itinerary = Itinerary::with('schedules.activities', 'schedules.transfers')->find($id);
+    
+    //     if (!$itinerary) {
+    //         return response()->json(['message' => 'Itinerary not found'], 404);
+    //     }
+    
+    //     // Delete selected activities via schedules
+    //     if ($request->has('deleted_activity_ids')) {
+    //         foreach ($itinerary->schedules as $schedule) {
+    //             $schedule->activities()
+    //                 ->whereIn('id', $request->deleted_activity_ids)
+    //                 ->delete();
+    //         }
+    //     }
+    
+    //     // Delete selected transfers via schedules
+    //     if ($request->has('deleted_transfer_ids')) {
+    //         foreach ($itinerary->schedules as $schedule) {
+    //             $schedule->transfers()
+    //                 ->whereIn('id', $request->deleted_transfer_ids)
+    //                 ->delete();
+    //         }
+    //     }
+    
+    //     // Delete selected schedules directly
+    //     if ($request->has('deleted_schedule_ids')) {
+    //         $itinerary->schedules()
+    //             ->whereIn('id', $request->deleted_schedule_ids)
+    //             ->delete();
+    //     }
+    
+    //     // If no partial deletions passed, delete full itinerary
+    //     if (
+    //         !$request->has('deleted_schedule_ids') &&
+    //         !$request->has('deleted_activity_ids') &&
+    //         !$request->has('deleted_transfer_ids')
+    //     ) {
+    //         $itinerary->delete();
+    //         return response()->json(['message' => 'Itinerary deleted successfully']);
+    //     }
+    
+    //     return response()->json(['message' => 'Selected relations deleted successfully']);
+    // }    
+
 }

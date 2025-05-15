@@ -27,9 +27,9 @@ class Transfer extends Model
     }
 
     // Relationship with Media
-    public function media()
+    public function mediaGallery()
     {
-        return $this->hasMany(TransferMedia::class);
+        return $this->hasMany(TransferMediaGallery::class);
     }
 
     // Relationship with SEO

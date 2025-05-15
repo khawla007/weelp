@@ -6,7 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Transfer;
 use App\Models\TransferVendorRoute;
 use App\Models\TransferPricingAvailability;
-use App\Models\TransferMedia;
+use App\Models\TransferMediaGallery;
 use App\Models\TransferSeo;
 
 class TransferSeeder extends Seeder
@@ -143,7 +143,7 @@ class TransferSeeder extends Seeder
 
             // Media  
             foreach ($data['media'] as $media) {
-                TransferMedia::create([
+                TransferMediaGallery::create([
                     'transfer_id' => $transfer->id,
                     'media_type' => $media['media_type'],
                     // 'media_url' => $media['media_url'],

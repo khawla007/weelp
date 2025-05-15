@@ -32,7 +32,7 @@ class Media extends Model
 
     public function transferMedia()
     {
-        return $this->hasMany(TransferyMedia::class, 'media_id');
+        return $this->hasMany(TransferyMediaGallery::class, 'media_id');
     }
     
 }

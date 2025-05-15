@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('transfer_media', function (Blueprint $table) {
+        Schema::create('transfer_media_gallery', function (Blueprint $table) {
             $table->id();
             $table->foreignId('transfer_id')->constrained('transfers')->onDelete('cascade');
             $table->enum('media_type', ['photo', 'video']);
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('transfer_media');
+        Schema::dropIfExists('transfer_media_gallery');
     }
 };
