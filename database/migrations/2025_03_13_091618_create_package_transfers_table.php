@@ -19,7 +19,7 @@ return new class extends Migration
             $table->time('end_time')->nullable();
             $table->text('notes')->nullable();
             $table->decimal('price', 10, 2)->nullable();
-            $table->boolean('include_in_package')->default(false);
+            $table->boolean('included')->default(false);
             $table->string('pickup_location');
             $table->string('dropoff_location');
             $table->integer('pax')->nullable();

@@ -193,6 +193,7 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::get('/', [PackageController::class, 'index']); // Get all
         Route::get('/{id}', [PackageController::class, 'show']); // Get single
         Route::delete('/{id}', [PackageController::class, 'destroy']); // Delete
+        Route::delete('/{id}/partial-delete', [PackageController::class, 'partialDelete']); //partialDelete
     });
 
     Route::prefix('blogs')->group(function () {

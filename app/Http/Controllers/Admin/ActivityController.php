@@ -32,24 +32,24 @@ class ActivityController extends Controller
     */
     public function index(Request $request)
     {
-        $perPage = 3; 
-        $page = $request->get('page', 1); 
+        $perPage        = 3; 
+        $page           = $request->get('page', 1); 
         
-        $categorySlug = $request->get('category');
-        $difficulty = $request->get('difficulty_level');
-        $duration = $request->get('duration');
-        $ageGroup = $request->get('age_restriction');
-        $season = $request->get('season');
-        $minPrice = $request->get('min_price', 0);
-        $maxPrice = $request->get('max_price');
-        $sortBy = $request->get('sort_by', 'id_desc'); // Default: Newest First
+        $categorySlug   = $request->get('category');
+        $difficulty     = $request->get('difficulty_level');
+        $duration       = $request->get('duration');
+        $ageGroup       = $request->get('age_restriction');
+        $season         = $request->get('season');
+        $minPrice       = $request->get('min_price', 0);
+        $maxPrice       = $request->get('max_price');
+        $sortBy         = $request->get('sort_by', 'id_desc'); // Default: Newest First
         
-        $category = $categorySlug ? Category::where('slug', $categorySlug)->first() : null;
-        $categoryId = $category ? $category->id : null;
+        $category       = $categorySlug ? Category::where('slug', $categorySlug)->first() : null;
+        $categoryId     = $category ? $category->id : null;
     
         $difficultyAttr = Attribute::where('slug', 'difficulty-level')->first();
-        $durationAttr = Attribute::where('slug', 'duration')->first();
-        $ageGroupAttr = Attribute::where('slug', 'age-restriction')->first(); // Adjust slug if different
+        $durationAttr   = Attribute::where('slug', 'duration')->first();
+        $ageGroupAttr   = Attribute::where('slug', 'age-restriction')->first(); // Adjust slug if different
         
         $query = Activity::query()
             ->select('activities.*')  // Select all fields from activities
@@ -162,7 +162,7 @@ class ActivityController extends Controller
             });
             $data['tags'] = collect($activity->tags)->map(function ($tag) {
                 return [
-                    'id'            => $tag->id,
+                    'id'       => $tag->id,
                     'tag_id'   => $tag->tag_id,
                     'tag_name' => $tag->tag->name ?? null,
                 ];
@@ -172,11 +172,11 @@ class ActivityController extends Controller
         });
 
         return response()->json([
-            'success' => true,
-            'data' => $transformed->values(),
+            'success'      => true,
+            'data'         => $transformed->values(),
             'current_page' => (int) $page,
-            'per_page' => $perPage,
-            'total' => $allItems->count(),
+            'per_page'     => $perPage,
+            'total'        => $allItems->count(),
         ], 200);
     }    
 
@@ -188,33 +188,32 @@ class ActivityController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|unique:activities,slug',
-            'description' => 'nullable|string',
-            'short_description' => 'nullable|string',
-            'featured_activity' => 'boolean',
-            'categories' => 'nullable|array',
-            'tags' => 'nullable|array',
-            'locations' => 'nullable|array',
-            'attributes' => 'nullable|array',
-            'pricing' => 'nullable|array',
-            'seasonal_pricing' => 'nullable|array',
-            'group_discounts' => 'nullable|array',
-            // 'group_discounts.*.discount_type' => 'required|string|in:percentage,fixed',
-            'early_bird_discount' => 'nullable|array',
+            'name'                 => 'required|string|max:255',
+            'slug'                 => 'required|string|unique:activities,slug',
+            'description'          => 'nullable|string',
+            'short_description'    => 'nullable|string',
+            'featured_activity'    => 'boolean',
+            'categories'           => 'nullable|array',
+            'tags'                 => 'nullable|array',
+            'locations'            => 'nullable|array',
+            'attributes'           => 'nullable|array',
+            'pricing'              => 'nullable|array',
+            'seasonal_pricing'     => 'nullable|array',
+            'group_discounts'      => 'nullable|array',
+            'early_bird_discount'  => 'nullable|array',
             'last_minute_discount' => 'nullable|array',
-            'promo_codes' => 'nullable|array',
-            'media_gallery' => 'nullable|array',
-            'availability' => 'nullable|array',
+            'promo_codes'          => 'nullable|array',
+            'media_gallery'        => 'nullable|array',
+            'availability'         => 'nullable|array',
         ]);
     
         try {
             DB::beginTransaction();
     
             $activity = Activity::create([
-                'name' => $request->name,
-                'slug' => $request->slug,
-                'description' => $request->description,
+                'name'              => $request->name,
+                'slug'              => $request->slug,
+                'description'       => $request->description,
                 'short_description' => $request->short_description,
                 'featured_activity' => $request->featured_activity ?? false,
             ]);
@@ -234,7 +233,7 @@ class ActivityController extends Controller
                 foreach ($request->tags as $tag_id) {
                     ActivityTag::create([
                         'activity_id' => $activity->id,
-                        'tag_id' => $tag_id,
+                        'tag_id'      => $tag_id,
                     ]);
                 }
             }
@@ -243,11 +242,11 @@ class ActivityController extends Controller
             if ($request->has('locations')) {
                 foreach ($request->locations as $location) {
                     ActivityLocation::create([
-                        'activity_id' => $activity->id,
-                        'city_id' => $location['city_id'],
-                        'location_type' => $location['location_type'],
+                        'activity_id'    => $activity->id,
+                        'city_id'        => $location['city_id'],
+                        'location_type'  => $location['location_type'],
                         'location_label' => $location['location_label'],
-                        'duration' => $location['duration'] ?? null,
+                        'duration'       => $location['duration'] ?? null,
                     ]);
                 }
             }
@@ -256,8 +255,8 @@ class ActivityController extends Controller
             if ($request->has('attributes')) {
                 foreach ($request->input('attributes') as $attribute) {
                     ActivityAttribute::create([
-                        'activity_id' => $activity->id,
-                        'attribute_id' => $attribute['attribute_id'],
+                        'activity_id'     => $activity->id,
+                        'attribute_id'    => $attribute['attribute_id'],
                         'attribute_value' => $attribute['attribute_value'],
                     ]);
                 }
@@ -266,21 +265,21 @@ class ActivityController extends Controller
             // Pricing
             if ($request->has('pricing')) {
                 ActivityPricing::create([
-                    'activity_id' => $activity->id,
+                    'activity_id'   => $activity->id,
                     'regular_price' => $request->pricing['regular_price'],
-                    'currency' => $request->pricing['currency'],
+                    'currency'      => $request->pricing['currency'],
                 ]);
     
                 // Seasonal Pricing
                 if ($request->has('seasonal_pricing')) {
                     foreach ($request->seasonal_pricing as $season) {
                         ActivitySeasonalPricing::create([
-                            'activity_id' => $activity->id,
-                            'season_name' => $season['season_name'],
+                            'activity_id'             => $activity->id,
+                            'season_name'             => $season['season_name'],
                             'enable_seasonal_pricing' => true,
-                            'season_start' => $season['season_start'],
-                            'season_end' => $season['season_end'],
-                            'season_price' => $season['season_price'],
+                            'season_start'            => $season['season_start'],
+                            'season_end'              => $season['season_end'],
+                            'season_price'            => $season['season_price'],
                         ]);
                     }
                 }
@@ -291,10 +290,10 @@ class ActivityController extends Controller
                 // dd($request->group_discounts);
                 foreach ($request->group_discounts as $discount) {
                     ActivityGroupDiscount::create([
-                        'activity_id' => $activity->id,
-                        'min_people' => $discount['min_people'],
+                        'activity_id'     => $activity->id,
+                        'min_people'      => $discount['min_people'],
                         'discount_amount' => $discount['discount_amount'],
-                        'discount_type' => $discount['discount_type'],
+                        'discount_type'   => $discount['discount_type'],
                     ]);
                 }
             }
@@ -302,22 +301,22 @@ class ActivityController extends Controller
             // Early Bird Discount
             if ($request->has('early_bird_discount')) {
                 ActivityEarlyBirdDiscount::create([
-                    'activity_id' => $activity->id,
-                    'enabled' => $request->last_minute_discount['enabled'],
+                    'activity_id'       => $activity->id,
+                    'enabled'           => $request->last_minute_discount['enabled'],
                     'days_before_start' => $request->early_bird_discount['days_before_start'],
-                    'discount_amount' => $request->early_bird_discount['discount_amount'],
-                    'discount_type' => $request->early_bird_discount['discount_type'],
+                    'discount_amount'   => $request->early_bird_discount['discount_amount'],
+                    'discount_type'     => $request->early_bird_discount['discount_type'],
                 ]);
             }
     
             // Last Minute Discount
             if ($request->has('last_minute_discount')) {
                 ActivityLastMinuteDiscount::create([
-                    'activity_id' => $activity->id,
-                    'enabled' => $request->last_minute_discount['enabled'],
+                    'activity_id'       => $activity->id,
+                    'enabled'           => $request->last_minute_discount['enabled'],
                     'days_before_start' => $request->last_minute_discount['days_before_start'],
-                    'discount_amount' => $request->last_minute_discount['discount_amount'],
-                    'discount_type' => $request->last_minute_discount['discount_type'],
+                    'discount_amount'   => $request->last_minute_discount['discount_amount'],
+                    'discount_type'     => $request->last_minute_discount['discount_type'],
                 ]);
             }
     
@@ -325,13 +324,13 @@ class ActivityController extends Controller
             if ($request->has('promo_codes')) {
                 foreach ($request->promo_codes as $promo) {
                     ActivityPromoCode::create([
-                        'activity_id' => $activity->id,
-                        'promo_code' => $promo['promo_code'],
-                        'max_uses' => $promo['max_uses'],
+                        'activity_id'     => $activity->id,
+                        'promo_code'      => $promo['promo_code'],
+                        'max_uses'        => $promo['max_uses'],
                         'discount_amount' => $promo['discount_amount'],
-                        'discount_type' => $promo['discount_type'],
-                        'valid_from' => $promo['valid_from'],
-                        'valid_to' => $promo['valid_to'],
+                        'discount_type'   => $promo['discount_type'],
+                        'valid_from'      => $promo['valid_from'],
+                        'valid_to'        => $promo['valid_to'],
                     ]);
                 }
             }
@@ -341,7 +340,7 @@ class ActivityController extends Controller
                 foreach ($request->media_gallery as $media) {
                     ActivityMediaGallery::create([
                         'activity_id' => $activity->id,
-                        'media_id' => $media['media_id'],
+                        'media_id'    => $media['media_id'],
                     ]);
                 }
             }
@@ -349,12 +348,12 @@ class ActivityController extends Controller
             // Availability
             if ($request->has('availability')) {
                 ActivityAvailability::create([
-                    'activity_id' => $activity->id,
-                    'date_based_activity' => $request->availability['date_based_activity'],
-                    'start_date' => $request->availability['start_date'] ?? null,
-                    'end_date' => $request->availability['end_date'] ?? null,
+                    'activity_id'             => $activity->id,
+                    'date_based_activity'     => $request->availability['date_based_activity'],
+                    'start_date'              => $request->availability['start_date'] ?? null,
+                    'end_date'                => $request->availability['end_date'] ?? null,
                     'quantity_based_activity' => $request->availability['quantity_based_activity'],
-                    'max_quantity' => $request->availability['max_quantity'] ?? null,
+                    'max_quantity'            => $request->availability['max_quantity'] ?? null,
                 ]);
             }
     
@@ -586,24 +585,24 @@ class ActivityController extends Controller
         // Replace location city object with just `city_name`
         $activityData['locations'] = collect($activity->locations)->map(function ($location) {
             return [
-                'id' => $location->id,
-                'activity_id' => $location->activity_id,
-                'location_type' => $location->location_type,
-                'city_id' => $location->city_id,
-                'city_name' => $location->city->name ?? null, // Get city name
+                'id'             => $location->id,
+                'activity_id'    => $location->activity_id,
+                'location_type'  => $location->location_type,
+                'city_id'        => $location->city_id,
+                'city_name'      => $location->city->name ?? null, // Get city name
                 'location_label' => $location->location_label,
-                'duration' => $location->duration,
-                'created_at' => $location->created_at,
-                'updated_at' => $location->updated_at,
+                'duration'       => $location->duration,
+                'created_at'     => $location->created_at,
+                'updated_at'     => $location->updated_at,
             ];
         });
     
         // Replace attributes with just `attribute_name`
         $activityData['attributes'] = collect($activity->attributes)->map(function ($attribute) {
             return [
-                'id' => $attribute->id,
-                'attribute_id' => $attribute->attribute_id,
-                'attribute_name' => $attribute->attribute->name ?? null, // Get attribute name
+                'id'              => $attribute->id,
+                'attribute_id'    => $attribute->attribute_id,
+                'attribute_name'  => $attribute->attribute->name ?? null, // Get attribute name
                 'attribute_value' => $attribute->attribute_value,
             ];
         });
@@ -611,15 +610,15 @@ class ActivityController extends Controller
         // Replace categories with just `category_name`
         $activityData['categories'] = collect($activity->categories)->map(function ($category) {
             return [
-                'id' => $category->id,
-                'category_id' => $category->category_id,
+                'id'            => $category->id,
+                'category_id'   => $category->category_id,
                 'category_name' => $category->category->name ?? null, // Get category name
             ];
         });
         $activityData['tags'] = collect($activity->tags)->map(function ($tag) {
             return [
-                'id' => $tag->id,
-                'tag_id' => $tag->tag_id,
+                'id'       => $tag->id,
+                'tag_id'   => $tag->tag_id,
                 'tag_name' => $tag->tag->name ?? null, // Get tag name
             ];
         });
@@ -644,23 +643,23 @@ class ActivityController extends Controller
         $activity = Activity::findOrFail($id);
     
         $rules = [
-            'name' => 'sometimes|required|string|max:255',
-            'slug' => 'sometimes|required|string|unique:activities,slug,' . $activity->id,
-            'description' => 'nullable|string',
-            'short_description' => 'nullable|string',
-            'featured_activity' => 'boolean',
-            'categories' => 'nullable|array',
-            'tags' => 'nullable|array',
-            'locations' => 'nullable|array',
-            'attributes' => 'nullable|array',
-            'pricing' => 'nullable|array',
-            'seasonal_pricing' => 'nullable|array',
-            'group_discounts' => 'nullable|array',
-            'early_bird_discount' => 'nullable|array',
+            'name'                 => 'sometimes|required|string|max:255',
+            'slug'                 => 'sometimes|required|string|unique:activities,slug,' . $activity->id,
+            'description'          => 'nullable|string',
+            'short_description'    => 'nullable|string',
+            'featured_activity'    => 'boolean',
+            'categories'           => 'nullable|array',
+            'tags'                 => 'nullable|array',
+            'locations'            => 'nullable|array',
+            'attributes'           => 'nullable|array',
+            'pricing'              => 'nullable|array',
+            'seasonal_pricing'     => 'nullable|array',
+            'group_discounts'      => 'nullable|array',
+            'early_bird_discount'  => 'nullable|array',
             'last_minute_discount' => 'nullable|array',
-            'promo_codes' => 'nullable|array',
-            'media_gallery' => 'nullable|array',
-            'availability' => 'nullable|array',
+            'promo_codes'          => 'nullable|array',
+            'media_gallery'        => 'nullable|array',
+            'availability'         => 'nullable|array',
         ];
     
         $request->validate($rules);
@@ -756,7 +755,7 @@ class ActivityController extends Controller
                             $model->fill($item)->save();
                         }
                     } else {
-                        $item[$foreignKey] = $pricing->id;
+                        $item[$foreignKey]   = $pricing->id;
                         $item['activity_id'] = $activity->id;
                         $modelClass::create($item);
                     }
@@ -815,13 +814,13 @@ class ActivityController extends Controller
             DB::commit();
     
             return response()->json([
-                'message' => 'Activity updated successfully',
+                'message'  => 'Activity updated successfully',
                 'activity' => $activity->fresh()
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
-                'error' => 'Something went wrong',
+                'error'   => 'Something went wrong',
                 'details' => $e->getMessage(),
             ], 500);
         }
@@ -841,14 +840,14 @@ class ActivityController extends Controller
         try {
             // Define which relations can be deleted partially and the key used in request
             $deletableRelations = [
-                'categories' => [ActivityCategory::class, 'category_id'],
-                'tags' => [ActivityTag::class, 'tag_id'],
-                'locations' => [ActivityLocation::class, 'id'], // assuming deleting by id
-                'attributes' => [ActivityAttribute::class, 'attribute_id'],
-                'promo_codes' => [ActivityPromoCode::class, 'id'],
-                'group_discounts' => [ActivityGroupDiscount::class, 'id'],
+                'categories'       => [ActivityCategory::class, 'category_id'],
+                'tags'             => [ActivityTag::class, 'tag_id'],
+                'locations'        => [ActivityLocation::class, 'id'], // assuming deleting by id
+                'attributes'       => [ActivityAttribute::class, 'attribute_id'],
+                'promo_codes'      => [ActivityPromoCode::class, 'id'],
+                'group_discounts'  => [ActivityGroupDiscount::class, 'id'],
                 'seasonal_pricing' => [ActivitySeasonalPricing::class, 'id'],
-                'media_gallery' => [ActivityMediaGallery::class, 'id'],
+                'media_gallery'    => [ActivityMediaGallery::class, 'id'],
             ];
 
             $hasPartialDeletes = false;

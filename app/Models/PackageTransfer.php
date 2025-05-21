@@ -16,10 +16,14 @@ class PackageTransfer extends Model
         'end_time',
         'notes',
         'price',
-        'include_in_package',
+        'included',
         'pickup_location',
         'dropoff_location',
         'pax',
+    ];
+
+    protected $casts = [
+        'included' => 'boolean'
     ];
 
     public function schedule()

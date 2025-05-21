@@ -40,24 +40,24 @@ class PackageController extends Controller
     */
     public function index(Request $request)
     {
-        $perPage = 3; 
-        $page = $request->get('page', 1); 
+        $perPage        = 3; 
+        $page           = $request->get('page', 1); 
 
-        $categorySlug = $request->get('category');
-        $difficulty = $request->get('difficulty_level');
-        $duration = $request->get('duration');
-        $ageGroup = $request->get('age_restriction');
-        $season = $request->get('season');
-        $minPrice = $request->get('min_price', 0);
-        $maxPrice = $request->get('max_price');
-        $sortBy = $request->get('sort_by', 'id_desc'); // Default: Newest First
+        $categorySlug   = $request->get('category');
+        $difficulty     = $request->get('difficulty_level');
+        $duration       = $request->get('duration');
+        $ageGroup       = $request->get('age_restriction');
+        $season         = $request->get('season');
+        $minPrice       = $request->get('min_price', 0);
+        $maxPrice       = $request->get('max_price');
+        $sortBy         = $request->get('sort_by', 'id_desc'); // Default: Newest First
 
-        $category = $categorySlug ? Category::where('slug', $categorySlug)->first() : null;
-        $categoryId = $category ? $category->id : null;
+        $category       = $categorySlug ? Category::where('slug', $categorySlug)->first() : null;
+        $categoryId     = $category ? $category->id : null;
 
         $difficultyAttr = Attribute::where('slug', 'difficulty-level')->first();
-        $durationAttr = Attribute::where('slug', 'duration')->first();
-        $ageGroupAttr = Attribute::where('slug', 'age-restriction')->first();
+        $durationAttr   = Attribute::where('slug', 'duration')->first();
+        $ageGroupAttr   = Attribute::where('slug', 'age-restriction')->first();
 
         $query = Package::query()
             ->select('packages.*')  
@@ -138,11 +138,11 @@ class PackageController extends Controller
         $paginatedItems = $allItems->forPage($page, $perPage);
 
         return response()->json([
-            'success' => true,
-            'data' => $paginatedItems->values(),
+            'success'      => true,
+            'data'         => $paginatedItems->values(),
             'current_page' => (int) $page,
-            'per_page' => $perPage,
-            'total' => $allItems->count(),
+            'per_page'     => $perPage,
+            'total'        => $allItems->count(),
         ], 200);
     }
 
@@ -152,28 +152,28 @@ class PackageController extends Controller
     public function store(Request $request)
     {
         $rules = [
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|unique:packages,slug',
-            'description' => 'nullable|string',
-            'featured_package' => 'boolean',
-            'private_package' => 'boolean',
-            'locations' => 'nullable|array',
-            'information' => 'nullable|array',
-            'schedules' => 'nullable|array',
-            'activities' => 'nullable|array',
-            'transfers' => 'nullable|array',
-            'itineraries' => 'nullable|array',
-            'pricing' => 'nullable|array',
-            'price_variations' => 'nullable|array',
-            'blackout_dates' => 'nullable|array',
+            'name'                  => 'required|string|max:255',
+            'slug'                  => 'required|string|unique:packages,slug',
+            'description'           => 'nullable|string',
+            'featured_package'      => 'boolean',
+            'private_package'       => 'boolean',
+            'locations'             => 'nullable|array',
+            'information'           => 'nullable|array',
+            'schedules'             => 'nullable|array',
+            'activities'            => 'nullable|array',
+            'transfers'             => 'nullable|array',
+            'itineraries'           => 'nullable|array',
+            'pricing'               => 'nullable|array',
+            'price_variations'      => 'nullable|array',
+            'blackout_dates'        => 'nullable|array',
             'inclusions_exclusions' => 'nullable|array',
-            'media_gallery' => 'nullable|array',
-            'faqs' => 'nullable|array',
-            'seo' => 'nullable|array',
-            'categories' => 'nullable|array',
-            'attributes' => 'nullable|array',
-            'tags' => 'nullable|array',
-            'availability' => 'nullable|array',
+            'media_gallery'         => 'nullable|array',
+            'faqs'                  => 'nullable|array',
+            'seo'                   => 'nullable|array',
+            'categories'            => 'nullable|array',
+            'attributes'            => 'nullable|array',
+            'tags'                  => 'nullable|array',
+            'availability'          => 'nullable|array',
         ];
     
         $request->validate($rules);
@@ -182,30 +182,30 @@ class PackageController extends Controller
             DB::beginTransaction();
     
             $package = Package::create([
-                'name' => $request->name,
-                'slug' => $request->slug,
-                'description' => $request->description ?? null,
+                'name'             => $request->name,
+                'slug'             => $request->slug,
+                'description'      => $request->description ?? null,
                 'featured_package' => $request->boolean('featured_package'),
-                'private_package' => $request->boolean('private_package'),
+                'private_package'  => $request->boolean('private_package'),
             ]);
     
             // === Information ===
             if ($request->has('information')) {
                 foreach ($request->information as $info) {
                     PackageInformation::create([
-                        'package_id' => $package->id,
+                        'package_id'    => $package->id,
                         'section_title' => $info['section_title'] ?? '',
-                        'content' => $info['content'] ?? '',
+                        'content'       => $info['content'] ?? '',
                     ]);
                 }
             }
-    
+
             // === Locations ===
             if ($request->has('locations')) {
-                foreach ($request->locations as $location) {
+                foreach ($request->locations as $cityId) {
                     PackageLocation::create([
                         'package_id' => $package->id,
-                        'city_id' => $location['city_id'],
+                        'city_id'    => $cityId,
                     ]);
                 }
             }
@@ -216,7 +216,7 @@ class PackageController extends Controller
                 foreach ($request->schedules as $schedule) {
                     $record = PackageSchedule::create([
                         'package_id' => $package->id,
-                        'day' => $schedule['day'],
+                        'day'        => $schedule['day'],
                     ]);
                     $scheduleMap[$schedule['day']] = $record->id;
                 }
@@ -228,16 +228,16 @@ class PackageController extends Controller
                     $scheduleId = $scheduleMap[$transfer['day']] ?? null;
                     if ($scheduleId) {
                         PackageTransfer::create([
-                            'schedule_id' => $scheduleId,
-                            'transfer_id' => $transfer['transfer_id'],
-                            'start_time' => $transfer['start_time'],
-                            'end_time' => $transfer['end_time'],
-                            'notes' => $transfer['notes'],
-                            'price' => $transfer['price'],
-                            'include_in_package' => $transfer['include_in_package'],
-                            'pickup_location' => $transfer['pickup_location'] ?? null,
-                            'dropoff_location' => $transfer['dropoff_location'] ?? null,
-                            'pax' => $transfer['pax'] ?? null,
+                            'schedule_id'        => $scheduleId,
+                            'transfer_id'        => $transfer['transfer_id'],
+                            'start_time'         => $transfer['start_time'],
+                            'end_time'           => $transfer['end_time'],
+                            'notes'              => $transfer['notes'],
+                            'price'              => $transfer['price'],
+                            'included'           => $transfer['included'],
+                            'pickup_location'    => $transfer['pickup_location'] ?? null,
+                            'dropoff_location'   => $transfer['dropoff_location'] ?? null,
+                            'pax'                => $transfer['pax'] ?? null,
                         ]);
                     }
                 }
@@ -249,13 +249,13 @@ class PackageController extends Controller
                     $scheduleId = $scheduleMap[$activity['day']] ?? null;
                     if ($scheduleId) {
                         PackageActivity::create([
-                            'schedule_id' => $scheduleId,
-                            'activity_id' => $activity['activity_id'],
-                            'start_time' => $activity['start_time'],
-                            'end_time' => $activity['end_time'],
-                            'notes' => $activity['notes'],
-                            'price' => $activity['price'],
-                            'include_in_package' => $activity['include_in_package'],
+                            'schedule_id'        => $scheduleId,
+                            'activity_id'        => $activity['activity_id'],
+                            'start_time'         => $activity['start_time'],
+                            'end_time'           => $activity['end_time'],
+                            'notes'              => $activity['notes'],
+                            'price'              => $activity['price'],
+                            'included'           => $activity['included'],
                         ]);
                     }
                 }
@@ -267,16 +267,16 @@ class PackageController extends Controller
                     $scheduleId = $scheduleMap[$itinerary['day']] ?? null;
                     if ($scheduleId) {
                         PackageItinerary::create([
-                            'schedule_id' => $scheduleId,
-                            'itinerary_id' => $itinerary['itinerary_id'],
-                            'start_time' => $itinerary['start_time'],
-                            'end_time' => $itinerary['end_time'],
-                            'notes' => $itinerary['notes'],
-                            'price' => $itinerary['price'],
-                            'include_in_package' => $itinerary['include_in_package'],
-                            'pickup_location' => $itinerary['pickup_location'] ?? null,
-                            'dropoff_location' => $itinerary['dropoff_location'] ?? null,
-                            'pax' => $itinerary['pax'] ?? null,
+                            'schedule_id'        => $scheduleId,
+                            'itinerary_id'       => $itinerary['itinerary_id'],
+                            'start_time'         => $itinerary['start_time'],
+                            'end_time'           => $itinerary['end_time'],
+                            'notes'              => $itinerary['notes'],
+                            'price'              => $itinerary['price'],
+                            'included'           => $itinerary['included'],
+                            'pickup_location'    => $itinerary['pickup_location'] ?? null,
+                            'dropoff_location'   => $itinerary['dropoff_location'] ?? null,
+                            'pax'                => $itinerary['pax'] ?? null,
                         ]);
                     }
                 }
@@ -285,22 +285,22 @@ class PackageController extends Controller
             // === Pricing ===
             if ($request->has('pricing')) {
                 $basePricing = PackageBasePricing::create([
-                    'package_id' => $package->id,
-                    'currency' => $request->pricing['currency'],
+                    'package_id'   => $package->id,
+                    'currency'     => $request->pricing['currency'],
                     'availability' => $request->pricing['availability'],
-                    'start_date' => $request->pricing['start_date'],
-                    'end_date' => $request->pricing['end_date'],
+                    'start_date'   => $request->pricing['start_date'],
+                    'end_date'     => $request->pricing['end_date'],
                 ]);
     
                 if ($request->has('price_variations')) {
                     foreach ($request->price_variations as $variation) {
                         PackagePriceVariation::create([
                             'base_pricing_id' => $basePricing->id,
-                            'name' => $variation['name'],
-                            'regular_price' => $variation['regular_price'],
-                            'sale_price' => $variation['sale_price'],
-                            'max_guests' => $variation['max_guests'],
-                            'description' => $variation['description'],
+                            'name'            => $variation['name'],
+                            'regular_price'   => $variation['regular_price'],
+                            'sale_price'      => $variation['sale_price'],
+                            'max_guests'      => $variation['max_guests'],
+                            'description'     => $variation['description'],
                         ]);
                     }
                 }
@@ -309,7 +309,7 @@ class PackageController extends Controller
                     foreach ($request->blackout_dates as $date) {
                         PackageBlackoutDate::create([
                             'base_pricing_id' => $basePricing->id,
-                            'date' => $date['date'],
+                            'date'   => $date['date'],
                             'reason' => $date['reason'],
                         ]);
                     }
@@ -320,11 +320,11 @@ class PackageController extends Controller
             if ($request->has('inclusions_exclusions')) {
                 foreach ($request->inclusions_exclusions as $ie) {
                     PackageInclusionExclusion::create([
-                        'package_id' => $package->id,
-                        'type' => $ie['type'],
-                        'title' => $ie['title'],
-                        'description' => $ie['description'],
-                        'include_exclude' => $ie['include_exclude'] === 'include' ? 1 : 0,
+                        'package_id'      => $package->id,
+                        'type'            => $ie['type'],
+                        'title'           => $ie['title'],
+                        'description'     => $ie['description'],
+                        'included'        => $ie['included'],
                     ]);
                 }
             }
@@ -343,10 +343,10 @@ class PackageController extends Controller
             if ($request->has('faqs')) {
                 foreach ($request->faqs as $faq) {
                     PackageFaq::create([
-                        'package_id' => $package->id,
-                        'question_number' => $faq['question_number'] ?? null,
-                        'question' => $faq['question'],
-                        'answer' => $faq['answer'],
+                        'package_id'      => $package->id,
+                        // 'question_number' => $faq['question_number'] ?? null,
+                        'question'        => $faq['question'],
+                        'answer'          => $faq['answer'],
                     ]);
                 }
             }
@@ -354,14 +354,14 @@ class PackageController extends Controller
             // === SEO ===
             if ($request->has('seo')) {
                 PackageSeo::create([
-                    'package_id' => $package->id,
-                    'meta_title' => $request->seo['meta_title'],
+                    'package_id'       => $package->id,
+                    'meta_title'       => $request->seo['meta_title'],
                     'meta_description' => $request->seo['meta_description'],
-                    'keywords' => $request->seo['keywords'],
-                    'og_image_url' => $request->seo['og_image_url'],
-                    'canonical_url' => $request->seo['canonical_url'],
-                    'schema_type' => $request->seo['schema_type'],
-                    'schema_data' => is_array($request->seo['schema_data']) 
+                    'keywords'         => $request->seo['keywords'],
+                    'og_image_url'     => $request->seo['og_image_url'],
+                    'canonical_url'    => $request->seo['canonical_url'],
+                    'schema_type'      => $request->seo['schema_type'],
+                    'schema_data'      => is_array($request->seo['schema_data']) 
                         ? json_encode($request->seo['schema_data']) 
                         : $request->seo['schema_data'],
                 ]);
@@ -371,7 +371,7 @@ class PackageController extends Controller
             if ($request->has('categories')) {
                 foreach ($request->categories as $category_id) {
                     PackageCategory::create([
-                        'package_id' => $package->id,
+                        'package_id'  => $package->id,
                         'category_id' => $category_id,
                     ]);
                 }
@@ -381,8 +381,8 @@ class PackageController extends Controller
             
                 foreach ($request->input('attributes') as $attribute) {
                     PackageAttribute::create([
-                        'package_id' => $package->id,
-                        'attribute_id' => $attribute['attribute_id'],
+                        'package_id'      => $package->id,
+                        'attribute_id'    => $attribute['attribute_id'],
                         'attribute_value' => $attribute['attribute_value'],
                     ]);
                 }
@@ -393,7 +393,7 @@ class PackageController extends Controller
                 foreach ($request->tags as $tag_id) {
                     PackageTag::create([
                         'package_id' => $package->id,
-                        'tag_id' => $tag_id,
+                        'tag_id'     => $tag_id,
                     ]);
                 }
             }
@@ -401,12 +401,12 @@ class PackageController extends Controller
             // === Availability ===
             if ($request->has('availability')) {
                 PackageAvailability::create([
-                    'package_id' => $package->id,
-                    'date_based_package' => $request->availability['date_based_package'],
-                    'start_date' => $request->availability['start_date'] ?? null,
-                    'end_date' => $request->availability['end_date'] ?? null,
+                    'package_id'             => $package->id,
+                    'date_based_package'     => $request->availability['date_based_package'],
+                    'start_date'             => $request->availability['start_date'] ?? null,
+                    'end_date'               => $request->availability['end_date'] ?? null,
                     'quantity_based_package' => $request->availability['quantity_based_package'],
-                    'max_quantity' => $request->availability['max_quantity'] ?? null,
+                    'max_quantity'           => $request->availability['max_quantity'] ?? null,
                 ]);
             }
     
@@ -420,7 +420,7 @@ class PackageController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
-                'error' => 'Something went wrong',
+                'error'   => 'Something went wrong',
                 'details' => $e->getMessage(),
             ], 500);
         }
@@ -438,9 +438,10 @@ class PackageController extends Controller
             'categories.category',
             'attributes.attribute',
             'tags.tag',
+            'information',
             'schedules.transfers.transfer.mediaGallery.media',
             'schedules.activities.activity.mediaGallery.media',
-            'schedules.itineraries',
+            'schedules.itineraries.itinerary.mediaGallery.media',
             'basePricing.variations',
             'inclusionsExclusions',
             'mediaGallery.media',
@@ -550,22 +551,48 @@ class PackageController extends Controller
             });
         })->values();
 
+        // Flatten itineraries with day
+        $packageData['itineraries'] = collect($package->schedules)->flatMap(function ($schedule) {
+            return collect($schedule->itineraries)->map(function ($itinerary) use ($schedule) {
+                $mediaItems = collect($itinerary->itinerary->mediaGallery ?? [])->map(function ($media) {
+                    return [
+                        'name'      => $media->media->name ?? null,
+                        'alt_text'  => $media->media->alt_text ?? null,
+                        'url'       => $media->media->url ?? null,
+                    ];
+                })->filter(fn($item) => $item['url'])->values();
+                return [
+
+                    'id'             => $itinerary->id,
+                    'itinerary_id'   => $itinerary->itinerary_id,
+                    'itinerary_name' => $itinerary->itinerary->name ?? null,
+                    'media_url'      => $mediaItems,
+                    'day'            => $schedule->day,
+                    'start_time'     => $itinerary->start_time,
+                    'end_time'       => $itinerary->end_time,
+                    'notes'          => $itinerary->notes,
+                    'price'          => (float) $itinerary->price,
+                    'included'       => $itinerary->included,
+                ];
+            });
+        })->values();
+        
         // Replace location city object with just `city_name`
         $packageData['locations'] = collect($package->locations)->map(function ($location) {
             return [
-                'id' => $location->id,
+                'id'         => $location->id,
                 'package_id' => $location->package_id,
-                'city_id' => $location->city_id,
-                'city_name' => $location->city->name ?? null,
+                'city_id'    => $location->city_id,
+                'city_name'  => $location->city->name ?? null,
             ];
         });
     
         // Replace attributes with just `attribute_name`
         $packageData['attributes'] = collect($package->attributes)->map(function ($attribute) {
             return [
-                'id' => $attribute->id,
-                'attribute_id' => $attribute->attribute_id,
-                'attribute_name' => $attribute->attribute->name ?? null,
+                'id'              => $attribute->id,
+                'attribute_id'    => $attribute->attribute_id,
+                'attribute_name'  => $attribute->attribute->name ?? null,
                 'attribute_value' => $attribute->attribute_value,
             ];
         });
@@ -573,15 +600,15 @@ class PackageController extends Controller
         // Replace categories with just `category_name`
         $packageData['categories'] = collect($package->categories)->map(function ($category) {
             return [
-                'id' => $category->id,
-                'category_id' => $category->category_id,
+                'id'            => $category->id,
+                'category_id'   => $category->category_id,
                 'category_name' => $category->category->name ?? null,
             ];
         });
         $packageData['tags'] = collect($package->tags)->map(function ($tag) {
             return [
-                'id' => $tag->id,
-                'tag_id' => $tag->tag_id,
+                'id'       => $tag->id,
+                'tag_id'   => $tag->tag_id,
                 'tag_name' => $tag->tag->name ?? null,
             ];
         });
@@ -597,28 +624,28 @@ class PackageController extends Controller
         $package = Package::findOrFail($id);
     
         $rules = [
-            'name' => 'sometimes|string|max:255',
-            'slug' => 'sometimes|string|unique:packages,slug,' . $package->id,
-            'description' => 'nullable|string',
-            'featured_package' => 'boolean',
-            'private_package' => 'boolean',
-            'locations' => 'nullable|array',
-            'information' => 'nullable|array',
-            'schedules' => 'nullable|array',
-            'activities' => 'nullable|array',
-            'transfers' => 'nullable|array',
-            'itineraries' => 'nullable|array',
-            'pricing' => 'nullable|array',
-            'price_variations' => 'nullable|array',
-            'blackout_dates' => 'nullable|array',
+            'name'                  => 'sometimes|string|max:255',
+            'slug'                  => 'sometimes|string|unique:packages,slug,' . $package->id,
+            'description'           => 'nullable|string',
+            'featured_package'      => 'boolean',
+            'private_package'       => 'boolean',
+            'locations'             => 'nullable|array',
+            'information'           => 'nullable|array',
+            'schedules'             => 'nullable|array',
+            'activities'            => 'nullable|array',
+            'transfers'             => 'nullable|array',
+            'itineraries'           => 'nullable|array',
+            'pricing'               => 'nullable|array',
+            'price_variations'      => 'nullable|array',
+            'blackout_dates'        => 'nullable|array',
             'inclusions_exclusions' => 'nullable|array',
-            'media_gallery' => 'nullable|array',
-            'faqs' => 'nullable|array',
-            'seo' => 'nullable|array',
-            'categories' => 'nullable|array',
-            'attributes' => 'nullable|array',
-            'tags' => 'nullable|array',
-            'availability' => 'nullable|array',
+            'media_gallery'         => 'nullable|array',
+            'faqs'                  => 'nullable|array',
+            'seo'                   => 'nullable|array',
+            'categories'            => 'nullable|array',
+            'attributes'            => 'nullable|array',
+            'tags'                  => 'nullable|array',
+            'availability'          => 'nullable|array',
         ];
     
         $request->validate($rules);
@@ -633,21 +660,40 @@ class PackageController extends Controller
     
             $scheduleMap = [];
     
+            // $updateOrCreateRelation = function ($relationName, $data, $extra = []) use ($package) {
+            //     $relation = $package->$relationName();
+            //     $existing = $relation->pluck('id')->toArray();
+    
+            //     foreach ($data as $item) {
+            //         $attributes = array_merge($item, $extra);
+            //         if (!empty($item['id']) && in_array($item['id'], $existing)) {
+            //             $relation->where('id', $item['id'])->update($attributes);
+            //         } else {
+            //             $relation->create($attributes);
+            //         }
+            //     }
+            // };
+
             $updateOrCreateRelation = function ($relationName, $data, $extra = []) use ($package) {
                 $relation = $package->$relationName();
-                $existing = $relation->pluck('id')->toArray();
-    
+                $modelClass = get_class($relation->getRelated());
+                $packageKey = $relation->getForeignKeyName(); // e.g., package_id
+            
                 foreach ($data as $item) {
                     $attributes = array_merge($item, $extra);
-                    if (!empty($item['id']) && in_array($item['id'], $existing)) {
-                        $relation->where('id', $item['id'])->update($attributes);
+                    if (!empty($item['id'])) {
+                        $model = $modelClass::find($item['id']);
+                        if ($model) {
+                            $model->fill($attributes)->save();
+                        }
                     } else {
+                        $attributes[$packageKey] = $package->id;
                         $relation->create($attributes);
                     }
                 }
             };
     
-            foreach (['information', 'locations', 'faqs', 'inclusionsExclusions', 'mediaGallery'] as $relation) {
+            foreach (['information', 'faqs', 'inclusionsExclusions', 'mediaGallery'] as $relation) {
                 if ($request->has(Str::snake($relation))) {
                     $updateOrCreateRelation($relation, $request->{Str::snake($relation)});
                 }
@@ -730,30 +776,6 @@ class PackageController extends Controller
                 $updateOrCreateChild('blackoutDates', $request->blackout_dates, \App\Models\PackageBlackoutDate::class, 'base_pricing_id');
             }
 
-            // if ($request->has('categories')) {
-            //     foreach ($request->categories as $category) {
-            //         if (!empty($category['id'])) {
-            //             $package->categories()->where('id', $category['id'])->update(['category_id' => $category['category_id']]);
-            //         } else {
-            //             $package->categories()->create(['category_id' => $tag['category_id']]);
-            //         }
-            //     }
-            // }
-
-            // if ($request->has('tags')) {
-            //     foreach ($request->tags as $tag) {
-            //         if (!empty($tag['id'])) {
-            //             $package->tags()->where('id', $tag['id'])->update(['tag_id' => $tag['tag_id']]);
-            //         } else {
-            //             $package->tags()->create(['tag_id' => $tag['tag_id']]);
-            //         }
-            //     }
-            // }
-    
-            // if ($request->has('attributes')) {
-            //     $updateOrCreateRelation('attributes', $request->input('attributes'));
-            // }
-
             // Handle locations [1, 2, 3]
             if ($request->has('locations')) {
                 $itinerary->locations()->delete();
@@ -790,7 +812,7 @@ class PackageController extends Controller
                 foreach ($request->attributes as $attribute) {
                     // Create or update each attribute with its value
                     $itinerary->attributes()->create([
-                        'attribute_id' => $attribute['attribute_id'],
+                        'attribute_id'    => $attribute['attribute_id'],
                         'attribute_value' => $attribute['attribute_value']
                     ]);
                 }
@@ -817,7 +839,7 @@ class PackageController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
-                'error' => 'Something went wrong',
+                'error'   => 'Something went wrong',
                 'details' => $e->getMessage(),
             ], 500);
         }
@@ -842,10 +864,17 @@ class PackageController extends Controller
 
     public function partialDelete(Request $request, string $id)
     {
-        $package = Package::with('schedules.activities', 'schedules.transfers', 'basePricing.variations', 'basePricing.blackoutDates')->find($id);
+        $package = Package::with('information', 'schedules.activities', 'schedules.transfers', 'basePricing.variations', 'basePricing.blackoutDates')->find($id);
 
         if (!$package) {
             return response()->json(['message' => 'Package not found'], 404);
+        }
+
+        // Delete selected information
+        if ($request->has('deleted_information_ids')) {
+            $package->information()
+                ->whereIn('id', $request->deleted_information_ids)
+                ->delete();
         }
 
         // Delete selected activities via schedules
@@ -866,6 +895,15 @@ class PackageController extends Controller
             }
         }
 
+        // Delete selected itineraries via schedules
+        if ($request->has('deleted_itinerary_ids')) {
+            foreach ($package->schedules as $schedule) {
+                $schedule->itineraries()
+                    ->whereIn('id', $request->deleted_itinerary_ids)
+                    ->delete();
+            }
+        }
+
         // Delete selected schedules directly
         if ($request->has('deleted_schedule_ids')) {
             $package->schedules()
@@ -874,14 +912,14 @@ class PackageController extends Controller
         }
 
         // Delete selected price variation directly
-        if ($request->has('deleted_price_variation_ids') && $itinerary->basePricing) {
+        if ($request->has('deleted_price_variation_ids') && $package->basePricing) {
             $package->basePricing->variations()
                 ->whereIn('id', $request->deleted_price_variation_ids)
                 ->delete();
         }
 
         // Delete selected blackout dates directly
-        if ($request->has('deleted_blackout_date_ids') && $itinerary->basePricing) {
+        if ($request->has('deleted_blackout_date_ids') && $package->basePricing) {
             $package->basePricing->blackoutDates()
                 ->whereIn('id', $request->deleted_blackout_date_ids)
                 ->delete();
@@ -891,6 +929,13 @@ class PackageController extends Controller
         if ($request->has('deleted_inclusion_exclusion_ids')) {
             $package->inclusionsExclusions()
                 ->whereIn('id', $request->deleted_inclusion_exclusion_ids)
+                ->delete();
+        }
+
+        // Delete selected faq directly
+        if ($request->has('deleted_faq_ids')) {
+            $package->faqs()
+                ->whereIn('id', $request->deleted_faq_ids)
                 ->delete();
         }
 

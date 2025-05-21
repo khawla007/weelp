@@ -12,9 +12,13 @@ class PackageInclusionExclusion extends Model
 
     protected $fillable = [
         'package_id', 'type', 'title', 
-        'description', 'include_exclude'
+        'description', 'included'
     ];
 
+    protected $casts = [
+        'included' => 'boolean'
+    ];
+    
     public function package()
     {
         return $this->belongsTo(Package::class);

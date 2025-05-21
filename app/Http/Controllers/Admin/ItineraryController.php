@@ -196,7 +196,7 @@ class ItineraryController extends Controller
     {
         $rules = [
             'name'                  => 'required|string|max:255',
-            'slug' => 'required|string|unique:itineraries,slug',
+            'slug'                  => 'required|string|unique:itineraries,slug',
             'description'           => 'nullable|string',
             'featured_itinerary'    => 'boolean',
             'private_itinerary'     => 'boolean',
@@ -505,7 +505,7 @@ class ItineraryController extends Controller
         })->values();
 
         $itineraryData['base_pricing']       = $basePricing;
-        $itineraryData['price_variations'] = $basePricingVariations;
+        $itineraryData['price_variations']   = $basePricingVariations;
         $itineraryData['blackout_dates']     = $blackoutDates;
 
 
@@ -839,7 +839,7 @@ class ItineraryController extends Controller
                 foreach ($request->attributes as $attribute) {
                     // Create or update each attribute with its value
                     $itinerary->attributes()->create([
-                        'attribute_id' => $attribute['attribute_id'],
+                        'attribute_id'    => $attribute['attribute_id'],
                         'attribute_value' => $attribute['attribute_value']
                     ]);
                 }
@@ -860,13 +860,13 @@ class ItineraryController extends Controller
             DB::commit();
     
             return response()->json([
-                'message' => 'itinerary updated successfully',
+                'message'   => 'itinerary updated successfully',
                 'itinerary' => $itinerary->fresh()
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
-                'error' => 'Something went wrong',
+                'error'   => 'Something went wrong',
                 'details' => $e->getMessage(),
             ], 500);
         }

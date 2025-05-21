@@ -11,7 +11,7 @@ class PackageFaq extends Model
 
     protected $fillable = [
         'package_id',
-        'question_number',
+        // 'question_number',
         'question',
         'answer',
     ];

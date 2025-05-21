@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('package_faqs', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('package_id')->unsigned();
-            $table->integer('question_number')->autoIncrement(false); // Auto-generated question number
+            // $table->integer('question_number')->autoIncrement(false); // Auto-generated question number
             $table->text('question'); 
             $table->text('answer'); 
             $table->timestamps();

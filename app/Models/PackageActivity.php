@@ -16,7 +16,11 @@ class PackageActivity extends Model
         'end_time',
         'notes',
         'price',
-        'include_in_package',
+        'included',
+    ];
+
+    protected $casts = [
+        'included' => 'boolean'
     ];
 
     public function schedule()
