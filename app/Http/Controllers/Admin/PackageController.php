@@ -442,11 +442,12 @@ class PackageController extends Controller
             'schedules.transfers.transfer.mediaGallery.media',
             'schedules.activities.activity.mediaGallery.media',
             'schedules.itineraries.itinerary.mediaGallery.media',
-            'basePricing.variations',
+            // 'basePricing.variations',
             'inclusionsExclusions',
             'mediaGallery.media',
             'availability',
             'seo',
+            'faqs',
         ])->find($id);
         
         if (!$package) {
@@ -587,6 +588,18 @@ class PackageController extends Controller
             ];
         });
     
+        // Replace mediaobject with just `media data`
+        $packageData['media_gallery'] = collect($package->mediaGallery)->map(function ($media) {
+            return [
+                'id'            => $media->id,
+                'package_id'  => $media->package_id,
+                'media_id'      => $media->media_id,
+                'name'          => $media->media->name,
+                'alt_text'      => $media->media->alt_text,
+                'url'           => $media->media->url ?? null,
+            ];
+        });
+
         // Replace attributes with just `attribute_name`
         $packageData['attributes'] = collect($package->attributes)->map(function ($attribute) {
             return [
@@ -778,9 +791,9 @@ class PackageController extends Controller
 
             // Handle locations [1, 2, 3]
             if ($request->has('locations')) {
-                $itinerary->locations()->delete();
+                $package->locations()->delete();
                 foreach ($request->locations as $locationId) {
-                    $itinerary->locations()->create([
+                    $package->locations()->create([
                         'city_id' => $locationId
                     ]);
                 }
@@ -788,9 +801,9 @@ class PackageController extends Controller
 
             // Handle categories [1, 2, 3]
             if ($request->has('categories')) {
-                $itinerary->categories()->delete();
+                $package->categories()->delete();
                 foreach ($request->categories as $categoryId) {
-                    $itinerary->categories()->create([
+                    $package->categories()->create([
                         'category_id' => $categoryId
                     ]);
                 }
@@ -798,25 +811,34 @@ class PackageController extends Controller
 
             // Handle tags [1, 2, 3]
             if ($request->has('tags')) {
-                $itinerary->tags()->delete();
+                $package->tags()->delete();
                 foreach ($request->tags as $tagId) {
-                    $itinerary->tags()->create([
+                    $package->tags()->create([
                         'tag_id' => $tagId
                     ]);
                 }
             }
 
-            // Handle attributes with attribute_value
+            // // Handle attributes with attribute_value
+            // if ($request->has('attributes')) {
+            //     $package->attributes()->delete(); // Delete existing attributes
+            //     foreach ($request->attributes as $attribute) {
+            //         // Create or update each attribute with its value
+            //         $package->attributes()->create([
+            //             'attribute_id'    => $attribute['attribute_id'],
+            //             'attribute_value' => $attribute['attribute_value']
+            //         ]);
+            //     }
+            // }
             if ($request->has('attributes')) {
-                $itinerary->attributes()->delete(); // Delete existing attributes
-                foreach ($request->attributes as $attribute) {
-                    // Create or update each attribute with its value
-                    $itinerary->attributes()->create([
-                        'attribute_id'    => $attribute['attribute_id'],
-                        'attribute_value' => $attribute['attribute_value']
-                    ]);
-                }
-            }
+                $package->attributes()->delete();
+            
+                $attributes = collect($request->input('attributes'))->map(function ($attr) use ($package) {
+                    return array_merge($attr, ['activity_id' => $package->id]);
+                })->toArray();
+            
+                $package->attributes()->createMany($attributes);
+            } 
     
             if ($request->has('availability')) {
                 $package->availability()->updateOrCreate([], $request->availability);

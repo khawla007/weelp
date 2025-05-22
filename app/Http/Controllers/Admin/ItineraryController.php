@@ -834,16 +834,26 @@ class ItineraryController extends Controller
             }
 
             // Handle attributes with attribute_value
+            // if ($request->has('attributes')) {
+            //     $itinerary->attributes()->delete(); // Delete existing attributes
+            //     foreach ($request->attributes as $attribute) {
+            //         // Create or update each attribute with its value
+            //         $itinerary->attributes()->create([
+            //             'attribute_id'    => $attribute['attribute_id'],
+            //             'attribute_value' => $attribute['attribute_value']
+            //         ]);
+            //     }
+            // }
+
             if ($request->has('attributes')) {
-                $itinerary->attributes()->delete(); // Delete existing attributes
-                foreach ($request->attributes as $attribute) {
-                    // Create or update each attribute with its value
-                    $itinerary->attributes()->create([
-                        'attribute_id'    => $attribute['attribute_id'],
-                        'attribute_value' => $attribute['attribute_value']
-                    ]);
-                }
-            }
+                $itinerary->attributes()->delete();
+            
+                $attributes = collect($request->input('attributes'))->map(function ($attr) use ($itinerary) {
+                    return array_merge($attr, ['activity_id' => $itinerary->id]);
+                })->toArray();
+            
+                $itinerary->attributes()->createMany($attributes);
+            } 
     
             if ($request->has('availability')) {
                 $itinerary->availability()->updateOrCreate([], $request->availability);
