@@ -9,13 +9,13 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\TagController;
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\CountryController;
-use App\Http\Controllers\Admin\CountryLocationDetailController;
-use App\Http\Controllers\Admin\CountryTravelInfoController;
-use App\Http\Controllers\Admin\CountryEventController;
-use App\Http\Controllers\Admin\CountrySeasonController;
-use App\Http\Controllers\Admin\CountryAdditionalInfoController;
-use App\Http\Controllers\Admin\CountryFaqController;
-use App\Http\Controllers\Admin\CountrySeoController;
+// use App\Http\Controllers\Admin\CountryLocationDetailController;
+// use App\Http\Controllers\Admin\CountryTravelInfoController;
+// use App\Http\Controllers\Admin\CountryEventController;
+// use App\Http\Controllers\Admin\CountrySeasonController;
+// use App\Http\Controllers\Admin\CountryAdditionalInfoController;
+// use App\Http\Controllers\Admin\CountryFaqController;
+// use App\Http\Controllers\Admin\CountrySeoController;
 use App\Http\Controllers\Admin\CountryImportController;
 use App\Http\Controllers\Admin\StateImportController;
 use App\Http\Controllers\Admin\CityImportController;
@@ -83,38 +83,38 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
     // Admin Side Destination Countries Routes
     Route::apiResource('/countries', CountryController::class);
 
-    // Admin Side Destination Countries Location & Details Routes
-    Route::prefix('/countries/{id}/country-location-details')->group(function () {
-        Route::post('/', [CountryLocationDetailController::class, 'store']); 
-        Route::get('/', [CountryLocationDetailController::class, 'show']); 
-        Route::put('/', [CountryLocationDetailController::class, 'update']);
-        Route::delete('/', [CountryLocationDetailController::class, 'destroy']);
-    });
-    // Admin Side Destination Countries Travel Info Routes
-    Route::prefix('/countries/{id}/country-travel-info')->group(function () {
-        Route::post('/', [CountryTravelInfoController::class, 'store']); 
-        Route::get('/', [CountryTravelInfoController::class, 'show']); 
-        Route::put('/', [CountryTravelInfoController::class, 'update']);
-        Route::delete('/', [CountryTravelInfoController::class, 'destroy']);
-    });
-    // Admin Side Destination Countries Season and Event Routes
-    Route::prefix('/countries/{id}')->group(function () {
-        Route::apiResource('country-seasons', CountrySeasonController::class);
-        Route::apiResource('country-events', CountryEventController::class);
-    });
-    // Admin Side Destination Countries additional info Routes
-    Route::prefix('/countries/{id}')->group(function () {
-        Route::apiResource('country-additional-info', CountryAdditionalInfoController::class);
-    });
-    // Admin Side Destination Countries faq Routes
-    Route::prefix('/countries/{id}')->group(function () {
-        Route::apiResource('country-faqs', CountryFaqController::class);
-    });
-    // Admin Side Destination Countries SEO data Routes
-    Route::prefix('/countries/{id}')->group(function () {
-        Route::get('country-seo', [CountrySeoController::class, 'show']);
-        Route::post('country-seo', [CountrySeoController::class, 'store']);
-    });
+    // // Admin Side Destination Countries Location & Details Routes
+    // Route::prefix('/countries/{id}/country-location-details')->group(function () {
+    //     Route::post('/', [CountryLocationDetailController::class, 'store']); 
+    //     Route::get('/', [CountryLocationDetailController::class, 'show']); 
+    //     Route::put('/', [CountryLocationDetailController::class, 'update']);
+    //     Route::delete('/', [CountryLocationDetailController::class, 'destroy']);
+    // });
+    // // Admin Side Destination Countries Travel Info Routes
+    // Route::prefix('/countries/{id}/country-travel-info')->group(function () {
+    //     Route::post('/', [CountryTravelInfoController::class, 'store']); 
+    //     Route::get('/', [CountryTravelInfoController::class, 'show']); 
+    //     Route::put('/', [CountryTravelInfoController::class, 'update']);
+    //     Route::delete('/', [CountryTravelInfoController::class, 'destroy']);
+    // });
+    // // Admin Side Destination Countries Season and Event Routes
+    // Route::prefix('/countries/{id}')->group(function () {
+    //     Route::apiResource('country-seasons', CountrySeasonController::class);
+    //     Route::apiResource('country-events', CountryEventController::class);
+    // });
+    // // Admin Side Destination Countries additional info Routes
+    // Route::prefix('/countries/{id}')->group(function () {
+    //     Route::apiResource('country-additional-info', CountryAdditionalInfoController::class);
+    // });
+    // // Admin Side Destination Countries faq Routes
+    // Route::prefix('/countries/{id}')->group(function () {
+    //     Route::apiResource('country-faqs', CountryFaqController::class);
+    // });
+    // // Admin Side Destination Countries SEO data Routes
+    // Route::prefix('/countries/{id}')->group(function () {
+    //     Route::get('country-seo', [CountrySeoController::class, 'show']);
+    //     Route::post('country-seo', [CountrySeoController::class, 'store']);
+    // });
 
     Route::post('/import-countries', [CountryImportController::class, 'import']);
     Route::post('/import-states', [StateImportController::class, 'import']);

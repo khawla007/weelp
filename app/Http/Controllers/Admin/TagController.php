@@ -30,11 +30,12 @@ class TagController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'slug'        => 'sometimes|required|string|max:255|unique:tags,slug',
             'description' => 'nullable|string',
         ]);
 
-        $validated['slug'] = str_replace(' ', '_', strtolower($validated['name']));
-        $validated['taxonomy'] = 'tag';
+        // $validated['slug'] = str_replace(' ', '_', strtolower($validated['name']));
+        // $validated['taxonomy'] = 'tag';
         // $validated['post_type'] = 'activity';
 
         $tag = Tag::create($validated);
@@ -60,12 +61,13 @@ class TagController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
+            'slug'        => 'sometimes|required|string|max:255|unique:tags,slug,' . $tag->id,
             'description' => 'nullable|string',
         ]);
 
-        if (isset($validated['name'])) {
-            $validated['slug'] = str_replace(' ', '_', strtolower($validated['name']));
-        }
+        // if (isset($validated['name'])) {
+        //     $validated['slug'] = str_replace(' ', '_', strtolower($validated['name']));
+        // }
 
         $tag->update($validated);
 

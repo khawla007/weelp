@@ -7,16 +7,16 @@ use Illuminate\Support\Str;
 
 class Tag extends Model
 {
-    protected $fillable = ['name', 'slug', 'taxonomy', 'post_type'];
+    protected $fillable = ['name', 'slug', 'description', 'taxonomy', 'post_type'];
 
     // Automatically generate slug when creating or updating
     protected static function boot()
     {
         parent::boot();
 
-        static::saving(function ($tag) {
-            $tag->slug = Str::slug(str_replace(' ', '_', strtolower($tag->name)), '_');
-        });
+        // static::saving(function ($tag) {
+        //     $tag->slug = Str::slug(str_replace(' ', '_', strtolower($tag->name)), '_');
+        // });
     }
 
     public function itineraries()

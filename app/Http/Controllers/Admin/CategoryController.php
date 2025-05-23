@@ -16,7 +16,7 @@ class CategoryController extends Controller
         $categories = Category::all();
         return response()->json([
             'success' => true,
-            'data' => $categories
+            'data'    => $categories
         ]);
     }
 
@@ -26,13 +26,14 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name'        => 'required|string|max:255',
+            'slug'        => 'sometimes|required|string|max:255|unique:categories,slug',
             'description' => 'nullable|string',
-            'parent_id' => 'nullable|exists:categories,id',
+            'parent_id'   => 'nullable|exists:categories,id',
         ]);
 
-        $validated['slug'] = str_replace(' ', '_', strtolower($validated['name']));
-        $validated['taxonomy'] = 'cat';
+        // $validated['slug']     = str_replace(' ', '-', strtolower($validated['name']));
+        // $validated['taxonomy'] = 'cat';
         // $validated['post_type'] = 'activity';
 
         $category = Category::create($validated);
@@ -54,17 +55,18 @@ class CategoryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $category = Category::findOrFail($id);
+        $category  = Category::findOrFail($id);
 
         $validated = $request->validate([
-            'name' => 'sometimes|required|string|max:255',
+            'name'        => 'sometimes|required|string|max:255',
+            'slug'        => 'sometimes|required|string|max:255|unique:categories,slug,' . $category->id,
             'description' => 'nullable|string',
-            'parent_id' => 'nullable|exists:categories,id',
+            'parent_id'   => 'nullable|exists:categories,id',
         ]);
 
-        if (isset($validated['name'])) {
-            $validated['slug'] = str_replace(' ', '_', strtolower($validated['name']));
-        }
+        // if (isset($validated['name'])) {
+        //     $validated['slug'] = str_replace(' ', '_', strtolower($validated['name']));
+        // }
 
         $category->update($validated);
 
