@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->string('slug')->unique();
-            $table->enum('type', ['single_select', 'multi_select', 'text', 'number', 'yes_no']);
+            // $table->enum('type', ['single_select', 'multi_select', 'text', 'number', 'yes_no']);
+            $table->string('type')->nullable();
             $table->text('description')->nullable();
             $table->json('values')->nullable(); 
             $table->string('default_value')->nullable();

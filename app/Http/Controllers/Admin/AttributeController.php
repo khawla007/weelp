@@ -29,7 +29,9 @@ class AttributeController extends Controller
     {
         $request->validate([
             'name' => 'required|unique:attributes,name',
-            'type' => 'required|in:single_select,multi_select,text,number,yes_no',
+            'slug' => 'sometimes|required|string|max:255|unique:attributes,slug',
+            // 'type' => 'required|in:single_select,multi_select,text,number,yes_no',
+            'type' => 'nullable|string',
             'description' => 'nullable|string',
             'values' => 'nullable|array',
             'default_value' => 'nullable|string',
@@ -40,11 +42,16 @@ class AttributeController extends Controller
 
         $attribute = Attribute::create([
             'name' => $request->name,
-            'slug' => $slug,
+            // 'slug' => $slug,
+            'slug' => $request->slug,
             'type' => $request->type,
             'description' => $request->description,
-            'values' => $request->type === 'single_select' || $request->type === 'multi_select' ? json_encode($request->values) : null,
-            'default_value' => in_array($request->type, ['single_select', 'multi_select', 'text', 'number']) ? $request->default_value : null,
+            // 'values' => $request->type === 'single_select' || $request->type === 'multi_select' ? json_encode($request->values) : null,
+            'values' => in_array($request->type, ['single_select', 'multi_select']) && is_array($request->values)
+                ? implode(',', $request->values)
+                : null,
+            // 'default_value' => in_array($request->type, ['single_select', 'multi_select']) ? $request->default_value : null,
+            'default_value' => $request->default_value ?? null,
             'taxonomy' => $taxonomy,
         ]);
 
@@ -68,7 +75,9 @@ class AttributeController extends Controller
 
         $request->validate([
             'name' => 'required|unique:attributes,name,' . $id,
-            'type' => 'required|in:single_select,multi_select,text,number,yes_no',
+            'slug' => 'sometimes|required|string|max:255|unique:attributes,slug,' . $id,
+            // 'type' => 'required|in:single_select,multi_select,text,number,yes_no',
+            'type' => 'nullable|string',
             'description' => 'nullable|string',
             'values' => 'nullable|array',
             'default_value' => 'nullable|string',
@@ -79,11 +88,16 @@ class AttributeController extends Controller
 
         $attribute->update([
             'name' => $request->name,
-            'slug' => $slug,
+            // 'slug' => $slug,
+            'slug' => $request->slug,
             'type' => $request->type,
             'description' => $request->description,
-            'values' => $request->type === 'single_select' || $request->type === 'multi_select' ? json_encode($request->values) : null,
-            'default_value' => in_array($request->type, ['single_select', 'multi_select', 'text', 'number']) ? $request->default_value : null,
+            // 'values' => $request->type === 'single_select' || $request->type === 'multi_select' ? json_encode($request->values) : null,
+            'values' => in_array($request->type, ['single_select', 'multi_select']) && is_array($request->values)
+                ? implode(',', $request->values)
+                : null,
+            // 'default_value' => in_array($request->type, ['single_select', 'multi_select', 'text', 'number']) ? $request->default_value : null,
+            'default_value' => $request->default_value ?? null,
             'taxonomy' => $taxonomy,
         ]);
 
