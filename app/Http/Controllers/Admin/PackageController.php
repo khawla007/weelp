@@ -43,6 +43,7 @@ class PackageController extends Controller
         $perPage        = 3; 
         $page           = $request->get('page', 1); 
 
+        $name           = $request->get('name'); // Search by package name
         $categorySlug   = $request->get('category');
         $difficulty     = $request->get('difficulty_level');
         $duration       = $request->get('duration');
@@ -70,6 +71,11 @@ class PackageController extends Controller
                 'attributes.attribute:id,name',
                 'mediaGallery'
             ])
+
+            ->when($name, fn($query) =>
+                $query->where('packages.name', 'like', "%{$name}%")
+            )   
+
             ->when($categoryId, fn($query) => 
                 $query->whereHas('categories', fn($q) => 
                     $q->where('category_id', $categoryId)
@@ -137,9 +143,51 @@ class PackageController extends Controller
         $allItems = $query->get();
         $paginatedItems = $allItems->forPage($page, $perPage);
 
+        $transformed = $paginatedItems->map(function ($package) {
+            $data = $package->toArray(); // keep all original fields
+        
+            // Replace transformed fields
+            $data['locations'] = collect($package->locations)->map(function ($location) {
+                return [
+                    'id'         => $location->id,
+                    'city_id'    => $location->city_id,
+                    'city_name'  => $location->city->name ?? null,
+                ];
+            });
+        
+            $data['media_gallery'] = collect($package->mediaGallery)->map(function ($media) {
+                return [
+                    'id'         => $media->id,
+                    'media_id'   => $media->media_id,
+                    'name'       => $media->media->name ?? null,
+                    'alt_text'   => $media->media->alt_text ?? null,
+                    'url'        => $media->media->url ?? null,
+                ];
+            });
+        
+            $data['attributes'] = collect($package->attributes)->map(function ($attribute) {
+                return [
+                    'id'              => $attribute->id,
+                    'attribute_id'    => $attribute->attribute_id,
+                    'attribute_name'  => $attribute->attribute->name ?? null,
+                    'attribute_value' => $attribute->attribute_value,
+                ];
+            });
+        
+            $data['categories'] = collect($package->categories)->map(function ($category) {
+                return [
+                    'id'            => $category->id,
+                    'category_id'   => $category->category_id,
+                    'category_name' => $category->category->name ?? null,
+                ];
+            });
+        
+            return $data;
+        });
+
         return response()->json([
             'success'      => true,
-            'data'         => $paginatedItems->values(),
+            'data'         => $transformed->values(),
             'current_page' => (int) $page,
             'per_page'     => $perPage,
             'total'        => $allItems->count(),
@@ -884,6 +932,9 @@ class PackageController extends Controller
         return response()->json(['message' => 'Package deleted successfully']);
     }
 
+    /**
+     * Remove the specified package specific fields from storage.
+     */
     public function partialDelete(Request $request, string $id)
     {
         $package = Package::with('information', 'schedules.activities', 'schedules.transfers', 'basePricing.variations', 'basePricing.blackoutDates')->find($id);
@@ -962,5 +1013,35 @@ class PackageController extends Controller
         }
 
         return response()->json(['message' => 'Selected items deleted successfully']);
+    }
+
+    /**
+     * Remove the bulk packages from storage.
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $validated = $request->validate([
+            'package_ids' => 'required|array',
+            'package_ids.*' => 'integer|exists:packages,id',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            // This will automatically cascade delete related rows if foreign keys are set correctly
+            Package::whereIn('id', $validated['package_ids'])->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Selected packages deleted successfully.'
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'error' => 'Failed to delete selected packages.',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -82,4 +82,8 @@ class Itinerary extends Model
     // {
     //     return $this->hasMany(ItineraryTransfer::class);
     // }
+    public function orders()
+    {
+        return $this->morphMany(Order::class, 'orderable');
+    }
 }

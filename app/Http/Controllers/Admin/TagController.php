@@ -11,17 +11,21 @@ class TagController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // $tags = Tag::all();
-        // return response()->json($tags);
-
-        $tags = Tag::all();
+        $perPage = 6;
+        $page    = $request->get('page', 1);
+    
+        $tags = Tag::paginate($perPage, ['*'], 'page', $page);
+    
         return response()->json([
-            'success' => true,
-            'data' => $tags
+            'success'      => true,
+            'data'         => $tags->items(),
+            'current_page' => $tags->currentPage(),
+            'per_page'     => $tags->perPage(),
+            'total'        => $tags->total(),
         ]);
-    }
+    }    
 
     /**
      * Store a newly created resource in storage.

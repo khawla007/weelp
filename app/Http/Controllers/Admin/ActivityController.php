@@ -35,6 +35,7 @@ class ActivityController extends Controller
         $perPage        = 3; 
         $page           = $request->get('page', 1); 
         
+        $name           = $request->get('name'); // Search by activity name
         $categorySlug   = $request->get('category');
         $difficulty     = $request->get('difficulty_level');
         $duration       = $request->get('duration');
@@ -55,6 +56,11 @@ class ActivityController extends Controller
             ->select('activities.*')  // Select all fields from activities
             ->join('activity_pricing', 'activity_pricing.activity_id', '=', 'activities.id') // Join with activity_pricing table
             ->with(['categories.category', 'tags.tag', 'locations.city', 'pricing', 'attributes', 'mediaGallery.media']) // Eager load relationships
+
+            ->when($name, fn($query) =>
+                $query->where('activities.name', 'like', "%{$name}%")
+            )
+            
             ->when($categoryId, fn($query) => 
                 $query->whereHas('categories', fn($q) => 
                     $q->where('category_id', $categoryId)
@@ -829,154 +835,90 @@ class ActivityController extends Controller
     /**
      * Remove the specified activity from storage.
      */
-    public function destroy(Request $request, string $id)
+    public function destroy(string $id)
     {
         $activity = Activity::find($id);
+        
         if (!$activity) {
             return response()->json(['message' => 'Activity not found'], 404);
         }
+        
+        $activity->delete();
+
+        return response()->json(['message' => 'Activity deleted successfully']);
+    }
+
+    /**
+     * Remove the specified activity specific fields from storage.
+     */
+    public function partialDelete(Request $request, string $id)
+    {
+        $activity = Activity::with('locations', 'seasonalPricing', 'groupDiscounts', 'promoCodes')->find($id);
+
+        if (!$activity) {
+                return response()->json(['message' => 'Activity not found'], 404);
+        }
+
+        // Delete selected locations directly
+        if ($request->has('deleted_location_ids') && $activity->locations) {
+            $activity->locations()
+                ->whereIn('id', $request->deleted_location_ids)
+                ->delete();
+        }
+
+        // Delete selected Seasonal Pricing directly
+        if ($request->has('deleted_seasonal_pricing_ids') && $activity->seasonalPricing) {
+            $activity->seasonalPricing()
+                ->whereIn('id', $request->deleted_seasonal_pricing_ids)
+                ->delete();
+        }
+
+        // Delete selected Group Discounts directly
+        if ($request->has('deleted_group_discounts_ids') && $activity->groupDiscounts) {
+            $activity->groupDiscounts()
+                ->whereIn('id', $request->deleted_group_discounts_ids)
+                ->delete();
+        }
+
+        // Delete selected Promo Codes directly
+        if ($request->has('deleted_promo_codes_ids') && $activity->promoCodes) {
+            $activity->promoCodes()
+                ->whereIn('id', $request->deleted_promo_codes_ids)
+                ->delete();
+        }
+
+        return response()->json(['message' => 'Selected items deleted successfully']);
+    }
+
+    /**
+     * Remove the bulk activities from storage.
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $validated = $request->validate([
+            'activity_ids' => 'required|array',
+            'activity_ids.*' => 'integer|exists:activities,id',
+        ]);
 
         DB::beginTransaction();
         try {
-            // Define which relations can be deleted partially and the key used in request
-            $deletableRelations = [
-                'categories'       => [ActivityCategory::class, 'category_id'],
-                'tags'             => [ActivityTag::class, 'tag_id'],
-                'locations'        => [ActivityLocation::class, 'id'], // assuming deleting by id
-                'attributes'       => [ActivityAttribute::class, 'attribute_id'],
-                'promo_codes'      => [ActivityPromoCode::class, 'id'],
-                'group_discounts'  => [ActivityGroupDiscount::class, 'id'],
-                'seasonal_pricing' => [ActivitySeasonalPricing::class, 'id'],
-                'media_gallery'    => [ActivityMediaGallery::class, 'id'],
-            ];
-
-            $hasPartialDeletes = false;
-
-            foreach ($deletableRelations as $key => [$modelClass, $fieldKey]) {
-                if ($request->has($key)) {
-                    $hasPartialDeletes = true;
-                    foreach ($request->$key as $item) {
-                        $modelClass::where('activity_id', $id)
-                            ->where($fieldKey, $item[$fieldKey])
-                            ->delete();
-                    }
-                }
-            }
-
-            // If no partial delete requested, then do full delete
-            if (!$hasPartialDeletes) {
-                // Delete all related data
-                foreach ($deletableRelations as [$modelClass, $_]) {
-                    $modelClass::where('activity_id', $id)->delete();
-                }
-
-                // Delete hasOne relations
-                ActivityPricing::where('activity_id', $id)->delete();
-                ActivityEarlyBirdDiscount::where('activity_id', $id)->delete();
-                ActivityLastMinuteDiscount::where('activity_id', $id)->delete();
-                ActivityAvailability::where('activity_id', $id)->delete();
-
-                // Delete main activity
-                $activity->delete();
-            }
+            // This will automatically cascade delete related rows if foreign keys are set correctly
+            Activity::whereIn('id', $validated['activity_ids'])->delete();
 
             DB::commit();
 
             return response()->json([
-                'message' => $hasPartialDeletes ? 'Selected relation items deleted successfully' : 'Activity deleted successfully'
+                'message' => 'Selected activities deleted successfully.'
             ], 200);
 
         } catch (\Exception $e) {
-            DB::rollback();
-            return response()->json(['error' => 'Failed to delete', 'message' => $e->getMessage()], 500);
+            DB::rollBack();
+            return response()->json([
+                'error' => 'Failed to delete selected activities.',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
-    // public function destroy(string $id)
-    // {
-    //     $activity = Activity::find($id);
-    //     if (!$activity) {
-    //         return response()->json(['message' => 'Activity not found'], 404);
-    //     }
-
-    //     DB::beginTransaction();
-    //     try {
-    //         // Delete related records
-    //         ActivityCategory::where('activity_id', $id)->delete();
-    //         ActivityLocation::where('activity_id', $id)->delete();
-    //         ActivityAttribute::where('activity_id', $id)->delete();
-    //         ActivityPricing::where('activity_id', $id)->delete();
-    //         ActivitySeasonalPricing::where('activity_id', $id)->delete();
-    //         ActivityGroupDiscount::where('activity_id', $id)->delete();
-    //         ActivityEarlyBirdDiscount::where('activity_id', $id)->delete();
-    //         ActivityLastMinuteDiscount::where('activity_id', $id)->delete();
-    //         ActivityPromoCode::where('activity_id', $id)->delete();
-    //         ActivityAvailability::where('activity_id', $id)->delete();
-
-    //         // Delete activity
-    //         $activity->delete();
-
-    //         DB::commit();
-    //         return response()->json(['message' => 'Activity deleted successfully'], 200);
-    //     } catch (\Exception $e) {
-    //         DB::rollback();
-    //         return response()->json(['error' => 'Failed to delete activity', 'message' => $e->getMessage()], 500);
-    //     }
-    // }
-
-    // public function partialDelete(Request $request, $activityId)
-    // {
-    //     $activity = Activity::find($activityId);
-    //     if (!$activity) {
-    //         return response()->json(['message' => 'Activity not found'], 404);
-    //     }
-
-    //     DB::beginTransaction();
-    //     try {
-    //         // Activity Categories
-    //         if ($request->has('categories_to_delete')) {
-    //             ActivityCategory::where('activity_id', $activityId)
-    //                 ->whereIn('id', $request->categories_to_delete)
-    //                 ->delete();
-    //         }
-
-    //         // Tags
-    //         if ($request->has('tags_to_delete')) {
-    //             ActivityTag::where('activity_id', $activityId)
-    //                 ->whereIn('id', $request->tags_to_delete)
-    //                 ->delete();
-    //         }
-
-    //         // Locations
-    //         if ($request->has('locations_to_delete')) {
-    //             ActivityLocation::where('activity_id', $activityId)
-    //                 ->whereIn('id', $request->locations_to_delete)
-    //                 ->delete();
-    //         }
-
-    //         // Attributes
-    //         if ($request->has('attributes_to_delete')) {
-    //             ActivityAttribute::where('activity_id', $activityId)
-    //                 ->whereIn('id', $request->attributes_to_delete)
-    //                 ->delete();
-    //         }
-
-    //         // Promo Codes
-    //         if ($request->has('promo_codes_to_delete')) {
-    //             ActivityPromoCode::where('activity_id', $activityId)
-    //                 ->whereIn('id', $request->promo_codes_to_delete)
-    //                 ->delete();
-    //         }
-
-    //         DB::commit();
-    //         return response()->json(['message' => 'Selected items deleted successfully'], 200);
-    //     } catch (\Exception $e) {
-    //         DB::rollBack();
-    //         return response()->json([
-    //             'error' => 'Failed to delete selected items',
-    //             'message' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
 
 }

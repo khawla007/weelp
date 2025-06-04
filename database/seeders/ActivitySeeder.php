@@ -77,6 +77,195 @@ class ActivitySeeder extends Seeder {
                 'short_description' => 'Scuba diving with professional guides.',
                 'featured_activity' => true,
             ],
+            [
+                'name' => 'River Kayaking Adventure',
+                'slug' => 'river-kayaking-adventure',
+                'description' => 'Experience the thrill of kayaking through beautiful river bends.',
+                'short_description' => 'Exciting river kayaking journey.',
+                'featured_activity' => false,
+            ],
+            [
+                'name' => 'Sunset Paddle Boarding',
+                'slug' => 'sunset-paddle-boarding',
+                'description' => 'Paddle board on calm waters as the sun sets on the horizon.',
+                'short_description' => 'Relaxing paddle board at sunset.',
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Jungle Trekking Expedition',
+                'slug' => 'jungle-trekking-expedition',
+                'description' => 'Explore dense jungles with expert guides and thrilling trails.',
+                'short_description' => 'Guided jungle trekking experience.',
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Cave Exploration Tour',
+                'slug' => 'cave-exploration-tour',
+                'description' => 'Discover underground mysteries with our safe cave tours.',
+                'short_description' => 'Adventure into hidden caves.',
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Mountain Biking Challenge',
+                'slug' => 'mountain-biking-challenge',
+                'description' => 'Conquer rough terrains with high-performance mountain bikes.',
+                'short_description' => 'High-energy mountain biking fun.',
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Beach Volleyball Camp',
+                'slug' => 'beach-volleyball-camp',
+                'description' => 'Enjoy a fun-filled beach volleyball session with your team.',
+                'short_description' => 'Team sports on the beach.',
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Desert Safari Tour',
+                'slug' => 'desert-safari-tour',
+                'description' => 'Ride across sandy dunes in a thrilling desert safari experience.',
+                'short_description' => 'Exciting desert ride with scenic views.',
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Hot Air Balloon Ride',
+                'slug' => 'hot-air-balloon-ride',
+                'description' => 'Soar above landscapes and enjoy a bird’s-eye view.',
+                'short_description' => 'Peaceful ride in a hot air balloon.',
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Snorkeling with Turtles',
+                'slug' => 'snorkeling-with-turtles',
+                'description' => 'Swim alongside sea turtles in crystal clear waters.',
+                'short_description' => 'Underwater exploration with turtles.',
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Forest Ziplining Adventure',
+                'slug' => 'forest-ziplining-adventure',
+                'description' => 'Fly through the treetops in an adrenaline-pumping zipline ride.',
+                'short_description' => 'High-speed forest ziplining.',
+                'featured_activity' => false,
+            ],
+            [
+                'name' => 'Island Hopping Cruise',
+                'slug' => 'island-hopping-cruise',
+                'description' => 'Sail across stunning islands and enjoy scenic stopovers.',
+                'short_description' => 'Multiple island visits by boat.',
+                'featured_activity' => false,
+            ],
+            [
+                'name' => 'Rock Climbing Session',
+                'slug' => 'rock-climbing-session',
+                'description' => 'Test your strength with our safe and fun rock climbing tour.',
+                'short_description' => 'Challenging rock climbing routes.',
+                'featured_activity' => false,
+            ],
+            [
+                'name' => 'Night Safari Experience',
+                'slug' => 'night-safari-experience',
+                'description' => 'Explore wildlife under moonlight with our guided night safari.',
+                'short_description' => 'Wildlife spotting after dark.',
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Scuba Diving Certification',
+                'slug' => 'scuba-diving-certification',
+                'description' => 'Get trained and certified in scuba diving by professionals.',
+                'short_description' => 'Complete scuba training course.',
+                'featured_activity' => false,
+            ],
+            [
+                'name' => 'Cultural Village Tour',
+                'slug' => 'cultural-village-tour',
+                'description' => 'Learn traditions and crafts in a local cultural village.',
+                'short_description' => 'Interactive cultural exploration.',
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Bird Watching Walk',
+                'slug' => 'bird-watching-walk',
+                'description' => 'Stroll through nature and spot exotic bird species.',
+                'short_description' => 'Peaceful walk with birdwatching.',
+                'featured_activity' => false,
+            ],
+            [
+                'name' => 'Waterfall Picnic Escape',
+                'slug' => 'waterfall-picnic-escape',
+                'description' => 'Relax by a waterfall and enjoy a peaceful picnic experience.',
+                'short_description' => 'Scenic picnic by the falls.',
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Horseback Riding Trail',
+                'slug' => 'horseback-riding-trail',
+                'description' => 'Ride majestic horses through mountain trails.',
+                'short_description' => 'Guided horseback adventure.',
+                'featured_activity' => false,
+            ],
+            [
+                'name' => 'Fishing Village Experience',
+                'slug' => 'fishing-village-experience',
+                'description' => 'Live like a local in a quaint fishing village.',
+                'short_description' => 'Authentic village lifestyle tour.',
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Paragliding Thrill Ride',
+                'slug' => 'paragliding-thrill-ride',
+                'description' => 'Glide through the air with panoramic mountain views.',
+                'short_description' => 'Sky-high paragliding adventure.',
+                'featured_activity' => false,
+            ],
+            [
+                'name' => 'Farm to Table Cooking Class',
+                'slug' => 'farm-to-table-cooking-class',
+                'description' => 'Learn to cook fresh dishes using farm-grown ingredients.',
+                'short_description' => 'Hands-on culinary experience.',
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Stargazing Camp Night',
+                'slug' => 'stargazing-camp-night',
+                'description' => 'Spend a night under the stars with telescope viewing.',
+                'short_description' => 'Peaceful night sky observation.',
+                'featured_activity' => false,
+            ],
+            [
+                'name' => 'Lakeside Yoga Retreat',
+                'slug' => 'lakeside-yoga-retreat',
+                'description' => 'Rejuvenate your soul with lakeside meditation and yoga.',
+                'short_description' => 'Serene yoga by the lake.',
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Historical Ruins Exploration',
+                'slug' => 'historical-ruins-exploration',
+                'description' => 'Walk through ancient ruins and uncover their secrets.',
+                'short_description' => 'Step into ancient history.',
+                'featured_activity' => false,
+            ],
+            [
+                'name' => 'Sunrise Jungle Meditation',
+                'slug' => 'sunrise-jungle-meditation',
+                'description' => 'Start your day with peace in the heart of nature.',
+                'short_description' => 'Morning meditation in the wild.',
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Culinary Street Food Tour',
+                'slug' => 'culinary-street-food-tour',
+                'description' => 'Taste the best local street food with our guided tour.',
+                'short_description' => 'Delicious street food tasting.',
+                'featured_activity' => true,
+            ],
+            [
+                'name' => 'Artisan Craft Workshop',
+                'slug' => 'artisan-craft-workshop',
+                'description' => 'Create your own crafts with local artisans.',
+                'short_description' => 'Hands-on craft making experience.',
+                'featured_activity' => false,
+            ],
         ];
 
         foreach ($activities as $activityData) {
@@ -90,16 +279,40 @@ class ActivitySeeder extends Seeder {
                 'activity_id' => $activity->id,
                 'category_id' => rand(2, 4) 
             ]);
-            ActivityAttribute::create([
-                'activity_id' => $activity->id,
-                'attribute_id' => rand(1, 2),
-                'attribute_value' => '1 Hour'
-            ]);
-            ActivityAttribute::create([
-                'activity_id' => $activity->id,
-                'attribute_id' => rand(3, 4),
-                'attribute_value' => '1 Hour'
-            ]);
+            // ActivityAttribute::create([
+            //     'activity_id' => $activity->id,
+            //     'attribute_id' => 1,
+            //     'attribute_value' => '1 Hour'
+            // ]);
+            // ActivityAttribute::create([
+            //     'activity_id' => $activity->id,
+            //     'attribute_id' => 2,
+            //     'attribute_value' => 'Medium'
+            // ]);
+
+            $attributeValues = [
+                1 => ['1 Hour', '2 Hours', 'Half Day', 'Full Day'],
+                2 => ['Easy', 'Medium', 'Hard'],
+                3 => ['1-5', '6-10', '11-20', '20+'],
+            ];
+            
+            $usedAttributeIds = [];
+            
+            $randomAttributeIds = array_rand($attributeValues, rand(2, 3)); // 2 ya 3 attributes assign kare
+            
+            // Ensure it's array
+            $randomAttributeIds = is_array($randomAttributeIds) ? $randomAttributeIds : [$randomAttributeIds];
+            
+            foreach ($randomAttributeIds as $attributeId) {
+                $valueOptions = $attributeValues[$attributeId];
+                $attributeValue = $valueOptions[array_rand($valueOptions)];
+            
+                ActivityAttribute::create([
+                    'activity_id' => $activity->id,
+                    'attribute_id' => $attributeId,
+                    'attribute_value' => $attributeValue
+                ]);
+            }
 
             ActivityTag::create([
                 'activity_id' => $activity->id,
@@ -127,25 +340,6 @@ class ActivitySeeder extends Seeder {
                 'duration' => rand(5, 20)
             ]);
 
-            // Fetch all attributes
-            // $attribute = Attribute::inRandomOrder()->first();
-            
-            // if (!$attribute || empty($attribute->values)) {
-            //     continue; // Skip if no attribute or empty values
-            // }
-
-            // // Decode JSON values and pick a random one
-            // $attributeValues = json_decode($attribute->values, true);
-            // $randomValue = is_array($attributeValues) ? $attributeValues[array_rand($attributeValues)] : null;
-
-            // if ($randomValue) {
-            //     ActivityAttribute::create([
-            //         'activity_id' => $activity->id,
-            //         'attribute_id' => $attribute->id,
-            //         'attribute_value' => $randomValue, // Use a value from JSON
-            //     ]);
-            // }
-
             // Pricing
             $pricing = ActivityPricing::create([
                 'activity_id' => $activity->id,
@@ -154,11 +348,12 @@ class ActivitySeeder extends Seeder {
             ]);
 
             // ⏳ Seasonal Pricing (if enabled)
+            $seasons = ['winter', 'summer', 'spring', 'autumn'];
             // if ($pricing->enable_seasonal_pricing) {
                 ActivitySeasonalPricing::create([
                     'activity_id' => $activity->id,
                     'enable_seasonal_pricing' => true,
-                    'season_name' => 'Winter Special',
+                    'season_name' => $seasons[array_rand($seasons)],
                     'season_start' => '2025-12-01',
                     'season_end'    => '2026-02-28',
                     'season_price' => rand(60, 400),

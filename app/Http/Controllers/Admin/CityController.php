@@ -21,8 +21,40 @@ class CityController extends Controller
      */
     public function index()
     {
+        // $cities = City::with(['locationDetails', 'travelInfo', 'seasons', 'events', 'additionalInfo', 'faqs', 'seo'])->get();
+        // return response()->json($cities);
+
         $cities = City::with(['locationDetails', 'travelInfo', 'seasons', 'events', 'additionalInfo', 'faqs', 'seo'])->get();
-        return response()->json($cities);
+    
+        $transformed = $cities->map(function ($city) {
+            return [
+                'id' => $city->id,
+                'city_id' => $city->id, // duplicate, as per your requirement
+                'name' => $city->name,
+                'city_code' => $city->city_code,
+                'slug' => $city->slug,
+                'state_id' => $city->state_id,
+                'description' => $city->description,
+                'feature_image' => $city->feature_image,
+                'featured_destination' => $city->featured_destination,
+                'created_at' => $city->created_at,
+                'updated_at' => $city->updated_at,
+    
+                'location_details' => $city->locationDetails,
+                'travel_info' => $city->travelInfo,
+                'seasons' => $city->seasons,
+                'events' => $city->events,
+                'additional_info' => $city->additionalInfo,
+                'faqs' => $city->faqs,
+                'seo' => $city->seo,
+            ];
+        });
+    
+        return response()->json([
+            'success' => true,
+            'data' => $transformed
+        ]);
+        // return response()->json($transformed);
     }
 
     /**

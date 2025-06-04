@@ -204,7 +204,7 @@ class TransferController extends Controller
      */
     public function show(string $id)
     {
-        $transfer = Transfer::with(['vendorRoutes', 'pricingAvailability', 'media', 'seo'])->find($id);
+        $transfer = Transfer::with(['vendorRoutes', 'pricingAvailability', 'mediaGallery.media', 'seo'])->find($id);
         if (!$transfer) {
             return response()->json(['message' => 'Transfer not found'], 404);
         }

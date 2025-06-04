@@ -11,14 +11,21 @@ class CategoryController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $categories = Category::all();
+        $perPage = 6;
+        $page    = $request->get('page', 1);
+    
+        $categories = Category::paginate($perPage, ['*'], 'page', $page);
+    
         return response()->json([
-            'success' => true,
-            'data'    => $categories
+            'success'      => true,
+            'data'         => $categories->items(),
+            'current_page' => $categories->currentPage(),
+            'per_page'     => $categories->perPage(),
+            'total'        => $categories->total(),
         ]);
-    }
+    }  
 
     /**
      * Store a newly created resource in storage.

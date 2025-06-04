@@ -85,4 +85,10 @@ class Package extends Model
     {
         return $this->hasMany(PackageMediaGallery::class);
     }
+
+    public function orders()
+    {
+        return $this->morphMany(Order::class, 'orderable');
+    }
+
 }

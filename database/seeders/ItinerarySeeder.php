@@ -50,60 +50,249 @@ class ItinerarySeeder extends Seeder
 
         $itineraries = [
             [
-                'name'               => 'Luxury Safari in Kenya',
-                'slug'               => Str::slug('Luxury Safari in Kenya'),
-                'description'        => 'Explore the luxury of Kenyas wild safari.',
+                'name' => 'Luxury Safari in Kenya',
+                'slug' => 'luxury-safari-in-kenya',
+                'description' => 'Explore the luxury of Kenyas wild safari.',
                 'featured_itinerary' => true,
-                'private_itinerary'  => false,
+                'private_itinerary' => false,
             ],
             [
-                'name'               => 'Adventure Trek in Nepal',
-                'slug'               => Str::slug('Adventure Trek in Nepal'),
-                'description'        => 'Experience the thrill of the Himalayas.',
+                'name' => 'Adventure Trek in Nepal',
+                'slug' => 'adventure-trek-in-nepal',
+                'description' => 'Experience the thrill of the Himalayas.',
                 'featured_itinerary' => true,
-                'private_itinerary'  => false,
+                'private_itinerary' => false,
             ],
             [
-                'name'               => 'Beach Vacation in Maldives',
-                'slug'               => Str::slug('Beach Vacation in Maldives'),
-                'description'        => 'Relax on the white sands of Maldives.',
+                'name' => 'Beach Vacation in Maldives',
+                'slug' => 'beach-vacation-in-maldives',
+                'description' => 'Relax on the white sands of Maldives.',
                 'featured_itinerary' => false,
-                'private_itinerary'  => false,
+                'private_itinerary' => false,
             ],
             [
-                'name'               => 'Cultural Tour in Japan',
-                'slug'               => Str::slug('Cultural Tour in Japan'),
-                'description'        => 'Explore the rich culture of Japan.',
+                'name' => 'Cultural Tour in Japan',
+                'slug' => 'cultural-tour-in-japan',
+                'description' => 'Explore the rich culture of Japan.',
                 'featured_itinerary' => true,
-                'private_itinerary'  => true,
+                'private_itinerary' => true,
             ],
             [
-                'name'               => 'Cultural Tour in Kangra',
-                'slug'               => Str::slug('Cultural Tour in kangra'),
-                'description'        => 'Explore the rich culture of Japan.',
+                'name' => 'Cultural Tour in Kangra',
+                'slug' => 'cultural-tour-in-kangra',
+                'description' => 'Explore the rich culture of Japan.',
                 'featured_itinerary' => true,
-                'private_itinerary'  => true,
+                'private_itinerary' => true,
             ],
             [
-                'name'               => 'Cultural Tour in Lama Temple',
-                'slug'               => Str::slug('Cultural Tour in Lama Temple'),
-                'description'        => 'Explore the rich culture of Japan.',
+                'name' => 'Cultural Tour in Lama Temple',
+                'slug' => 'cultural-tour-in-lama-temple',
+                'description' => 'Explore the rich culture of Japan.',
                 'featured_itinerary' => true,
-                'private_itinerary'  => true,
+                'private_itinerary' => true,
             ],
             [
-                'name'               => 'Cultural Tour in Dharamshala',
-                'slug'               => Str::slug('Cultural Tour in Dharamshala'),
-                'description'        => 'Explore the rich culture of Japan.',
+                'name' => 'Cultural Tour in Dharamshala',
+                'slug' => 'cultural-tour-in-dharamshala',
+                'description' => 'Explore the rich culture of Japan.',
                 'featured_itinerary' => true,
-                'private_itinerary'  => true,
+                'private_itinerary' => true,
             ],
             [
-                'name'               => 'Cultural Tour in Rehan',
-                'slug'               => Str::slug('Cultural Tour in Rehan'),
-                'description'        => 'Explore the rich culture of Japan.',
+                'name' => 'Cultural Tour in Rehan',
+                'slug' => 'cultural-tour-in-rehan',
+                'description' => 'Explore the rich culture of Japan.',
                 'featured_itinerary' => true,
-                'private_itinerary'  => true,
+                'private_itinerary' => true,
+            ],
+            [
+                'name' => 'Market Tour in Greece',
+                'slug' => 'market-tour-in-greece',
+                'description' => 'Experience the beauty and culture of Greece.',
+                'featured_itinerary' => false,
+                'private_itinerary' => false,
+            ],
+            [
+                'name' => 'Beach Tour in Costa Rica',
+                'slug' => 'beach-tour-in-costa-rica',
+                'description' => 'Experience the beauty and culture of Costa Rica.',
+                'featured_itinerary' => false,
+                'private_itinerary' => true,
+            ],
+            [
+                'name' => 'Park Tour in Portugal',
+                'slug' => 'park-tour-in-portugal',
+                'description' => 'Experience the beauty and culture of Portugal.',
+                'featured_itinerary' => false,
+                'private_itinerary' => false,
+            ],
+            [
+                'name' => 'Village Tour in Iceland',
+                'slug' => 'village-tour-in-iceland',
+                'description' => 'Experience the beauty and culture of Iceland.',
+                'featured_itinerary' => false,
+                'private_itinerary' => false,
+            ],
+            [
+                'name' => 'Camp Tour in Cuba',
+                'slug' => 'camp-tour-in-cuba',
+                'description' => 'Experience the beauty and culture of Cuba.',
+                'featured_itinerary' => true,
+                'private_itinerary' => true,
+            ],
+            [
+                'name' => 'River Tour in Sri Lanka',
+                'slug' => 'river-tour-in-sri-lanka',
+                'description' => 'Experience the beauty and culture of Sri Lanka.',
+                'featured_itinerary' => true,
+                'private_itinerary' => true,
+            ],
+            [
+                'name' => 'Museum Tour in Argentina',
+                'slug' => 'museum-tour-in-argentina',
+                'description' => 'Experience the beauty and culture of Argentina.',
+                'featured_itinerary' => false,
+                'private_itinerary' => true,
+            ],
+            [
+                'name' => 'Church Tour in Canada',
+                'slug' => 'church-tour-in-canada',
+                'description' => 'Experience the beauty and culture of Canada.',
+                'featured_itinerary' => false,
+                'private_itinerary' => true,
+            ],
+            [
+                'name' => 'Hill Tour in Himalayas',
+                'slug' => 'hill-tour-in-himalayas',
+                'description' => 'Experience the beauty and culture of Himalayas.',
+                'featured_itinerary' => false,
+                'private_itinerary' => true,
+            ],
+            [
+                'name' => 'Villa Tour in Bhutan',
+                'slug' => 'villa-tour-in-bhutan',
+                'description' => 'Experience the beauty and culture of Bhutan.',
+                'featured_itinerary' => true,
+                'private_itinerary' => false,
+            ],
+            [
+                'name' => 'Tower Tour in Germany',
+                'slug' => 'tower-tour-in-germany',
+                'description' => 'Experience the beauty and culture of Germany.',
+                'featured_itinerary' => true,
+                'private_itinerary' => false,
+            ],
+            [
+                'name' => 'Forest Tour in Brazil',
+                'slug' => 'forest-tour-in-brazil',
+                'description' => 'Experience the beauty and culture of Brazil.',
+                'featured_itinerary' => false,
+                'private_itinerary' => false,
+            ],
+            [
+                'name' => 'Lake Tour in Morocco',
+                'slug' => 'lake-tour-in-morocco',
+                'description' => 'Experience the beauty and culture of Morocco.',
+                'featured_itinerary' => false,
+                'private_itinerary' => false,
+            ],
+            [
+                'name' => 'Valley Tour in Peru',
+                'slug' => 'valley-tour-in-peru',
+                'description' => 'Experience the beauty and culture of Peru.',
+                'featured_itinerary' => false,
+                'private_itinerary' => false,
+            ],
+            [
+                'name' => 'Garden Tour in Austria',
+                'slug' => 'garden-tour-in-austria',
+                'description' => 'Experience the beauty and culture of Austria.',
+                'featured_itinerary' => true,
+                'private_itinerary' => true,
+            ],
+            [
+                'name' => 'Beach Tour in Bali',
+                'slug' => 'beach-tour-in-bali',
+                'description' => 'Experience the beauty and culture of Bali.',
+                'featured_itinerary' => true,
+                'private_itinerary' => false,
+            ],
+            [
+                'name' => 'Island Tour in Turkey',
+                'slug' => 'island-tour-in-turkey',
+                'description' => 'Experience the beauty and culture of Turkey.',
+                'featured_itinerary' => false,
+                'private_itinerary' => true,
+            ],
+            [
+                'name' => 'Field Tour in South Africa',
+                'slug' => 'field-tour-in-south-africa',
+                'description' => 'Experience the beauty and culture of South Africa.',
+                'featured_itinerary' => true,
+                'private_itinerary' => true,
+            ],
+            [
+                'name' => 'Temple Tour in Vietnam',
+                'slug' => 'temple-tour-in-vietnam',
+                'description' => 'Experience the beauty and culture of Vietnam.',
+                'featured_itinerary' => false,
+                'private_itinerary' => true,
+            ],
+            [
+                'name' => 'Ruins Tour in Egypt',
+                'slug' => 'ruins-tour-in-egypt',
+                'description' => 'Experience the beauty and culture of Egypt.',
+                'featured_itinerary' => false,
+                'private_itinerary' => true,
+            ],
+            [
+                'name' => 'Festival Tour in Cambodia',
+                'slug' => 'festival-tour-in-cambodia',
+                'description' => 'Experience the beauty and culture of Cambodia.',
+                'featured_itinerary' => true,
+                'private_itinerary' => false,
+            ],
+            [
+                'name' => 'Historic Tour in Tuscany',
+                'slug' => 'historic-tour-in-tuscany',
+                'description' => 'Experience the beauty and culture of Tuscany.',
+                'featured_itinerary' => false,
+                'private_itinerary' => true,
+            ],
+            [
+                'name' => 'Sightseeing Tour in Spain',
+                'slug' => 'sightseeing-tour-in-spain',
+                'description' => 'Experience the beauty and culture of Spain.',
+                'featured_itinerary' => true,
+                'private_itinerary' => false,
+            ],
+            [
+                'name' => 'Bridge Tour in Machu Picchu',
+                'slug' => 'bridge-tour-in-machu-picchu',
+                'description' => 'Experience the beauty and culture of Machu Picchu.',
+                'featured_itinerary' => false,
+                'private_itinerary' => false,
+            ],
+            [
+                'name' => 'Adventure Tour in Dubai',
+                'slug' => 'adventure-tour-in-dubai',
+                'description' => 'Experience the beauty and culture of Dubai.',
+                'featured_itinerary' => true,
+                'private_itinerary' => false,
+            ],
+            [
+                'name' => 'Museum Tour in Norway',
+                'slug' => 'museum-tour-in-norway',
+                'description' => 'Experience the beauty and culture of Norway.',
+                'featured_itinerary' => true,
+                'private_itinerary' => false,
+            ],
+            [
+                'name' => 'Pilgrimage Tour in China',
+                'slug' => 'pilgrimage-tour-in-china',
+                'description' => 'Experience the beauty and culture of China.',
+                'featured_itinerary' => false,
+                'private_itinerary' => false,
             ],
         ];
 
@@ -200,11 +389,35 @@ class ItinerarySeeder extends Seeder
                 'category_id'  => 1,
             ]);
 
-            ItineraryAttribute::create([
-                'itinerary_id'    => $itinerary->id,
-                'attribute_id'    => 1,
-                'attribute_value' => '1 Hour'
-            ]);
+            // ItineraryAttribute::create([
+            //     'itinerary_id'    => $itinerary->id,
+            //     'attribute_id'    => 1,
+            //     'attribute_value' => '1 Hour'
+            // ]);
+
+            $attributeValues = [
+                1 => ['1 Hour', '2 Hours', 'Half Day', 'Full Day'],
+                2 => ['Easy', 'Medium', 'Hard'],
+                3 => ['1-5', '6-10', '11-20', '20+'],
+            ];
+            
+            $usedAttributeIds = [];
+            
+            $randomAttributeIds = array_rand($attributeValues, rand(2, 3)); // 2 ya 3 attributes assign kare
+            
+            // Ensure it's array
+            $randomAttributeIds = is_array($randomAttributeIds) ? $randomAttributeIds : [$randomAttributeIds];
+            
+            foreach ($randomAttributeIds as $attributeId) {
+                $valueOptions = $attributeValues[$attributeId];
+                $attributeValue = $valueOptions[array_rand($valueOptions)];
+            
+                ItineraryAttribute::create([
+                    'itinerary_id' => $itinerary->id,
+                    'attribute_id' => $attributeId,
+                    'attribute_value' => $attributeValue
+                ]);
+            }
 
             ItineraryTag::create([
                 'itinerary_id' => $itinerary->id,

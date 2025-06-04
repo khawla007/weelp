@@ -109,6 +109,197 @@ class PackageSeeder extends Seeder
                 'featured_package' => true,
                 'private_package'  => true,
             ],
+        
+            // --- 27 New Packages ---
+            [
+                'name' => 'Beach Escape in Andaman',
+                'slug' => Str::slug('Beach Escape in Andaman'),
+                'description' => 'Discover the blue waters of Andaman Islands.',
+                'featured_package' => false,
+                'private_package' => false,
+            ],
+            [
+                'name' => 'Spiritual Journey in Rishikesh',
+                'slug' => Str::slug('Spiritual Journey in Rishikesh'),
+                'description' => 'Experience peace and yoga in Rishikesh.',
+                'featured_package' => true,
+                'private_package' => true,
+            ],
+            [
+                'name' => 'Hill Station Tour in Manali',
+                'slug' => Str::slug('Hill Station Tour in Manali'),
+                'description' => 'Snow capped mountains and serene views.',
+                'featured_package' => true,
+                'private_package' => false,
+            ],
+            [
+                'name' => 'Cultural Trail in Jaipur',
+                'slug' => Str::slug('Cultural Trail in Jaipur'),
+                'description' => 'Explore forts and palaces of Rajasthan.',
+                'featured_package' => true,
+                'private_package' => false,
+            ],
+            [
+                'name' => 'Backwater Bliss in Alleppey',
+                'slug' => Str::slug('Backwater Bliss in Alleppey'),
+                'description' => 'Relax in houseboats of Kerala.',
+                'featured_package' => false,
+                'private_package' => false,
+            ],
+            [
+                'name' => 'Wildlife Safari in Jim Corbett',
+                'slug' => Str::slug('Wildlife Safari in Jim Corbett'),
+                'description' => 'See tigers and elephants in the wild.',
+                'featured_package' => true,
+                'private_package' => false,
+            ],
+            [
+                'name' => 'Snow Adventure in Gulmarg',
+                'slug' => Str::slug('Snow Adventure in Gulmarg'),
+                'description' => 'Enjoy skiing and snowboarding in Gulmarg.',
+                'featured_package' => false,
+                'private_package' => true,
+            ],
+            [
+                'name' => 'Monsoon Retreat in Munnar',
+                'slug' => Str::slug('Monsoon Retreat in Munnar'),
+                'description' => 'Lush green tea gardens await you.',
+                'featured_package' => false,
+                'private_package' => true,
+            ],
+            [
+                'name' => 'Romantic Getaway in Udaipur',
+                'slug' => Str::slug('Romantic Getaway in Udaipur'),
+                'description' => 'Lakes and palaces perfect for couples.',
+                'featured_package' => true,
+                'private_package' => false,
+            ],
+            [
+                'name' => 'Food Tour in Amritsar',
+                'slug' => Str::slug('Food Tour in Amritsar'),
+                'description' => 'Tasty treats and heritage walk.',
+                'featured_package' => false,
+                'private_package' => true,
+            ],
+            [
+                'name' => 'Pilgrimage Tour in Varanasi',
+                'slug' => Str::slug('Pilgrimage Tour in Varanasi'),
+                'description' => 'Spiritual baths and Ganga Aarti.',
+                'featured_package' => true,
+                'private_package' => false,
+            ],
+            [
+                'name' => 'Island Hopper in Lakshadweep',
+                'slug' => Str::slug('Island Hopper in Lakshadweep'),
+                'description' => 'Isolated beaches and coral reefs.',
+                'featured_package' => false,
+                'private_package' => false,
+            ],
+            [
+                'name' => 'Luxury Escape in Shimla',
+                'slug' => Str::slug('Luxury Escape in Shimla'),
+                'description' => 'Historic charm and luxury hotels.',
+                'featured_package' => true,
+                'private_package' => false,
+            ],
+            [
+                'name' => 'Eco Tour in Sikkim',
+                'slug' => Str::slug('Eco Tour in Sikkim'),
+                'description' => 'Clean green and pristine views.',
+                'featured_package' => false,
+                'private_package' => true,
+            ],
+            [
+                'name' => 'Festive Tour in Kolkata',
+                'slug' => Str::slug('Festive Tour in Kolkata'),
+                'description' => 'Enjoy Durga Puja celebrations.',
+                'featured_package' => true,
+                'private_package' => true,
+            ],
+            [
+                'name' => 'Fort Tour in Chittorgarh',
+                'slug' => Str::slug('Fort Tour in Chittorgarh'),
+                'description' => 'Massive forts and Rajput glory.',
+                'featured_package' => true,
+                'private_package' => false,
+            ],
+            [
+                'name' => 'Tea Garden Walk in Darjeeling',
+                'slug' => Str::slug('Tea Garden Walk in Darjeeling'),
+                'description' => 'Toy train and scenic tea estates.',
+                'featured_package' => false,
+                'private_package' => false,
+            ],
+            [
+                'name' => 'Temple Trail in Tamil Nadu',
+                'slug' => Str::slug('Temple Trail in Tamil Nadu'),
+                'description' => 'Ancient temples and architecture.',
+                'featured_package' => false,
+                'private_package' => true,
+            ],
+            [
+                'name' => 'Wild East in Meghalaya',
+                'slug' => Str::slug('Wild East in Meghalaya'),
+                'description' => 'Caves, waterfalls, and forests.',
+                'featured_package' => false,
+                'private_package' => false,
+            ],
+            [
+                'name' => 'Bike Trip to Leh Ladakh',
+                'slug' => Str::slug('Bike Trip to Leh Ladakh'),
+                'description' => 'Rugged terrains and biker heaven.',
+                'featured_package' => true,
+                'private_package' => true,
+            ],
+            [
+                'name' => 'Sunset Tour in Kanyakumari',
+                'slug' => Str::slug('Sunset Tour in Kanyakumari'),
+                'description' => 'Meeting point of oceans.',
+                'featured_package' => false,
+                'private_package' => true,
+            ],
+            [
+                'name' => 'Island Escape to Diu',
+                'slug' => Str::slug('Island Escape to Diu'),
+                'description' => 'Portuguese vibes and quiet beaches.',
+                'featured_package' => true,
+                'private_package' => false,
+            ],
+            [
+                'name' => 'Colonial Trail in Pondicherry',
+                'slug' => Str::slug('Colonial Trail in Pondicherry'),
+                'description' => 'French town and seaside cafes.',
+                'featured_package' => true,
+                'private_package' => true,
+            ],
+            [
+                'name' => 'Jungle Stay in Bandipur',
+                'slug' => Str::slug('Jungle Stay in Bandipur'),
+                'description' => 'Stay amidst wildlife.',
+                'featured_package' => false,
+                'private_package' => false,
+            ],
+            [
+                'name' => 'Adventure Camp in Rann of Kutch',
+                'slug' => Str::slug('Adventure Camp in Rann of Kutch'),
+                'description' => 'White desert and cultural nights.',
+                'featured_package' => true,
+                'private_package' => true,
+            ],
+            [
+                'name' => 'Photography Tour in Spiti',
+                'slug' => Str::slug('Photography Tour in Spiti'),
+                'description' => 'Barren landscapes and monasteries.',
+                'featured_package' => false,
+                'private_package' => true,
+            ],
+            [
+                'name' => 'Waterfall Hike in Cherrapunji',
+                'slug' => Str::slug('Waterfall Hike in Cherrapunji'),
+                'description' => 'Trek to India’s highest falls.',
+                'featured_package' => false,
+                'private_package' => false,
+            ],
         ];
 
         foreach ($packages as $PackageData) {
@@ -273,11 +464,35 @@ class PackageSeeder extends Seeder
                 'category_id' => 1,
             ]);
 
-            PackageAttribute::create([
-                'package_id'      => $package->id,
-                'attribute_id'    => 1,
-                'attribute_value' => '1 Hour'
-            ]);
+            // PackageAttribute::create([
+            //     'package_id'      => $package->id,
+            //     'attribute_id'    => 1,
+            //     'attribute_value' => '1 Hour'
+            // ]);
+
+            $attributeValues = [
+                1 => ['1 Hour', '2 Hours', 'Half Day', 'Full Day'],
+                2 => ['Easy', 'Medium', 'Hard'],
+                3 => ['1-5', '6-10', '11-20', '20+'],
+            ];
+            
+            $usedAttributeIds = [];
+            
+            $randomAttributeIds = array_rand($attributeValues, rand(2, 3)); // 2 ya 3 attributes assign kare
+            
+            // Ensure it's array
+            $randomAttributeIds = is_array($randomAttributeIds) ? $randomAttributeIds : [$randomAttributeIds];
+            
+            foreach ($randomAttributeIds as $attributeId) {
+                $valueOptions = $attributeValues[$attributeId];
+                $attributeValue = $valueOptions[array_rand($valueOptions)];
+            
+                PackageAttribute::create([
+                    'package_id' => $package->id,
+                    'attribute_id' => $attributeId,
+                    'attribute_value' => $attributeValue
+                ]);
+            }
 
             PackageTag::create([
                 'package_id' => $package->id,

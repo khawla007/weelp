@@ -41,6 +41,7 @@ class ItineraryController extends Controller
         $perPage        = 3; 
         $page           = $request->get('page', 1); 
 
+        $name           = $request->get('name'); // Search by activity name
         $categorySlug   = $request->get('category');
         $difficulty     = $request->get('difficulty_level');
         $duration       = $request->get('duration');
@@ -68,6 +69,11 @@ class ItineraryController extends Controller
                 'attributes.attribute:id,name',
                 'mediaGallery.media'
             ])
+
+            ->when($name, fn($query) =>
+                $query->where('itineraries.name', 'like', "%{$name}%")
+            )   
+            
             ->when($categoryId, fn($query) => 
                 $query->whereHas('categories', fn($q) => 
                     $q->where('category_id', $categoryId)
@@ -898,6 +904,9 @@ class ItineraryController extends Controller
         return response()->json(['message' => 'Itinerary deleted successfully']);
     }
 
+    /**
+     * Remove the specified itinerary specific fields from storage.
+     */
     public function partialDelete(Request $request, string $id)
     {
         $itinerary = Itinerary::with('schedules.activities', 'schedules.transfers', 'basePricing.variations', 'basePricing.blackoutDates')->find($id);
@@ -955,50 +964,34 @@ class ItineraryController extends Controller
         return response()->json(['message' => 'Selected items deleted successfully']);
     }
 
-    // public function destroy(Request $request, string $id)
-    // {
-    //     $itinerary = Itinerary::with('schedules.activities', 'schedules.transfers')->find($id);
-    
-    //     if (!$itinerary) {
-    //         return response()->json(['message' => 'Itinerary not found'], 404);
-    //     }
-    
-    //     // Delete selected activities via schedules
-    //     if ($request->has('deleted_activity_ids')) {
-    //         foreach ($itinerary->schedules as $schedule) {
-    //             $schedule->activities()
-    //                 ->whereIn('id', $request->deleted_activity_ids)
-    //                 ->delete();
-    //         }
-    //     }
-    
-    //     // Delete selected transfers via schedules
-    //     if ($request->has('deleted_transfer_ids')) {
-    //         foreach ($itinerary->schedules as $schedule) {
-    //             $schedule->transfers()
-    //                 ->whereIn('id', $request->deleted_transfer_ids)
-    //                 ->delete();
-    //         }
-    //     }
-    
-    //     // Delete selected schedules directly
-    //     if ($request->has('deleted_schedule_ids')) {
-    //         $itinerary->schedules()
-    //             ->whereIn('id', $request->deleted_schedule_ids)
-    //             ->delete();
-    //     }
-    
-    //     // If no partial deletions passed, delete full itinerary
-    //     if (
-    //         !$request->has('deleted_schedule_ids') &&
-    //         !$request->has('deleted_activity_ids') &&
-    //         !$request->has('deleted_transfer_ids')
-    //     ) {
-    //         $itinerary->delete();
-    //         return response()->json(['message' => 'Itinerary deleted successfully']);
-    //     }
-    
-    //     return response()->json(['message' => 'Selected relations deleted successfully']);
-    // }    
+    /**
+     * Remove the bulk itineraries from storage.
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $validated = $request->validate([
+            'itinerary_ids' => 'required|array',
+            'itinerary_ids.*' => 'integer|exists:itineraries,id',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            // This will automatically cascade delete related rows if foreign keys are set correctly
+            Itinerary::whereIn('id', $validated['itinerary_ids'])->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Selected itineraries deleted successfully.'
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'error' => 'Failed to delete selected itineraries.',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 
 }

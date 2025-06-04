@@ -88,4 +88,9 @@ class Activity extends Model {
     {
         return $this->hasMany(Blog::class);
     }
+
+    public function orders()
+    {
+        return $this->morphMany(Order::class, 'orderable');
+    }
 }
