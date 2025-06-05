@@ -56,8 +56,8 @@ class OrderController extends Controller
             // Step 2: Create payment
             if (isset($validated['payment'])) {
                 $order->payment()->create([
-                    'status'            => $validated['payment']['status'] ?? 'pending',
-                    'method'            => $validated['payment']['method'] ?? null,
+                    'payment_status'    => $validated['payment']['payment_status'] ?? 'pending',
+                    'payment_method'    => $validated['payment']['payment_method'] ?? null,
                     'total_amount'      => $validated['payment']['total_amount'] ?? 0,
                     'is_custom_amount'  => $validated['payment']['is_custom_amount'] ?? false,
                     'custom_amount'     => $validated['payment']['custom_amount'] ?? 0,
@@ -89,125 +89,6 @@ class OrderController extends Controller
             ], 500);
         }
     }
-
-    // public function index(Request $request)
-    // {
-    //     $perPage = 5;
-    //     $page    = $request->get('page', 1);
-    //     $status  = $request->get('status');
-
-    //     // Get paginated orders with relationships
-    //     $orders = Order::with(['user', 'orderable', 'payment', 'emergencyContact'])
-    //                 ->paginate($perPage, ['*'], 'page', $page);
-
-    //     // Format each item
-    //     $formattedOrders = $orders->getCollection()->map(function ($order) {
-    //         return [
-    //             'id'                   => $order->id,
-    //             'order_type'           => strtolower(class_basename($order->orderable_type)),
-    //             'travel_date'          => $order->travel_date,
-    //             'preferred_time'       => $order->preferred_time,
-    //             'number_of_adults'     => $order->number_of_adults,
-    //             'number_of_children'   => $order->number_of_children,
-    //             'status'               => $order->status,
-    //             'special_requirements' => $order->special_requirements,
-    //             'user'                 => $order->user,
-    //             'orderable'            => $order->orderable,
-    //             'payment'              => $order->payment,
-    //             'emergency_contact'    => $order->emergencyContact,
-    //         ];
-    //     });
-
-    //     // Get overall stats (optional - not paginated)
-    //     $allOrders = Order::all();
-
-    //     // Get all payments (not paginated)
-    //     $allPayments = \App\Models\OrderPayment::all();
-    //     $summary = [
-    //         'total_revenue'    => $allPayments->sum(function ($payment) {
-    //             return ($payment->total_amount ?? 0) + ($payment->custom_amount ?? 0);
-    //         }),
-    //         'total_orders'     => $allOrders->count(),
-    //         'pending_orders'   => $allOrders->where('status', 'pending')->count(),
-    //         'confirmed_orders' => $allOrders->where('status', 'confirmed')->count(),
-    //         'cancelled_orders' => $allOrders->where('status', 'cancelled')->count(),
-    //     ];
-
-    //     return response()->json([
-    //         'success'       => true,
-    //         'data'          => $formattedOrders,
-    //         'summary'       => $summary,
-    //         'current_page'  => $orders->currentPage(),
-    //         'per_page'      => $orders->perPage(),
-    //         'total'         => $orders->total(),
-    //     ]);
-    // }
-
-    // public function index(Request $request)
-    // {
-    //     $perPage = 5;
-    //     $page    = $request->get('page', 1);
-    //     $status  = $request->get('status'); // Get status from query (?status=pending)
-
-    //     // Build the base query
-    //     $query = Order::with(['user', 'orderable', 'payment', 'emergencyContact']);
-        
-    //     // Apply status filter if provided
-    //     if ($status && in_array($status, ['pending', 'confirmed', 'cancelled'])) {
-    //         $query->where('status', $status);
-    //     }
-
-    //     // Paginate the filtered results
-    //     $orders = $query->paginate($perPage, ['*'], 'page', $page);
-
-    //     $formattedOrders = $orders->getCollection()->map(function ($order) {
-    //         return [
-    //             'id'                   => $order->id,
-    //             'order_type'           => strtolower(class_basename($order->orderable_type)),
-    //             'travel_date'          => $order->travel_date,
-    //             'preferred_time'       => $order->preferred_time,
-    //             'number_of_adults'     => $order->number_of_adults,
-    //             'number_of_children'   => $order->number_of_children,
-    //             'status'               => $order->status,
-    //             'special_requirements' => $order->special_requirements,
-    //             'user'                 => $order->user,
-    //             'orderable'            => $order->orderable,
-    //             'payment'              => $order->payment,
-    //             'emergency_contact'    => $order->emergencyContact,
-    //         ];
-    //     });
-
-    //     // Get summary for the filtered query
-    //     $allOrders = Order::all();
-    //     $allPayments = $allOrders->pluck('payment')->filter();
-
-    //     $summary = [
-    //         'total_orders'     => $allOrders->count(),
-    //         'pending_orders'   => $allOrders->where('status', 'pending')->count(),
-    //         'confirmed_orders' => $allOrders->where('status', 'confirmed')->count(),
-    //         'cancelled_orders' => $allOrders->where('status', 'cancelled')->count(),
-    //         'total_revenue'    => $allPayments->sum(function ($payment) {
-    //             return ($payment->total_amount ?? 0) + ($payment->custom_amount ?? 0);
-    //         }),
-    //     ];
-
-    //     $response = [
-    //         'success'       => true,
-    //         'data'          => $formattedOrders,
-    //         'summary'       => $summary,
-    //         'current_page'  => $orders->currentPage(),
-    //         'per_page'      => $orders->perPage(),
-    //         'total'         => $orders->total(),
-    //     ];
-
-    //     if ($formattedOrders->isEmpty() && $page > 1) {
-    //         $response['message'] = $status 
-    //             ? "No more {$status} orders available." 
-    //             : "No more orders available.";
-    //     }
-    
-    //     return response()->json($response);
-    // }
 
     public function index(Request $request)
     {

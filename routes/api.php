@@ -2,8 +2,11 @@
 
 // Admin
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\StripePaymentController;
+
 use App\Http\Controllers\Admin\UserController;
 // use App\Http\Controllers\Admin\UserProfileController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -59,6 +62,11 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/profile', [UserProfileController::class, 'show']);
     Route::put('/profile', [UserProfileController::class, 'update']);
 });
+
+// Stripe Payment api
+// Route::post('/create-payment-intent', [StripePaymentController::class, 'createPaymentIntent']);
+Route::post('/create-payment-intent', [StripePaymentController::class, 'bookAndCreatePaymentIntent']);
+Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook']);
 
 Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
 
