@@ -5,9 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use App\Models\User;
 use App\Models\Order;
-use App\Models\Payment;
-use App\Models\EmergencyContact;
+use App\Models\OrderPayment;
+use App\Models\OrderEmergencyContact;
 
 
 class StripePaymentController extends Controller
@@ -75,7 +76,6 @@ class StripePaymentController extends Controller
             // Create Order
             $order = Order::create([
                 'user_id'              => $request->user_id,
-                'order_type'           => $request->order_type,
                 'orderable_type'       => $orderableClass,
                 'orderable_id'         => $request->orderable_id,
                 'travel_date'          => $request->travel_date,
@@ -88,7 +88,7 @@ class StripePaymentController extends Controller
     
             // Emergency Contact (optional)
             if ($request->has('emergency_contact')) {
-                EmergencyContact::create([
+                OrderEmergencyContact::create([
                     'order_id'     => $order->id,
                     'name'         => $request->emergency_contact['name'] ?? '',
                     'phone'        => $request->emergency_contact['phone'] ?? '',
@@ -124,10 +124,10 @@ class StripePaymentController extends Controller
             }
     
             // Save Payment
-            Payment::create([
+            OrderPayment::create([
                 'order_id'        => $order->id,
                 'payment_status'  => 'pending',
-                'payment_method'  => 'card',
+                'payment_method'  => 'credit_card',
                 'total_amount'    => $request->amount,
                 'is_custom_amount'=> false,
                 'custom_amount'   => null,
