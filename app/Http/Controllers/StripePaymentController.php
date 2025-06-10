@@ -90,8 +90,8 @@ class StripePaymentController extends Controller
             if ($request->has('emergency_contact')) {
                 OrderEmergencyContact::create([
                     'order_id'     => $order->id,
-                    'name'         => $request->emergency_contact['name'] ?? '',
-                    'phone'        => $request->emergency_contact['phone'] ?? '',
+                    'contact_name'         => $request->emergency_contact['name'] ?? '',
+                    'contact_phone'        => $request->emergency_contact['phone'] ?? '',
                     'relationship' => $request->emergency_contact['relationship'] ?? '',
                 ]);
             }
