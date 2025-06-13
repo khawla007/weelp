@@ -10,8 +10,8 @@ class OrderPayment extends Model
     use HasFactory;
 
     protected $fillable = [
-        'order_id', 'payment_status', 'payment_method',
-        'total_amount', 'is_custom_amount', 'custom_amount'
+        'order_id', 'payment_status', 'stripe_session_id', 'payment_method',
+        'amount', 'is_custom_amount', 'custom_amount', 'total_amount', 'currency'
     ];
 
     protected $casts = [

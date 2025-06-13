@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\StripePaymentController;
+use App\Http\Controllers\StripeController;
 
 use App\Http\Controllers\Admin\UserController;
 // use App\Http\Controllers\Admin\UserProfileController;
@@ -67,6 +68,9 @@ Route::middleware('auth:api')->group(function () {
 // Route::post('/create-payment-intent', [StripePaymentController::class, 'createPaymentIntent']);
 Route::post('/create-payment-intent', [StripePaymentController::class, 'bookAndCreatePaymentIntent']);
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook']);
+
+Route::post('/create-checkout-session', [StripeController::class, 'createCheckoutSession']);
+Route::post('/confirm-payment', [StripeController::class, 'confirmPayment']);
 
 Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
 

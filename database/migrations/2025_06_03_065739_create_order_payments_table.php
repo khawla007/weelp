@@ -15,10 +15,13 @@ return new class extends Migration
             $table->id();
             $table->foreignId('order_id')->constrained()->onDelete('cascade');
             $table->enum('payment_status', ['pending', 'partial', 'paid', 'refunded']);
+            $table->string('stripe_session_id')->nullable();
             $table->enum('payment_method', ['credit_card', 'debit_card', 'bank_transfer', 'cash']);
-            $table->decimal('total_amount', 10, 2);
+            $table->decimal('amount', 10, 2)->nullable();
             $table->boolean('is_custom_amount')->default(false);
             $table->decimal('custom_amount', 10, 2)->nullable();
+            $table->decimal('total_amount', 10, 2)->nullable();
+            $table->string('currency')->nullable();
             $table->timestamps();
         });
     }
