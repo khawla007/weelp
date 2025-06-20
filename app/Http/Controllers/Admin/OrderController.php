@@ -92,7 +92,7 @@ class OrderController extends Controller
 
     public function index(Request $request)
     {
-        $perPage = 5;
+        $perPage = 3;
         $page    = $request->get('page', 1);
         $status  = $request->get('status');
 

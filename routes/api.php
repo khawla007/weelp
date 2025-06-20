@@ -62,12 +62,15 @@ Route::middleware('auth:api')->group(function () {
     // Route::get('/user', [UserController::class, 'getUser']);
     Route::get('/profile', [UserProfileController::class, 'show']);
     Route::put('/profile', [UserProfileController::class, 'update']);
+
+    // 👇 Logged-in user ke orders
+    Route::get('/userorders', [UserProfileController::class, 'getUserOrders']);
 });
 
 // Stripe Payment api
 // Route::post('/create-payment-intent', [StripePaymentController::class, 'createPaymentIntent']);
-Route::post('/create-payment-intent', [StripePaymentController::class, 'bookAndCreatePaymentIntent']);
-Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook']);
+// Route::post('/create-payment-intent', [StripePaymentController::class, 'bookAndCreatePaymentIntent']);
+// Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook']);
 
 Route::post('/create-checkout-session', [StripeController::class, 'createCheckoutSession']);
 Route::post('/confirm-payment', [StripeController::class, 'confirmPayment']);

@@ -15,7 +15,7 @@ return new class extends Migration
 
             $table->bigIncrements('id'); // Primary key
             $table->unsignedBigInteger('user_id'); // Foreign key to the users table
-            $table->string('username'); // Username column
+            $table->string('username')->nullable(); // Username column
             $table->json('interest')->nullable(); // JSON column to store interests
             $table->text('bio')->nullable(); // Bio column
             $table->timestamps(); // created_at and updated_at

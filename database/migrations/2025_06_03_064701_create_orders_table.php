@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('orderable_type');
             $table->unsignedBigInteger('orderable_id');
+            $table->json('item_snapshot_json')->nullable();
             $table->date('travel_date');
             $table->time('preferred_time')->nullable();
             $table->integer('number_of_adults')->nullable();

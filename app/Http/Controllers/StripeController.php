@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session;
 use App\Models\User;
 use App\Models\Order;
 use App\Models\OrderPayment;
@@ -63,6 +64,35 @@ class StripeController extends Controller
             ]);
         }
 
+        // if ($existingOrder && $existingOrder->payment->stripe_session_id) {
+        //     try {
+        //         $session = StripeSession::retrieve($existingOrder->payment->stripe_session_id);
+        
+        //         if ( $session->status !== 'expired' && $session->payment_status !== 'paid') {
+        //             return response()->json([
+        //                 'id' => $existingOrder->payment->stripe_session_id,
+        //                 'url' => 'https://checkout.stripe.com/pay/' . $existingOrder->payment->stripe_session_id,
+        //             ]);
+        //         } else {
+        //             return response()->json([
+        //                 'message' => 'Session expired, Use cancel instead of back to checkout',
+        //             ]);
+        //         }
+        
+        //     } catch (\Exception $e) {
+        //         \Log::warning('Stripe session retrieve failed for existing order: ' . $e->getMessage(), [
+        //             'session_id' => $existingOrder->payment->stripe_session_id ?? null,
+        //             'order_id'   => $existingOrder->id ?? null,
+        //         ]);
+        //         // Continue to create new Stripe session
+        //     }
+        // } 
+        // else {
+        //     return response()->json([
+        //         'message' => 'No record found',
+        //     ]);
+        // }
+
         // ✅ Create Order
         $order = Order::create([
             'user_id' => $data['user_id'],
@@ -82,6 +112,60 @@ class StripeController extends Controller
             'relationship' => $data['emergency_contact']['relationship'],
         ]);
 
+        // ✅ Prepare and save snapshot
+        if ($orderable instanceof \App\Models\Activity) {
+            $snapshot = [
+                'name' => $orderable->name,
+                'slug' => $orderable->slug,
+                'item_type' => $orderable->item_type,
+                'location' => $orderable->locations->map(function ($loc) {
+                    return [
+                        'location_type' => $loc->location_type,
+                        'city' => $loc->city?->name,
+                        'state' => $loc->city?->state?->name,
+                        'country' => $loc->city?->state?->country?->name,
+                    ];
+                }),
+                'pricing' => $orderable->pricings,
+                'coupons_applied' => $order->applied_coupons ?? [],
+                'media' => $orderable->mediaGallery->map(function ($mg) {
+                    return [
+                        'url' => $mg->media?->url,
+                        'alt' => $mg->media?->alt_text,
+                    ];
+                }),
+            ];
+        } elseif ($orderable instanceof \App\Models\Package || $orderable instanceof \App\Models\Itinerary) {
+            $snapshot = [
+                'name' => $orderable->name,
+                'slug' => $orderable->slug,
+                'locations' => $orderable->locations->map(function ($loc) {
+                    return [
+                        'city' => $loc->city?->name,
+                        'state' => $loc->city?->state?->name,
+                        'country' => $loc->city?->state?->country?->name,
+                    ];
+                }),
+                'schedules' => $orderable->schedules,
+                'pricing' => $orderable->basePricing->priceVariations ?? [],
+                'coupons_applied' => $order->applied_coupons ?? [],
+                'media' => $orderable->mediaGallery->map(function ($mg) {
+                    return [
+                        'url' => $mg->media?->url,
+                        'alt' => $mg->media?->alt_text,
+                    ];
+                }),
+            ];
+        }
+
+        if (isset($snapshot)) {
+            $order->item_snapshot_json = json_encode(collect($snapshot)->toArray());
+            $order->save();
+        }
+        // $order->item_snapshot_json = json_encode($snapshot);
+
+        // $order->save();
+        
         // ✅ Setup Stripe
         Stripe::setApiKey(env('STRIPE_SECRET'));
 
@@ -153,7 +237,7 @@ class StripeController extends Controller
 
             if ($payment->fresh()->payment_status === 'paid' && $order) {
                 $order->update([
-                    'status' => 'success',
+                    'status' => 'completed',
                 ]);
             }
             
@@ -212,131 +296,6 @@ class StripeController extends Controller
         } catch (\Exception $e) {
             return response()->json(['error' => 'Something went wrong: ' . $e->getMessage()], 500);
         }
-    }
-
-    // public function createCheckoutSession(Request $request)
-    // {
-    //     // ✅ Validate input (updated types)
-    //     $data = $request->validate([
-    //         'order_type' => 'required|string',
-    //         'orderable_id' => 'required|integer',
-    //         'travel_date' => 'required|date',
-    //         'preferred_time' => 'required',
-    //         'number_of_adults' => 'required|integer',
-    //         'number_of_children' => 'required|integer',
-    //         'special_requirements' => 'nullable|string',
-    //         'user_id' => 'required|integer',
-    //         'customer_email' => 'required|email',
-    //         'amount' => 'required|numeric|min:0',
-    //         'is_custom_amount' => 'required|boolean',
-    //         'custom_amount' => 'nullable|numeric|min:0|required_if:is_custom_amount,true',
-    //         'currency' => 'required|string',
-    //         'emergency_contact.name' => 'required|string',
-    //         'emergency_contact.phone' => 'required|string',
-    //         'emergency_contact.relationship' => 'required|string',
-    //     ]);
-    
-    //     // ✅ Determine the orderable model
-    //     $orderableClass = 'App\\Models\\' . ucfirst($data['order_type']);
-    //     $orderable = $orderableClass::findOrFail($data['orderable_id']);
-    
-    //     // ✅ Create Order
-    //     $order = Order::create([
-    //         'user_id' => $data['user_id'],
-    //         'orderable_type' => $orderableClass,
-    //         'orderable_id' => $data['orderable_id'],
-    //         'travel_date' => $data['travel_date'],
-    //         'preferred_time' => $data['preferred_time'],
-    //         'number_of_adults' => $data['number_of_adults'],
-    //         'number_of_children' => $data['number_of_children'],
-    //         'special_requirements' => $data['special_requirements'],
-    //     ]);
-    
-    //     // ✅ Save emergency contact
-    //     $order->emergencyContact()->create([
-    //         'contact_name' => $data['emergency_contact']['name'],
-    //         'contact_phone' => $data['emergency_contact']['phone'],
-    //         'relationship' => $data['emergency_contact']['relationship'],
-    //     ]);
-    
-    //     // ✅ Calculate total amount
-    //     $totalAmount = $data['is_custom_amount'] ? $data['custom_amount'] : $data['amount'];
-    
-    //     // ✅ Setup Stripe
-    //     Stripe::setApiKey(env('STRIPE_SECRET'));
-    
-    //     $checkoutSession = StripeSession::create([
-    //         'payment_method_types' => ['card'],
-    //         'line_items' => [[
-    //             'price_data' => [
-    //                 'currency' => $data['currency'],
-    //                 'product_data' => [
-    //                     'name' => 'Trip Booking for ' . $data['travel_date'],
-    //                 ],
-    //                 'unit_amount' => $totalAmount * 100, // amount in cents
-    //             ],
-    //             'quantity' => 1,
-    //         ]],
-    //         'mode' => 'payment',
-    //         'customer_email' => $data['customer_email'],
-    //         'success_url' => env('FRONTEND_URL') . '/checkout/success?session_id={CHECKOUT_SESSION_ID}',
-    //         'cancel_url' => env('FRONTEND_URL') . '/checkout',
-    //     ]);
-    
-    //     // ✅ Save payment record
-    //     $order->payment()->create([
-    //         'payment_status' => 'pending',
-    //         'payment_method' => 'credit_card',
-    //         'amount' => $data['amount'],
-    //         'is_custom_amount' => $data['is_custom_amount'],
-    //         'custom_amount' => $data['custom_amount'],
-    //         'total_amount' => $totalAmount,
-    //         'currency' => $data['currency'],
-    //         'stripe_session_id' => $checkoutSession->id,
-    //     ]);
-    
-    //     return response()->json([
-    //         'id' => $checkoutSession->id,
-    //         'url' => $checkoutSession->url,
-    //     ]);
-    // }
-    
-
-    // public function confirmPayment(Request $request)
-    // {
-    //     Stripe::setApiKey(env('STRIPE_SECRET'));
-
-    //     $sessionId = $request->input('session_id');
-
-    //     try {
-    //         $session = StripeSession::retrieve($sessionId);
-
-    //         if ($session->payment_status !== 'paid') {
-    //             return response()->json(['error' => 'Payment not completed'], 400);
-    //         }
-
-    //         // ✅ Find the order_payment record using session_id
-    //         $payment = OrderPayment::where('stripe_session_id', $sessionId)->first();
-
-    //         if (!$payment) {
-    //             return response()->json(['error' => 'Payment record not found'], 404);
-    //         }
-
-    //         // ✅ Update payment status
-    //         $payment->update([
-    //             'payment_status' => 'paid',
-    //         ]);
-
-    //         if ($payment->fresh()->payment_status === 'paid') {
-    //             Order::where('id', $payment->order_id)->update([
-    //                 'status' => 'success',
-    //             ]);
-    //         }
-
-    //         return response()->json(['message' => 'Payment confirmed successfully']);
-    //     } catch (\Exception $e) {
-    //         return response()->json(['error' => 'Something went wrong: ' . $e->getMessage()], 500);
-    //     }
-    // }
+    }    
 
 }
