@@ -75,6 +75,14 @@ Route::middleware('auth:api')->group(function () {
 Route::post('/create-checkout-session', [StripeController::class, 'createCheckoutSession']);
 Route::post('/confirm-payment', [StripeController::class, 'confirmPayment']);
 
+// New striep payment flow self hosted
+Route::post('/stripe/initialize', [StripeController::class, 'initializeCheckout']);
+Route::post('/stripe/create-order', [StripeController::class, 'createOrder']);
+Route::post('/stripe/webhook', [StripeController::class, 'handleWebhook']);
+Route::get('/order/thankyou', [StripeController::class, 'getOrderByPaymentIntent']);
+
+
+
 Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
 
     // Admin Side Users Routes

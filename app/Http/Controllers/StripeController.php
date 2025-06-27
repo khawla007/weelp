@@ -15,6 +15,300 @@ use Stripe\Checkout\Session as StripeSession;
 class StripeController extends Controller
 {
 
+    public function initializeCheckout(Request $request)
+    {
+        \Stripe\Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
+    
+        $validated = $request->validate([
+            'amount' => 'required|integer|min:1',
+            'currency' => 'required|string|in:inr,usd,eur', // Add other currencies if needed
+        ]);
+    
+        $intent = \Stripe\PaymentIntent::create([
+            'amount' => $validated['amount'],
+            'currency' => $validated['currency'],
+            'automatic_payment_methods' => ['enabled' => true],
+        ]);
+    
+        return response()->json([
+            'clientSecret' => $intent->client_secret,
+        ]);
+    }
+    
+    // public function initializeCheckout(Request $request)
+    // {
+    //     \Stripe\Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
+    
+    //     $validated = $request->validate([
+    //         'amount' => 'required|integer|min:1',
+    //         'currency' => 'required|string|in:inr,usd,eur',
+    //         'existing_intent_id' => 'nullable|string',
+    //     ]);
+    
+    //     // ✅ STEP 1: Check if frontend sent old intent to reuse
+    //     if (!empty($validated['existing_intent_id'])) {
+    //         try {
+    //             $existingIntent = \Stripe\PaymentIntent::retrieve($validated['existing_intent_id']);
+    
+    //             // ✅ STEP 2: Check if it's still usable
+    //             if (
+    //                 $existingIntent &&
+    //                 $existingIntent->status === 'requires_payment_method' &&
+    //                 $existingIntent->amount == $validated['amount'] &&
+    //                 $existingIntent->currency == $validated['currency']
+    //             ) {
+    //                 return response()->json([
+    //                     'clientSecret' => $existingIntent->client_secret,
+    //                 ]);
+    //             }
+    //         } catch (\Exception $e) {
+    //             // If something goes wrong, fallback to creating new intent
+    //         }
+    //     }
+    
+    //     // ✅ STEP 3: Create new intent if none found or invalid
+    //     $intent = \Stripe\PaymentIntent::create([
+    //         'amount' => $validated['amount'],
+    //         'currency' => $validated['currency'],
+    //         'automatic_payment_methods' => ['enabled' => true],
+    //     ]);
+    
+    //     return response()->json([
+    //         'clientSecret' => $intent->client_secret,
+    //         'intent_id' => $intent->id,
+    //     ]);
+    // }
+
+    public function createOrder(Request $request)
+    {
+        $data = $request->validate([
+            'order_type' => 'required|string',
+            'orderable_id' => 'required|integer',
+            'travel_date' => 'required|date',
+            'preferred_time' => 'required',
+            'number_of_adults' => 'required|integer',
+            'number_of_children' => 'required|integer',
+            'special_requirements' => 'nullable|string',
+            'user_id' => 'required|integer',
+            'customer_email' => 'required|email',
+            'amount' => 'required|numeric|min:0',
+            'is_custom_amount' => 'required|boolean',
+            'custom_amount' => 'nullable|numeric|min:0|required_if:is_custom_amount,true',
+            'currency' => 'required|string',
+            'payment_intent_id' => 'required|string',
+            'emergency_contact.name' => 'required|string',
+            'emergency_contact.phone' => 'required|string',
+            'emergency_contact.relationship' => 'required|string',
+        ]);
+
+        $orderableClass = 'App\\Models\\' . ucfirst($data['order_type']);
+        $orderable = $orderableClass::findOrFail($data['orderable_id']);
+        $totalAmount = $data['is_custom_amount'] ? $data['custom_amount'] : $data['amount'];
+
+        // ✅ Create order
+        $order = Order::create([
+            'user_id' => $data['user_id'],
+            'orderable_type' => $orderableClass,
+            'orderable_id' => $data['orderable_id'],
+            'travel_date' => $data['travel_date'],
+            'preferred_time' => $data['preferred_time'],
+            'number_of_adults' => $data['number_of_adults'],
+            'number_of_children' => $data['number_of_children'],
+            'special_requirements' => $data['special_requirements'],
+        ]);
+
+        // ✅ Save emergency contact
+        $order->emergencyContact()->create([
+            'contact_name' => $data['emergency_contact']['name'],
+            'contact_phone' => $data['emergency_contact']['phone'],
+            'relationship' => $data['emergency_contact']['relationship'],
+        ]);
+
+        // ✅ Snapshot (optional but useful)
+        if ($orderable instanceof \App\Models\Activity) {
+            $snapshot = [
+                'name' => $orderable->name,
+                'slug' => $orderable->slug,
+                'item_type' => $orderable->item_type,
+                'location' => $orderable->locations->map(function ($loc) {
+                    return [
+                        'location_type' => $loc->location_type,
+                        'city' => $loc->city?->name,
+                        'state' => $loc->city?->state?->name,
+                        'country' => $loc->city?->state?->country?->name,
+                    ];
+                }),
+                'pricing' => $orderable->pricings,
+                'coupons_applied' => $order->applied_coupons ?? [],
+                'media' => $orderable->mediaGallery->map(function ($mg) {
+                    return [
+                        'url' => $mg->media?->url,
+                        'alt' => $mg->media?->alt_text,
+                    ];
+                }),
+            ];
+        } elseif ($orderable instanceof \App\Models\Package || $orderable instanceof \App\Models\Itinerary) {
+            $snapshot = [
+                'name' => $orderable->name,
+                'slug' => $orderable->slug,
+                'locations' => $orderable->locations->map(function ($loc) {
+                    return [
+                        'city' => $loc->city?->name,
+                        'state' => $loc->city?->state?->name,
+                        'country' => $loc->city?->state?->country?->name,
+                    ];
+                }),
+                'schedules' => $orderable->schedules,
+                'pricing' => $orderable->basePricing->priceVariations ?? [],
+                'coupons_applied' => $order->applied_coupons ?? [],
+                'media' => $orderable->mediaGallery->map(function ($mg) {
+                    return [
+                        'url' => $mg->media?->url,
+                        'alt' => $mg->media?->alt_text,
+                    ];
+                }),
+            ];
+        }
+
+        if (isset($snapshot)) {
+            $order->item_snapshot_json = json_encode(collect($snapshot)->toArray());
+            $order->save();
+        }
+
+        // ✅ Save payment info (based on PaymentIntent, not session)
+        $order->payment()->create([
+            'payment_status'    => 'pending',
+            'payment_method'    => 'credit_card',
+            'amount'            => $data['amount'],
+            'is_custom_amount'  => $data['is_custom_amount'],
+            'custom_amount'     => $data['custom_amount'],
+            'total_amount'      => $totalAmount,
+            'currency'          => $data['currency'],
+            'payment_intent_id' => $data['payment_intent_id'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'order_id' => $order->id,
+        ]);
+    }
+
+    public function handleWebhook(Request $request)
+    {
+        $payload = $request->getContent();
+        $event = json_decode($payload);
+
+        if ($event->type == 'payment_intent.succeeded') {
+            $intent_id = $event->data->object->id;
+
+
+            $payment = OrderPayment::where('payment_intent_id', $intent_id)->first();
+
+            if (!$payment) {
+                return response()->json(['error' => 'Payment record not found'], 404);
+            }
+
+            // Update payment status
+            $payment->update([
+                'payment_status' => 'paid',
+            ]);
+
+            $order = Order::with(['emergencyContact', 'payment'])->find($payment->order_id);
+
+            if ($payment->fresh()->payment_status === 'paid' && $order) {
+                $order->update([
+                    'status' => 'completed',
+                ]);
+            }
+        }
+
+        return response('Webhook Handled', 200);
+    }
+
+
+    // thanku page get order details api
+    public function getOrderByPaymentIntent(Request $request)
+    {
+        $paymentIntentId = $request->query('payment_intent');
+
+        if (!$paymentIntentId) {
+            return response()->json(['error' => 'Payment Intent ID is required'], 400);
+        }
+    
+        $payment = OrderPayment::where('payment_intent_id', $paymentIntentId)->first();
+    
+        if (!$payment) {
+            return response()->json(['error' => 'Payment not found'], 404);
+        }
+    
+        $order = Order::with(['payment', 'emergencyContact'])->find($payment->order_id);
+    
+        if (!$order) {
+            return response()->json(['error' => 'Order not found'], 404);
+        }
+    
+        $user = $order->user ?? null;
+        $userProfile = $user?->profile;
+    
+        // ✅ Load from snapshot if orderable is missing
+        $snapshot = is_array($order->item_snapshot_json)
+            ? $order->item_snapshot_json
+            : json_decode($order->item_snapshot_json, true);
+    
+        $media = collect($snapshot['media'] ?? [])->map(fn ($mediaLink) => [
+            'name' => null,
+            'alt_text' => $mediaLink['alt'] ?? null,
+            'url' => $mediaLink['url'] ?? null,
+        ]);
+    
+        $locations = $snapshot['location'] ?? [];
+        $cityName = $locations[0]['city'] ?? null;
+        $countryId = null;
+    
+        if (!empty($locations[0]['country'])) {
+            $countryId = \App\Models\Country::where('name', $locations[0]['country'])->value('id');
+        }
+    
+        $region = $countryId
+            ? \App\Models\Region::whereHas('countries', fn ($q) => $q->where('countries.id', $countryId))->first()
+            : null;
+    
+        $response = [
+            'id' => $order->id,
+            'item_id' => $order->orderable_id,
+            'status' => $order->status,
+            'travel_date' => $order->travel_date,
+            'preferred_time' => $order->preferred_time,
+            'number_of_adults' => $order->number_of_adults,
+            'number_of_children' => $order->number_of_children,
+            'special_requirements' => $order->special_requirements,
+            'payment' => $order->payment,
+            'emergency_contact' => $order->emergencyContact,
+            'item' => [
+                'name' => $snapshot['name'] ?? null,
+                'slug' => $snapshot['slug'] ?? null,
+                'item_type' => $snapshot['item_type'] ?? null,
+                'city' => $cityName,
+                'region' => $region?->name,
+                'locations' => $snapshot['location'] ?? null,
+                'media' => $media,
+            ],
+            'user' => [
+                'name' => $user?->name,
+                'email' => $user?->email,
+                'phone' => $userProfile?->phone,
+            ],
+        ];
+    
+        return response()->json([
+            'success' => true,
+            'order' => $response
+        ]);
+    }    
+
+
+    //old stripe code
+
     public function createCheckoutSession(Request $request)
     {
         // ✅ Validate input
@@ -63,35 +357,6 @@ class StripeController extends Controller
                 'url' => 'https://checkout.stripe.com/pay/' . $existingOrder->payment->stripe_session_id,
             ]);
         }
-
-        // if ($existingOrder && $existingOrder->payment->stripe_session_id) {
-        //     try {
-        //         $session = StripeSession::retrieve($existingOrder->payment->stripe_session_id);
-        
-        //         if ( $session->status !== 'expired' && $session->payment_status !== 'paid') {
-        //             return response()->json([
-        //                 'id' => $existingOrder->payment->stripe_session_id,
-        //                 'url' => 'https://checkout.stripe.com/pay/' . $existingOrder->payment->stripe_session_id,
-        //             ]);
-        //         } else {
-        //             return response()->json([
-        //                 'message' => 'Session expired, Use cancel instead of back to checkout',
-        //             ]);
-        //         }
-        
-        //     } catch (\Exception $e) {
-        //         \Log::warning('Stripe session retrieve failed for existing order: ' . $e->getMessage(), [
-        //             'session_id' => $existingOrder->payment->stripe_session_id ?? null,
-        //             'order_id'   => $existingOrder->id ?? null,
-        //         ]);
-        //         // Continue to create new Stripe session
-        //     }
-        // } 
-        // else {
-        //     return response()->json([
-        //         'message' => 'No record found',
-        //     ]);
-        // }
 
         // ✅ Create Order
         $order = Order::create([
