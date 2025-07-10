@@ -16,7 +16,7 @@ class VendorAvailabilityTimeSlot extends Model {
         return $this->belongsTo(Vendor::class);
     }
 
-    public function assignedVehicle() {
+    public function vehicle() {
         return $this->belongsTo(VendorVehicle::class);
     }
 

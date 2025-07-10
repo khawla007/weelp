@@ -19,73 +19,117 @@ class VendorController extends Controller
      * Display a listing of the vendors.
     */
 
+    // public function index(Request $request)
+    // {
+    //      $perPage = 3;
+    //      $page = $request->get('page', 1);
+    //     //  $sortBy = $request->get('sort_by', 'id_asc');
+    //     //  $minPrice = $request->get('min_price', 0);
+    //     //  $maxPrice = $request->get('max_price');
+
+    //     // Search filter
+    //     $search = $request->get('search');
+     
+    //      $query = Vendor::query()
+    //          ->with([
+    //              'routes',
+    //              'pricingTiers',
+    //              'availabilityTimeSlots',
+    //              'vehicles',
+    //              'drivers.schedules'
+    //          ])
+    //          ->addSelect([
+    //              'min_price' => DB::table('vendor_pricing_tiers')
+    //                  ->selectRaw('MIN(base_price)')
+    //                  ->whereColumn('vendor_id', 'vendors.id')
+    //          ]);
+
+    //     $query->whereHas('pricingTiers', function ($q) use ($minPrice, $maxPrice) {
+    //         if ($minPrice !== null && $maxPrice !== null) {
+    //             $q->whereBetween('base_price', [$minPrice, $maxPrice]);
+    //         } elseif ($minPrice !== null) {
+    //             $q->where('base_price', '>=', $minPrice);
+    //         } elseif ($maxPrice !== null) {
+    //             $q->where('base_price', '<=', $maxPrice);
+    //         }
+    //     });
+     
+    //      // Sorting logic
+    //      switch ($sortBy) {
+    //          case 'price_asc':
+    //              $query->orderBy('min_price', 'asc');
+    //              break;
+    //          case 'price_desc':
+    //              $query->orderBy('min_price', 'desc');
+    //              break;
+    //          case 'name_asc':
+    //              $query->orderBy('vendors.name', 'asc');
+    //              break;
+    //          case 'name_desc':
+    //              $query->orderBy('vendors.name', 'desc');
+    //              break;
+    //          case 'id_asc':
+    //             default:
+    //             $query->orderBy('vendors.id', 'asc');
+    //             break;
+    //          case 'id_desc':
+    //             $query->orderBy('vendors.id', 'desc');
+    //             break;
+    //      }
+     
+    //      // Manual pagination
+    //      $allItems = $query->get();
+    //      $paginatedItems = $allItems->forPage($page, $perPage);
+     
+    //      return response()->json([
+    //          'success' => true,
+    //          'data' => $paginatedItems->values(),
+    //          'current_page' => (int) $page,
+    //          'per_page' => $perPage,
+    //          'total' => $allItems->count(),
+    //      ], 200);
+    // }  
+
     public function index(Request $request)
     {
-         $perPage = 3;
-         $page = $request->get('page', 1);
-         $sortBy = $request->get('sort_by', 'id_asc');
-         $minPrice = $request->get('min_price', 0);
-         $maxPrice = $request->get('max_price');
-     
-         $query = Vendor::query()
-             ->with([
+        // Pagination
+        $perPage = (int) $request->get('per_page', 3);
+        $page = (int) $request->get('page', 1);
+
+        // Search filter
+        $search = $request->get('search');
+
+        $query = Vendor::query()
+        ->with([
                  'routes',
                  'pricingTiers',
                  'availabilityTimeSlots',
                  'vehicles',
                  'drivers.schedules'
-             ])
-             ->addSelect([
-                 'min_price' => DB::table('vendor_pricing_tiers')
-                     ->selectRaw('MIN(base_price)')
-                     ->whereColumn('vendor_id', 'vendors.id')
-             ]);
+                ]);
 
-        $query->whereHas('pricingTiers', function ($q) use ($minPrice, $maxPrice) {
-            if ($minPrice !== null && $maxPrice !== null) {
-                $q->whereBetween('base_price', [$minPrice, $maxPrice]);
-            } elseif ($minPrice !== null) {
-                $q->where('base_price', '>=', $minPrice);
-            } elseif ($maxPrice !== null) {
-                $q->where('base_price', '<=', $maxPrice);
-            }
-        });
-     
-         // Sorting logic
-         switch ($sortBy) {
-             case 'price_asc':
-                 $query->orderBy('min_price', 'asc');
-                 break;
-             case 'price_desc':
-                 $query->orderBy('min_price', 'desc');
-                 break;
-             case 'name_asc':
-                 $query->orderBy('vendors.name', 'asc');
-                 break;
-             case 'name_desc':
-                 $query->orderBy('vendors.name', 'desc');
-                 break;
-             case 'id_asc':
-                default:
-                $query->orderBy('vendors.id', 'asc');
-                break;
-             case 'id_desc':
-                $query->orderBy('vendors.id', 'desc');
-                break;
-         }
-     
-         // Manual pagination
-         $allItems = $query->get();
-         $paginatedItems = $allItems->forPage($page, $perPage);
-     
-         return response()->json([
-             'success' => true,
-             'data' => $paginatedItems->values(),
-             'current_page' => (int) $page,
-             'per_page' => $perPage,
-             'total' => $allItems->count(),
-         ], 200);
-    }  
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        // Sorting by id ascending by default
+        $query->orderBy('id', 'asc');
+
+        // Get paginated result
+        $total = $query->count();
+        $items = $query
+            ->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $items,
+            'current_page' => $page,
+            'per_page' => $perPage,
+            'total' => $total,
+        ]);
+    }
 
     public function store(Request $request, $requestType)
     {
@@ -114,20 +158,42 @@ class VendorController extends Controller
     // Vendor Base table store
     private function storeVendor($request)
     {
+        // Check if email already exists
+        if (Vendor::where('email', $request->email)->exists()) {
+            return response()->json([
+                'error' => 'The email address is already in use.'
+            ], 409); // 409 Conflict
+        }
+    
+        // Optionally check phone
+        if (Vendor::where('phone', $request->phone)->exists()) {
+            return response()->json([
+                'error' => 'The phone number is already in use.'
+            ], 409);
+        }
+    
+        // Optionally check name
+        if (Vendor::where('name', $request->name)->exists()) {
+            return response()->json([
+                'error' => 'A vendor with this name already exists.'
+            ], 409);
+        }
+    
+        // If all clear, create vendor
         $vendor = Vendor::create([
             'name' => $request->name,
             'description' => $request->description,
             'email' => $request->email,
             'phone' => $request->phone,
             'address' => $request->address,
-            'status' => $request->status ?? 'Active',
+            'status' => $request->status ?? 'active',
         ]);
-
+    
         return response()->json([
             'message' => 'Vendor created successfully',
             'data' => $vendor
-        ], 201); // 201 = Created
-    }
+        ], 201);
+    }    
 
     // Pricing Tier store
     private function storePricingTier($request)
@@ -142,7 +208,7 @@ class VendorController extends Controller
             'waiting_charge' => $request->waiting_charge,
             'night_charge_multiplier' => $request->night_charge_multiplier,
             'peak_hour_multiplier' => $request->peak_hour_multiplier,
-            'status' => $request->status ?? 'Active',
+            'status' => $request->status ?? 'active',
         ]);
 
         return response()->json([
@@ -162,7 +228,7 @@ class VendorController extends Controller
             'end_point' => $request->end_point,
             'base_price' => $request->base_price,
             'price_per_km' => $request->price_per_km,
-            'status' => $request->status ?? 'Active',
+            'status' => $request->status ?? 'active',
         ]);
 
         return response()->json([
@@ -183,7 +249,7 @@ class VendorController extends Controller
             'year' => $request->year,
             'license_plate' => $request->license_plate,
             'features' => $request->features ?? null,
-            'status' => $request->status ?? 'Active',
+            'status' => $request->status ?? 'active',
             'last_maintenance' => $request->last_maintenance ?? now(),
             'next_maintenance' => $request->next_maintenance ?? now()->addMonth(),
         ]);
@@ -205,7 +271,7 @@ class VendorController extends Controller
             'phone' => $request->phone,
             'license_number' => $request->license_number,
             'license_expiry' => $request->license_expiry,
-            'status' => $request->status ?? 'Active',
+            'status' => $request->status ?? 'active',
             'assigned_vehicle_id' => $request->assigned_vehicle_id,
             'languages' => $request->languages,
         ]);
@@ -429,15 +495,366 @@ class VendorController extends Controller
     /**
      * Display the specified vendors.
      */
-    public function show(string $id)
-    {
-        $vendor = Vendor::with(['routes', 'pricingTiers', 'vehicles', 'drivers', 'availabilityTimeSlots'])->find($id);
+    // public function show(string $id)
+    // {
+    //     $vendor = Vendor::with(['routes', 'pricingTiers', 'vehicles', 'drivers', 'availabilityTimeSlots'])->find($id);
 
-        if (!$vendor) {
-            return response()->json(['message' => 'Vendor not found'], 404);
+    //     if (!$vendor) {
+    //         return response()->json(['message' => 'Vendor not found'], 404);
+    //     }
+
+    //     return response()->json($vendor);
+    // }
+
+    /**
+     * Get a single vendor detail.
+     */
+    // public function show($vendorId)
+    // {
+    //     $vendor = Vendor::findOrFail($vendorId);
+
+    //     return response()->json($vendor);
+    // }
+    public function show($vendorId)
+    {
+        $vendor = Vendor::with([
+            'routes:id,vendor_id,name',
+            'vehicles:id,vendor_id,vehicle_type'
+        ])->findOrFail($vendorId);
+
+        return response()->json([
+            'success' => true,
+            'data' => $vendor
+        ]);
+    }
+
+    /**
+     * Get all routes for a vendor.
+     */
+    // public function getRoutes($vendorId)
+    // {
+    //     $routes = VendorRoute::where('vendor_id', $vendorId)->get();
+
+    //     return response()->json($routes);
+    // }
+
+    public function getRoutes(Request $request, $vendorId)
+    {
+        // Pagination defaults
+        $perPage = (int) $request->get('per_page', 3);
+        $page = (int) $request->get('page', 1);
+
+        // Search filter
+        $search = $request->get('search');
+
+        $query = VendorRoute::where('vendor_id', $vendorId);
+
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
         }
 
-        return response()->json($vendor);
+        $total = $query->count();
+
+        $routes = $query
+            ->orderBy('id', 'asc')
+            ->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $routes,
+            'current_page' => $page,
+            'per_page' => $perPage,
+            'total' => $total
+        ]);
+    }
+
+    /**
+     * Get all pricing tiers for a vendor.
+     */
+    // public function getPricingTiers($vendorId)
+    // {
+    //     $tiers = VendorPricingTier::where('vendor_id', $vendorId)->get();
+
+    //     return response()->json($tiers);
+    // }
+
+    public function getPricingTiers(Request $request, $vendorId)
+    {
+        // Pagination defaults
+        $perPage = (int) $request->get('per_page', 3);
+        $page = (int) $request->get('page', 1);
+
+        // Search filter
+        $search = $request->get('search');
+
+        $query = VendorPricingTier::where('vendor_id', $vendorId);
+
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        $total = $query->count();
+
+        $tiers = $query
+            ->orderBy('id', 'asc')
+            ->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $tiers,
+            'current_page' => $page,
+            'per_page' => $perPage,
+            'total' => $total
+        ]);
+    }
+
+    /**
+     * Get all vehicles for a vendor.
+     */
+    // public function getVehicles($vendorId)
+    // {
+    //     $vehicles = VendorVehicle::where('vendor_id', $vendorId)->get();
+
+    //     return response()->json($vehicles);
+    // }
+
+    public function getVehicles(Request $request, $vendorId)
+    {
+        // Pagination defaults
+        $perPage = (int) $request->get('per_page', 3);
+        $page = (int) $request->get('page', 1);
+
+        // Search filter
+        $search = $request->get('search');
+
+        $query = VendorVehicle::where('vendor_id', $vendorId);
+
+        if ($search) {
+            $query->where('make', 'like', "%{$search}%");
+        }
+
+        $total = $query->count();
+
+        $vehicles = $query
+            ->orderBy('id', 'asc')
+            ->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $vehicles,
+            'current_page' => $page,
+            'per_page' => $perPage,
+            'total' => $total
+        ]);
+    }
+
+    public function getVehiclesfordropdown($vendorId)
+    {
+        $vehicles = VendorVehicle::where('vendor_id', $vendorId)
+            ->orderBy('id', 'asc')
+            ->get(['id', 'make', 'vehicle_type', 'model']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $vehicles
+        ]);
+    }
+
+    /**
+     * Get all drivers for a vendor.
+     */
+    // public function getDrivers($vendorId)
+    // {
+    //     $drivers = VendorDriver::where('vendor_id', $vendorId)->get();
+
+    //     return response()->json($drivers);
+    // }
+
+    public function getDrivers(Request $request, $vendorId)
+    {
+        // Pagination defaults
+        $perPage = (int) $request->get('per_page', 3);
+        $page = (int) $request->get('page', 1);
+
+        // Search filter
+        $search = $request->get('search');
+
+        $query = VendorDriver::where('vendor_id', $vendorId)
+        ->with('assignedVehicle');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                ->orWhere('last_name', 'like', "%{$search}%");
+            });
+        }
+
+        $total = $query->count();
+
+        $drivers = $query
+            ->orderBy('id', 'asc')
+            ->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get();
+
+        $data = $drivers->map(function($driver) {
+            return [
+                'id' => $driver->id,
+                'vendor_id' => $driver->vendor_id,
+                'first_name' => $driver->first_name,
+                'last_name' => $driver->last_name,
+                'email' => $driver->email,
+                'phone' => $driver->phone,
+                'license_number' => $driver->license_number,
+                'license_expiry' => $driver->license_expiry,
+                'status' => $driver->status,
+                'assigned_vehicle_id' => optional($driver->assignedVehicle)->id,
+                'vehicle_make' => optional($driver->assignedVehicle)->make,
+                'vehicle_model' => optional($driver->assignedVehicle)->model,
+                'languages' => $driver->languages,
+                'created_at' => $driver->created_at,
+                'updated_at' => $driver->updated_at,
+            ];
+        });
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+            'current_page' => $page,
+            'per_page' => $perPage,
+            'total' => $total
+        ]);
+    }
+
+    /**
+     * Get all driver schedules for a vendor.
+     */
+    // public function getSchedules($vendorId)
+    // {
+    //     // Option 1: Schedules joined with drivers of this vendor
+    //     $schedules = VendorDriverSchedule::whereIn('driver_id', function($query) use ($vendorId) {
+    //         $query->select('id')
+    //             ->from('vendor_drivers')
+    //             ->where('vendor_id', $vendorId);
+    //     })->get();
+
+    //     return response()->json($schedules);
+    // }
+
+    public function getSchedules(Request $request, $vendorId)
+    {
+        // Pagination
+        $perPage = (int) $request->get('per_page', 10);
+        $page = (int) $request->get('page', 1);
+
+        // Search input (for shift or date)
+        $search = $request->get('search');
+
+        // Base query: filter by drivers belonging to the vendor
+        $query = VendorDriverSchedule::whereIn('driver_id', function ($q) use ($vendorId) {
+            $q->select('id')
+            ->from('vendor_drivers')
+            ->where('vendor_id', $vendorId);
+        });
+
+        // Optional search filter
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('shift', 'like', "%{$search}%")
+                ->orWhere('date', 'like', "%{$search}%");
+            });
+        }
+
+        // Count and fetch paginated data
+        $total = $query->count();
+
+        $schedules = $query
+            ->orderBy('id', 'asc')
+            ->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $schedules,
+            'current_page' => $page,
+            'per_page' => $perPage,
+            'total' => $total,
+        ]);
+    }
+
+    /**
+     * Get all availability time slots for a vendor.
+     */
+    // public function getAvailabilityTimeSlots($vendorId)
+    // {
+    //     $slots = VendorAvailabilityTimeSlot::where('vendor_id', $vendorId)->get();
+
+    //     return response()->json($slots);
+    // }
+
+    public function getAvailabilityTimeSlots(Request $request, $vendorId)
+    {
+        // Pagination defaults
+        $perPage = (int) $request->get('per_page', 3);
+        $page = (int) $request->get('page', 1);
+
+        $search = $request->get('search');
+
+        $query = VendorAvailabilityTimeSlot::where('vendor_id', $vendorId)
+            ->with('vehicle');
+
+        if ($search) {
+            // Search via vehicle relation
+            $query->whereHas('vehicle', function ($q) use ($search) {
+                $q->where('vehicle_type', 'like', "%{$search}%");
+            });
+        }
+
+        $total = $query->count();
+
+        $slots = $query
+            ->orderBy('id', 'asc')
+            ->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get();
+
+        // Format response
+        $data = $slots->map(function ($slot) {
+            return [
+                'id' => $slot->id,
+                'vehicle_id' => $slot->vehicle_id,
+                'vehicle_type' => optional($slot->vehicle)->vehicle_type,
+                'date' => $slot->date,
+                'start_time' => $slot->start_time,
+                'end_time' => $slot->end_time,
+                'max_bookings' => $slot->max_bookings,
+                'price_multiplier' => $slot->price_multiplier,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+            'current_page' => $page,
+            'per_page' => $perPage,
+            'total' => $total,
+        ]);
+    }
+    
+    /**
+     * (Optional) Get schedules for a specific driver.
+     */
+    public function getDriverSchedules($driverId)
+    {
+        $schedules = VendorDriverSchedule::where('driver_id', $driverId)->get();
+
+        return response()->json($schedules);
     }
 
     /**

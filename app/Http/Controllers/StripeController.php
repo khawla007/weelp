@@ -15,25 +15,25 @@ use Stripe\Checkout\Session as StripeSession;
 class StripeController extends Controller
 {
 
-    public function initializeCheckout(Request $request)
-    {
-        \Stripe\Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
+    // public function initializeCheckout(Request $request)
+    // {
+    //     \Stripe\Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
     
-        $validated = $request->validate([
-            'amount' => 'required|integer|min:1',
-            'currency' => 'required|string|in:inr,usd,eur', // Add other currencies if needed
-        ]);
+    //     $validated = $request->validate([
+    //         'amount' => 'required|integer|min:1',
+    //         'currency' => 'required|string|in:inr,usd,eur', // Add other currencies if needed
+    //     ]);
     
-        $intent = \Stripe\PaymentIntent::create([
-            'amount' => $validated['amount'],
-            'currency' => $validated['currency'],
-            'automatic_payment_methods' => ['enabled' => true],
-        ]);
+    //     $intent = \Stripe\PaymentIntent::create([
+    //         'amount' => $validated['amount'],
+    //         'currency' => $validated['currency'],
+    //         'automatic_payment_methods' => ['enabled' => true],
+    //     ]);
     
-        return response()->json([
-            'clientSecret' => $intent->client_secret,
-        ]);
-    }
+    //     return response()->json([
+    //         'clientSecret' => $intent->client_secret,
+    //     ]);
+    // }
     
     // public function initializeCheckout(Request $request)
     // {

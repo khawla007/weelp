@@ -140,17 +140,30 @@ class TransferController extends Controller
      */
     public function store(Request $request)
     {
+        // Basic validations (common fields)
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'transfer_type' => 'required|string',
-            'vendor_id' => 'required|integer',
-            'route_id' => 'required|integer',
+            'is_vendor' => 'required|boolean',
+    
+            // When is_vendor = true
+            'vendor_id' => 'nullable|integer|exists:vendors,id',
+            'route_id' => 'nullable|integer|exists:vendor_routes,id',
+    
+            // When is_vendor = false
+            'pickup_location' => 'nullable|string|max:255',
+            'dropoff_location' => 'nullable|string|max:255',
+            'vehicle_type' => 'nullable|string|max:255',
+            'inclusion' => 'nullable|string',
+    
             'pricing_tier_id' => 'required|integer',
             'availability_id' => 'required|integer',
+    
             'media' => 'array',
             'media.*.media_type' => 'required|string',
             'media.*.media_url' => 'required|url',
+    
             'seo' => 'array',
             'seo.meta_title' => 'nullable|string|max:255',
             'seo.meta_description' => 'nullable|string',
@@ -161,34 +174,60 @@ class TransferController extends Controller
             'seo.schema_data' => 'nullable|json',
         ]);
     
+        // Conditional validations
+        if ($validatedData['is_vendor']) {
+            $request->validate([
+                'vendor_id' => 'required|integer|exists:vendors,id',
+                'route_id' => 'required|integer|exists:vendor_routes,id',
+            ]);
+        } else {
+            $request->validate([
+                'pickup_location' => 'required|string|max:255',
+                'dropoff_location' => 'required|string|max:255',
+                'vehicle_type' => 'required|string|max:255',
+                'custom_description' => 'required|string',
+                'inclusion' => 'required|string',
+            ]);
+        }
+    
+        // Create Transfer
         $transfer = Transfer::create([
             'name' => $validatedData['name'],
             'description' => $validatedData['description'] ?? null,
             'transfer_type' => $validatedData['transfer_type'],
         ]);
     
+        // Create TransferVendorRoute
         TransferVendorRoute::create([
             'transfer_id' => $transfer->id,
-            'vendor_id' => $validatedData['vendor_id'],
-            'route_id' => $validatedData['route_id'],
+            'is_vendor' => $validatedData['is_vendor'],
+            'vendor_id' => $validatedData['is_vendor'] ? $validatedData['vendor_id'] : null,
+            'route_id' => $validatedData['is_vendor'] ? $validatedData['route_id'] : null,
+            'pickup_location' => !$validatedData['is_vendor'] ? $validatedData['pickup_location'] : null,
+            'dropoff_location' => !$validatedData['is_vendor'] ? $validatedData['dropoff_location'] : null,
+            'vehicle_type' => !$validatedData['is_vendor'] ? $validatedData['vehicle_type'] : null,
+            'inclusion' => !$validatedData['is_vendor'] ? $validatedData['inclusion'] : null,
         ]);
     
+        // Create Pricing Availability
         TransferPricingAvailability::create([
             'transfer_id' => $transfer->id,
             'pricing_tier_id' => $validatedData['pricing_tier_id'],
             'availability_id' => $validatedData['availability_id'],
         ]);
     
+        // Create Media if any
         if (!empty($validatedData['media'])) {
             foreach ($validatedData['media'] as $media) {
                 TransferMedia::create([
                     'transfer_id' => $transfer->id,
                     'media_type' => $media['media_type'],
-                    'media_id' => $media['media_id'],
+                    'media_url' => $media['media_url'],
                 ]);
             }
         }
     
+        // Create SEO if any
         if (!empty($validatedData['seo'])) {
             TransferSeo::create([
                 'transfer_id' => $transfer->id,
@@ -196,8 +235,11 @@ class TransferController extends Controller
             ]);
         }
     
-        return response()->json(['message' => 'Transfer created successfully', 'transfer' => $transfer]);
-    }    
+        return response()->json([
+            'message' => 'Transfer created successfully',
+            'transfer' => $transfer,
+        ]);
+    }
 
     /**
      * Display the specified transfers.

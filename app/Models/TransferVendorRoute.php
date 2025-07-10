@@ -10,8 +10,17 @@ class TransferVendorRoute extends Model
     use HasFactory;
     protected $fillable = [
         'transfer_id',
+        'is_vendor',
         'vendor_id',
         'route_id',
+        'pickup_location',
+        'dropoff_location',
+        'vehicle_type',
+        'inclusion',
+    ];
+
+    protected $casts = [
+        'is_vendor' => 'boolean'
     ];
 
     // Relationship with Transfer

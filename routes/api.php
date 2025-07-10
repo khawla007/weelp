@@ -76,7 +76,7 @@ Route::post('/create-checkout-session', [StripeController::class, 'createCheckou
 Route::post('/confirm-payment', [StripeController::class, 'confirmPayment']);
 
 // New striep payment flow self hosted
-Route::post('/stripe/initialize', [StripeController::class, 'initializeCheckout']);
+// Route::post('/stripe/initialize', [StripeController::class, 'initializeCheckout']);
 Route::post('/stripe/create-order', [StripeController::class, 'createOrder']);
 Route::post('/stripe/webhook', [StripeController::class, 'handleWebhook']);
 Route::get('/order/thankyou', [StripeController::class, 'getOrderByPaymentIntent']);
@@ -132,16 +132,23 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
 
     // Admin Side vendors route
     Route::prefix('/vendors')->group(function () {
-        // Route::post('/', [VendorController::class, 'store']); // Create
-        // Route::put('/{id}', [VendorController::class, 'update']); // Update
-        // Route::patch('/{id}', [VendorController::class, 'update']); // Partial Update
         Route::get('/', [VendorController::class, 'index']);      // List vendors
+
         Route::get('/{id}', [VendorController::class, 'show']); // Show a vendor
+        Route::get('{vendor}/routes', [VendorController::class, 'getRoutes']);
+        Route::get('{vendor}/pricing-tiers', [VendorController::class, 'getPricingTiers']);
+        Route::get('{vendor}/vehicles', [VendorController::class, 'getVehicles']);
+        Route::get('{vendor}/vehiclesdropdown', [VendorController::class, 'getVehiclesfordropdown']);
+        Route::get('{vendor}/drivers', [VendorController::class, 'getDrivers']);
+        Route::get('{vendor}/schedules', [VendorController::class, 'getSchedules']);
+        Route::get('{vendor}/availability-time-slots', [VendorController::class, 'getAvailabilityTimeSlots']);
+
         Route::delete('/{id}', [VendorController::class, 'destroy']);  // Delete vendor
         Route::post('/store/{request_type}', [VendorController::class, 'store']);
         Route::put('/update/{request_type}/{id}', [VendorController::class, 'update']);
         // Route::delete('/relation/{request-type}/{id}', [VendorController::class, 'destroy']);
     });
+    Route::get('/drivers/{driver}/schedules', [VendorController::class, 'getDriverSchedules']);
 
     // Admin Side Transfer route
     Route::prefix('/transfers')->group(function () {
