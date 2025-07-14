@@ -286,6 +286,7 @@ class VendorController extends Controller
     private function storeSchedule($request)
     {
         $vendorDriverSchedule = VendorDriverSchedule::create([
+            'vendor_id' => $request->vendor_id,
             'driver_id' => $request->driver_id,
             'vehicle_id' => $request->vehicle_id,
             'date' => $request->date,
@@ -459,6 +460,7 @@ class VendorController extends Controller
         $schedule = VendorDriverSchedule::findOrFail($id);
     
         $schedule->update([
+            'vendor_id' => $request->vendor_id ?? $schedule->vendor_id,
             'driver_id' => $request->driver_id ?? $schedule->driver_id,
             'vehicle_id' => $request->vehicle_id ?? $schedule->vehicle_id,
             'date' => $request->date ?? $schedule->date,
@@ -731,6 +733,25 @@ class VendorController extends Controller
         ]);
     }
 
+    public function getDriversForSchedule($vendorId)
+    {
+        $drivers = VendorDriver::where('vendor_id', $vendorId)
+            ->orderBy('first_name')
+            ->get(['id', 'first_name', 'last_name']);
+
+        $data = $drivers->map(function($driver) {
+            return [
+                'id' => $driver->id,
+                'name' => trim($driver->first_name . ' ' . $driver->last_name)
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $data
+        ]);
+    }
+
     /**
      * Get all driver schedules for a vendor.
      */
@@ -746,47 +767,123 @@ class VendorController extends Controller
     //     return response()->json($schedules);
     // }
 
+    // public function getSchedules(Request $request, $vendorId)
+    // {
+    //     // Pagination
+    //     $perPage = (int) $request->get('per_page', 10);
+    //     $page = (int) $request->get('page', 1);
+
+    //     // Search input (for shift or date)
+    //     $search = $request->get('search');
+
+    //     // Base query: filter by drivers belonging to the vendor
+    //     $query = VendorDriverSchedule::whereIn('driver_id', function ($q) use ($vendorId) {
+    //         $q->select('id')
+    //         ->from('vendor_drivers')
+    //         ->where('vendor_id', $vendorId);
+    //     });
+
+    //     // Optional search filter
+    //     if ($search) {
+    //         $query->where(function ($q) use ($search) {
+    //             $q->where('shift', 'like', "%{$search}%")
+    //             ->orWhere('date', 'like', "%{$search}%");
+    //         });
+    //     }
+
+    //     // Count and fetch paginated data
+    //     $total = $query->count();
+
+    //     $schedules = $query
+    //         ->orderBy('id', 'asc')
+    //         ->skip(($page - 1) * $perPage)
+    //         ->take($perPage)
+    //         ->get();
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'data' => $schedules,
+    //         'current_page' => $page,
+    //         'per_page' => $perPage,
+    //         'total' => $total,
+    //     ]);
+    // }
     public function getSchedules(Request $request, $vendorId)
     {
         // Pagination
-        $perPage = (int) $request->get('per_page', 10);
+        $perPage = (int) $request->get('per_page', 3);
         $page = (int) $request->get('page', 1);
-
-        // Search input (for shift or date)
-        $search = $request->get('search');
-
-        // Base query: filter by drivers belonging to the vendor
+    
+        // Individual Filters
+        $driverId = $request->get('driver_id'); // driver id
+        $vehicleId = $request->get('vehicle_id'); // vehicle id
+        $shift = $request->get('shift');        // shift text
+        $date = $request->get('date');          // date text
+    
+        // Base query: only schedules for drivers of this vendor
         $query = VendorDriverSchedule::whereIn('driver_id', function ($q) use ($vendorId) {
             $q->select('id')
-            ->from('vendor_drivers')
-            ->where('vendor_id', $vendorId);
-        });
-
-        // Optional search filter
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('shift', 'like', "%{$search}%")
-                ->orWhere('date', 'like', "%{$search}%");
-            });
+              ->from('vendor_drivers')
+              ->where('vendor_id', $vendorId);
+        })
+        ->with(['driver', 'vehicle']); 
+    
+        // Filter by driver_id if provided
+        if ($driverId) {
+            $query->where('driver_id', $driverId);
         }
 
-        // Count and fetch paginated data
+        // Filter by vehicle_id if provided
+        if ($vehicleId) {
+            $query->where('vehicle_id', $vehicleId);
+        }
+    
+        // Filter by shift if provided
+        if ($shift) {
+            $query->where('shift', 'like', "%{$shift}%");
+        }
+    
+        // Filter by date if provided
+        if ($date) {
+            $query->where('date', 'like', "%{$date}%");
+        }
+    
+        // Count total
         $total = $query->count();
-
+    
+        // Fetch paginated data
         $schedules = $query
             ->orderBy('id', 'asc')
             ->skip(($page - 1) * $perPage)
             ->take($perPage)
             ->get();
+    
+        // Format the data
+        $data = $schedules->map(function($schedule) {
+            return [
+                'id' => $schedule->id,
+                'driver_id' => $schedule->driver_id,
+                'driver_name' => optional($schedule->driver)->first_name . ' ' . optional($schedule->driver)->last_name,
+                'vehicle_id' => $schedule->vehicle_id,
+                'vehicle_make' => optional($schedule->vehicle)->make,
+                'vehicle_model' => optional($schedule->vehicle)->model,
+                'date' => $schedule->date,
+                'shift' => $schedule->shift,
+                'time' => $schedule->time,
+                'created_at' => $schedule->created_at,
+                'updated_at' => $schedule->updated_at,
+            ];
+        });
 
+        // Return JSON
         return response()->json([
             'success' => true,
-            'data' => $schedules,
+            'data' => $data,
             'current_page' => $page,
             'per_page' => $perPage,
             'total' => $total,
         ]);
-    }
+    }    
 
     /**
      * Get all availability time slots for a vendor.

@@ -10,7 +10,11 @@ class VendorDriverSchedule extends Model {
 
     protected $table = 'vendor_driver_schedules';
 
-    protected $fillable = ['driver_id', 'vehicle_id', 'date', 'shift', 'time'];
+    protected $fillable = ['vendor_id', 'driver_id', 'vehicle_id', 'date', 'shift', 'time'];
+
+    public function vendor() {
+        return $this->belongsTo(Vendor::class);
+    }
 
     public function driver() {
         return $this->belongsTo(VendorDriver::class);

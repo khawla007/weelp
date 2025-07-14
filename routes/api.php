@@ -140,6 +140,7 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::get('{vendor}/vehicles', [VendorController::class, 'getVehicles']);
         Route::get('{vendor}/vehiclesdropdown', [VendorController::class, 'getVehiclesfordropdown']);
         Route::get('{vendor}/drivers', [VendorController::class, 'getDrivers']);
+        Route::get('{vendor}/driversforselect', [VendorController::class, 'getDriversForSchedule']);
         Route::get('{vendor}/schedules', [VendorController::class, 'getSchedules']);
         Route::get('{vendor}/availability-time-slots', [VendorController::class, 'getAvailabilityTimeSlots']);
 

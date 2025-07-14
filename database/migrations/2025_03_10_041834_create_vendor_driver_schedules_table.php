@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('vendor_driver_schedules', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('vendor_id')->constrained()->onDelete('cascade');
             $table->foreignId('driver_id')->constrained('vendor_drivers')->onDelete('cascade'); // Reference vendor_drivers
             $table->foreignId('vehicle_id')->constrained('vendor_vehicles')->onDelete('cascade'); // Reference vendor_vehicles
             $table->date('date');
