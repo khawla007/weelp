@@ -10,8 +10,8 @@ return new class extends Migration {
         Schema::create('itinerary_media_gallery', function (Blueprint $table) {
             $table->id();
             $table->foreignId('itinerary_id')->constrained('itineraries')->onDelete('cascade');
-            // $table->foreignId('media_id')->constrained('media')->onDelete('cascade')->nullable();
-            $table->unsignedBigInteger('media_id')->nullable();
+            $table->foreignId('media_id')->constrained('media')->onDelete('cascade')->nullable();
+            // $table->unsignedBigInteger('media_id')->nullable();
             $table->timestamps();
         });
     }
