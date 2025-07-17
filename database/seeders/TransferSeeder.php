@@ -22,9 +22,9 @@ class TransferSeeder extends Seeder
                 'route_id'        => 1,
                 'pricing_tier_id' => 1,
                 'availability_id' => 1,
-                'media'           => [
-                    ['media_type' => 'photo', 'media_url' => 'https://example.com/photo1.jpg'],
-                    ['media_type' => 'video', 'media_url' => 'https://example.com/video1.mp4']
+                'media_gallery'   => [
+                    ['media_id' => 1],
+                    ['media_id' => 2]
                 ],
                 'seo'             => [
                     'meta_title'       => 'Airport Transfer Service',
@@ -48,9 +48,9 @@ class TransferSeeder extends Seeder
                 'route_id'        => 4,
                 'pricing_tier_id' => 2,
                 'availability_id' => 2,
-                'media'           => [
-                    ['media_type' => 'photo', 'media_url' => 'https://example.com/photo2.jpg'],
-                    ['media_type' => 'video', 'media_url' => 'https://example.com/video2.mp4']
+                'media_gallery'   => [
+                    ['media_id' => 3],
+                    ['media_id' => 4]
                 ],
                 'seo'             => [
                     'meta_title'       => 'City Tour',
@@ -74,9 +74,9 @@ class TransferSeeder extends Seeder
                 'route_id'        => 5,
                 'pricing_tier_id' => 3,
                 'availability_id' => 3,
-                'media'           => [
-                    ['media_type' => 'photo', 'media_url' => 'https://example.com/photo3.jpg'],
-                    ['media_type' => 'video', 'media_url' => 'https://example.com/video3.mp4']
+                'media_gallery'   => [
+                    ['media_id' => 5],
+                    ['media_id' => 1]
                 ],
                 'seo'             => [
                     'meta_title'       => 'Hotel Transfer',
@@ -100,9 +100,9 @@ class TransferSeeder extends Seeder
                 'route_id'        => 7,
                 'pricing_tier_id' => 4,
                 'availability_id' => 4,
-                'media'           => [
-                    ['media_type' => 'photo', 'media_url' => 'https://example.com/photo4.jpg'],
-                    ['media_type' => 'video', 'media_url' => 'https://example.com/video4.mp4']
+                'media_gallery'   => [
+                    ['media_id' => 2],
+                    ['media_id' => 3]
                 ],
                 'seo'             => [
                     'meta_title'       => 'Adventure Trip',
@@ -141,14 +141,14 @@ class TransferSeeder extends Seeder
                 'availability_id' => $data['availability_id'],
             ]);
 
-            // Media  
-            foreach ($data['media'] as $media) {
-                TransferMediaGallery::create([
-                    'transfer_id' => $transfer->id,
-                    'media_type' => $media['media_type'],
-                    // 'media_url' => $media['media_url'],
-                    'media_id' => rand(1, 5),
-                ]);
+            // Media (if provided)
+            if (!empty($data['media_gallery'])) {
+                foreach ($data['media_gallery'] as $media) {
+                    TransferMediaGallery::create([
+                        'transfer_id' => $transfer->id,
+                        'media_id'    => $media['media_id'],
+                    ]);
+                }
             }
 
             // SEO  

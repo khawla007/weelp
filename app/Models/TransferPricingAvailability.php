@@ -11,10 +11,20 @@ class TransferPricingAvailability extends Model
     use HasFactory;
     protected $fillable = [
         'transfer_id',
+        'is_vendor',
         'pricing_tier_id',
         'availability_id',
+        'base_price',          
+        'currency',             
+        'price_type',           
+        'extra_luggage_charge', 
+        'waiting_charge', 
     ];
 
+    protected $casts = [
+        'is_vendor' => 'boolean',
+    ];
+    
     // Relationship with Transfer
     public function transfer()
     {

@@ -16,7 +16,7 @@ class PlaceSeeder extends Seeder
 {
     public function run()
     {
-        // 1️⃣ Insert Places
+        // 1️ Insert Places
         $places = [
             [
                 'city_id' => 1, // Jaipur
@@ -41,7 +41,7 @@ class PlaceSeeder extends Seeder
         foreach ($places as $data) {
             $place = Place::create($data);
 
-            // 2️⃣ Insert Place Location Details
+            // 2️ Insert Place Location Details
             PlaceLocationDetail::create([
                 'place_id' => $place->id,
                 'latitude' => '26.9855',
@@ -53,7 +53,7 @@ class PlaceSeeder extends Seeder
                 'local_cuisine' => 'Rajasthani Thali, Ghewar'
             ]);
 
-            // 3️⃣ Insert Travel Information
+            // 3️ Insert Travel Information
             PlaceTravelInfo::create([
                 'place_id' => $place->id,
                 'airport' => 'Jaipur International Airport',
@@ -70,7 +70,7 @@ class PlaceSeeder extends Seeder
                 'safety_information' => 'Safe but avoid isolated areas at night.'
             ]);
 
-            // 4️⃣ Insert Seasons
+            // 4️ Insert Seasons
             PlaceSeason::create([
                 'place_id' => $place->id,
                 'name' => 'Winter',
@@ -79,7 +79,7 @@ class PlaceSeeder extends Seeder
                 'activities' => 'Photography, Guided Tours, Light & Sound Show'
             ]);
 
-            // 5️⃣ Insert Events
+            // 5️ Insert Events
             PlaceEvent::create([
                 'place_id' => $place->id,
                 'name' => 'Light & Sound Show',
@@ -89,7 +89,7 @@ class PlaceSeeder extends Seeder
                 'description' => 'A historical show depicting the history of Amber Fort.'
             ]);
 
-            // 6️⃣ Insert Additional Information
+            // 6️ Insert Additional Information
             PlaceAdditionalInfo::create([
                 'place_id' => $place->id,
                 'title' => 'Interesting Facts',
@@ -126,7 +126,7 @@ class PlaceSeeder extends Seeder
                 $questionNumber++;
             }
 
-            // 8️⃣ Insert SEO Data
+            // 8️ Insert SEO Data
             PlaceSeo::create([
                 'place_id' => $place->id,
                 'meta_title' => 'Explore Amber Fort - Jaipur',
@@ -135,13 +135,6 @@ class PlaceSeeder extends Seeder
                 'og_image_url' => 'https://example.com/og-amber-fort.jpg',
                 'canonical_url' => 'https://example.com/amber-fort',
                 'schema_type' => 'TravelDestination',
-                // 'schema_data' => json_encode([
-                //     "@context" => "https://schema.org",
-                //     "@type" => "TravelDestination",
-                //     "name" => "Amber Fort",
-                //     "description" => "A historical fort in Jaipur, Rajasthan.",
-                //     "image" => "https://example.com/amber-fort.jpg"
-                // ], JSON_UNESCAPED_UNICODE)
                 'schema_data' => [
                     "@context" => "https://schema.org",
                     "@type" => "TravelDestination",

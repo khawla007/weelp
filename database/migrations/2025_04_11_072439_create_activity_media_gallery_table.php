@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('activity_media_gallery', function (Blueprint $table) {
             $table->id();
             $table->foreignId('activity_id')->constrained('activities')->onDelete('cascade');
-            // $table->text('url');
-            $table->foreignId('media_id')->constrained('media')->onDelete('cascade');
+            // $table->foreignId('media_id')->constrained('media')->onDelete('cascade');
+            $table->unsignedBigInteger('media_id')->nullable();
             $table->timestamps();
         });
     }

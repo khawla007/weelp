@@ -13,7 +13,6 @@ class TransferMediaGallery extends Model
 
     protected $fillable = [
         'transfer_id',
-        'media_type',
         'media_id',
     ];
 

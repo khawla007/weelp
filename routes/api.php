@@ -13,10 +13,15 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\TagController;
 use App\Http\Controllers\Admin\AttributeController;
+
 use App\Http\Controllers\Admin\CountryController;
 use App\Http\Controllers\Admin\CountryImportController;
+
 use App\Http\Controllers\Admin\StateImportController;
+
 use App\Http\Controllers\Admin\CityImportController;
+
+use App\Http\Controllers\Admin\PlaceController;
 use App\Http\Controllers\Admin\PlaceImportController;
 
 use App\Http\Controllers\Admin\CityController;
@@ -121,6 +126,17 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::delete('/{id}', [CityController::class, 'destroy']);
     });
 
+    Route::prefix('/places')->group(function () {
+        Route::get('/', [PlaceController::class, 'index']);
+        Route::get('/place-dropdown', [PlaceController::class, 'getPlaceDropdown']);
+
+        Route::post('/', [PlaceController::class, 'store']);
+
+        Route::get('/{id}', [PlaceController::class, 'show']);
+        Route::put('/{id}', [PlaceController::class, 'update']);
+        Route::delete('/{id}', [PlaceController::class, 'destroy']);
+    });
+
     // Admin Side media route
     Route::prefix('media')->group(function () {
         Route::get('/', [MediaController::class, 'index']);
@@ -133,16 +149,27 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
     // Admin Side vendors route
     Route::prefix('/vendors')->group(function () {
         Route::get('/', [VendorController::class, 'index']);      // List vendors
+        Route::get('/vendor-select', [VendorController::class, 'getVendorsForSelect']);
 
         Route::get('/{id}', [VendorController::class, 'show']); // Show a vendor
+
         Route::get('{vendor}/routes', [VendorController::class, 'getRoutes']);
+        Route::get('{vendor}/routes-select', [VendorController::class, 'getRoutesForSelect']);
+
         Route::get('{vendor}/pricing-tiers', [VendorController::class, 'getPricingTiers']);
+        Route::get('{vendor}/pricing-tiers-select', [VendorController::class, 'getPricingTiersForSelect']);
+
+
         Route::get('{vendor}/vehicles', [VendorController::class, 'getVehicles']);
         Route::get('{vendor}/vehiclesdropdown', [VendorController::class, 'getVehiclesfordropdown']);
         Route::get('{vendor}/drivers', [VendorController::class, 'getDrivers']);
         Route::get('{vendor}/driversforselect', [VendorController::class, 'getDriversForSchedule']);
         Route::get('{vendor}/schedules', [VendorController::class, 'getSchedules']);
+
+
         Route::get('{vendor}/availability-time-slots', [VendorController::class, 'getAvailabilityTimeSlots']);
+        Route::get('{vendor}/availability-time-slots-select', [VendorController::class, 'getAvailabilityTimeSlotsForSelect']);
+
 
         Route::delete('/{id}', [VendorController::class, 'destroy']);  // Delete vendor
         Route::post('/store/{request_type}', [VendorController::class, 'store']);
@@ -153,7 +180,7 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
 
     // Admin Side Transfer route
     Route::prefix('/transfers')->group(function () {
-        Route::post('/', [TransferController::class, 'save']); // Create
+        Route::post('/', [TransferController::class, 'store']); // Create
         Route::put('/{id}', [TransferController::class, 'save']); // Update
         Route::patch('/{id}', [TransferController::class, 'save']); // Partial Update
         Route::get('/', [TransferController::class, 'index']);
