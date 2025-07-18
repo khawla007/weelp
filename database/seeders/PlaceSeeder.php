@@ -46,7 +46,7 @@ class PlaceSeeder extends Seeder
                 'place_id' => $place->id,
                 'latitude' => '26.9855',
                 'longitude' => '75.8513',
-                'population' => null,
+                'population' => 100000,
                 'currency' => 'INR',
                 'timezone' => 'GMT+5:30',
                 'language' => 'Hindi, English',

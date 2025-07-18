@@ -319,16 +319,16 @@ class PlaceController extends Controller
     public function update(Request $request, $id)
     {
         $place = Place::with([
-            'locationDetail',
+            'locationDetails',
             'travelInfo',
             'seo',
             'seasons',
             'events',
-            'additionalInfos',
+            'additionalInfo',
             'faqs'
         ])->findOrFail($id);
     
-        // Update main place table (only provided fields)
+        // 1. Update place core fields
         $place->fill($request->only([
             'city_id',
             'name',
@@ -336,25 +336,30 @@ class PlaceController extends Controller
             'slug',
             'description',
             'feature_image',
-            'featured_destination'
+            'featured_destination',
+            'status'
         ]))->save();
     
-        // Update location_detail
-        if ($request->has('location_detail')) {
-            $place->locationDetail->update($request->location_detail);
+        // 2. Location Detail
+        if ($request->has('location_detail') && $place->locationDetails) {
+            $place->locationDetails->update($request->location_detail);
         }
     
-        // Update travel_info
-        if ($request->has('travel_info')) {
+        // 3. Travel Info
+        if ($request->has('travel_info') && $place->travelInfo) {
             $place->travelInfo->update($request->travel_info);
         }
     
-        // Update SEO
+        // 4. SEO
         if ($request->has('seo')) {
-            $place->seo->update($request->seo);
+            if ($place->seo) {
+                $place->seo->update($request->seo);
+            } else {
+                $place->seo()->create($request->seo);
+            }
         }
     
-        // Partial Update: Seasons (multiple)
+        // 5. Seasons (create or update)
         if ($request->has('seasons')) {
             foreach ($request->seasons as $seasonData) {
                 if (isset($seasonData['id'])) {
@@ -362,11 +367,13 @@ class PlaceController extends Controller
                     if ($season) {
                         $season->update($seasonData);
                     }
+                } else {
+                    $place->seasons()->create($seasonData);
                 }
             }
         }
     
-        // Partial Update: Events (multiple)
+        // 6. Events (create or update)
         if ($request->has('events')) {
             foreach ($request->events as $eventData) {
                 if (isset($eventData['id'])) {
@@ -374,23 +381,27 @@ class PlaceController extends Controller
                     if ($event) {
                         $event->update($eventData);
                     }
+                } else {
+                    $place->events()->create($eventData);
                 }
             }
         }
     
-        // Partial Update: Additional Infos (multiple)
-        if ($request->has('additional_infos')) {
-            foreach ($request->additional_infos as $infoData) {
+        // 7. Additional Info (create or update)
+        if ($request->has('additional_info')) {
+            foreach ($request->additional_info as $infoData) {
                 if (isset($infoData['id'])) {
-                    $info = $place->additionalInfos()->where('id', $infoData['id'])->first();
+                    $info = $place->additionalInfo()->where('id', $infoData['id'])->first();
                     if ($info) {
                         $info->update($infoData);
                     }
+                } else {
+                    $place->additionalInfo()->create($infoData);
                 }
             }
         }
     
-        // Partial Update: FAQs (multiple)
+        // 8. FAQs (create or update with question_number)
         if ($request->has('faqs')) {
             foreach ($request->faqs as $faqData) {
                 if (isset($faqData['id'])) {
@@ -398,6 +409,10 @@ class PlaceController extends Controller
                     if ($faq) {
                         $faq->update($faqData);
                     }
+                } else {
+                    $lastQuestion = $place->faqs()->orderBy('question_number', 'desc')->first();
+                    $faqData['question_number'] = $lastQuestion ? $lastQuestion->question_number + 1 : 1;
+                    $place->faqs()->create($faqData);
                 }
             }
         }
@@ -406,17 +421,64 @@ class PlaceController extends Controller
             'success' => true,
             'message' => 'Place updated successfully.',
             'data' => $place->fresh([
-                'locationDetail', 'travelInfo', 'seo',
-                'seasons', 'events', 'additionalInfos', 'faqs'
+                'locationDetails', 'travelInfo', 'seo',
+                'seasons', 'events', 'additionalInfo', 'faqs'
             ])
         ]);
-    }    
+    }     
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, $id)
     {
-        //
+        $place = Place::with([
+            'events', 'seasons', 'additionalInfo', 'faqs',
+            'locationDetails', 'travelInfo', 'seo'
+        ])->findOrFail($id);
+    
+        // 1. Partial Delete
+        if ($request->hasAny([
+            'deleted_event_ids', 
+            'deleted_season_ids', 
+            'deleted_additional_info_ids', 
+            'deleted_faq_ids'
+        ])) {
+            if ($eventIds = $request->deleted_event_ids) {
+                $place->events()->whereIn('id', $eventIds)->delete();
+            }
+    
+            if ($seasonIds = $request->deleted_season_ids) {
+                $place->seasons()->whereIn('id', $seasonIds)->delete();
+            }
+    
+            if ($infoIds = $request->deleted_additional_info_ids) {
+                $place->additionalInfo()->whereIn('id', $infoIds)->delete();
+            }
+    
+            if ($faqIds = $request->deleted_faq_ids) {
+                $place->faqs()->whereIn('id', $faqIds)->delete();
+            }
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Selected related data deleted successfully.',
+            ]);
+        }
+    
+        // 2. Full Delete (if no partial delete params present)
+        $place->events()->delete();
+        $place->seasons()->delete();
+        $place->additionalInfo()->delete();
+        $place->faqs()->delete();
+        $place->locationDetails()?->delete();
+        $place->travelInfo()?->delete();
+        $place->seo()?->delete();
+        $place->delete();
+    
+        return response()->json([
+            'success' => true,
+            'message' => 'Place and all related data deleted successfully.',
+        ]);
     }
 }
