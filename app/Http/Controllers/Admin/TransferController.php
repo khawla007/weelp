@@ -164,10 +164,10 @@ class TransferController extends Controller
             'seo.meta_title'       => 'nullable|string|max:255',
             'seo.meta_description' => 'nullable|string',
             'seo.keywords'         => 'nullable|string',
-            'seo.og_image_url'     => 'nullable|url',
-            'seo.canonical_url'    => 'nullable|url',
+            'seo.og_image_url'     => 'nullable|string',
+            'seo.canonical_url'    => 'nullable|string',
             'seo.schema_type'      => 'nullable|string',
-            'seo.schema_data'      => 'nullable|json',
+            'seo.schema_data'      => 'nullable|array',
         ]);
     
         // Conditional validations
@@ -228,8 +228,8 @@ class TransferController extends Controller
         TransferSchedule::create([
             'transfer_id'       => $transfer->id,
             'is_vendor'         => $validatedData['is_vendor'],
-            // 'availability_type' => $validatedData['availability_type'] ?? 'always_available',
-            'availability_type' => !empty($validatedData['availability_type']) ? implode(',', $validatedData['availability_type']) : null,
+            'availability_type' => $validatedData['availability_type'] ?? 'null',
+            // 'availability_type' => !empty($validatedData['availability_type']) ? implode(',', $validatedData['availability_type']) : null,
             'available_days'    => !empty($validatedData['available_days']) ? implode(',', $validatedData['available_days']) : null,
             'time_slots'        => !empty($validatedData['time_slots']) ? json_encode($validatedData['time_slots']) : null,
             'blackout_dates'    => !empty($validatedData['blackout_dates']) ? json_encode($validatedData['blackout_dates']) : null,
@@ -257,7 +257,10 @@ class TransferController extends Controller
                 'og_image_url' => $validatedData['seo']['og_image_url'] ?? null,
                 'canonical_url' => $validatedData['seo']['canonical_url'] ?? null,
                 'schema_type' => $validatedData['seo']['schema_type'] ?? null,
-                'schema_data' => $validatedData['seo']['schema_data'] ?? null,
+                // 'schema_data' => $validatedData['seo']['schema_data'] ?? null,
+                'schema_data' => is_array($validatedData['seo']['schema_data'] ?? null)
+                    ? json_encode($validatedData['seo']['schema_data'])
+                    : ($validatedData['seo']['schema_data'] ?? null),
             ]);
         }
     
@@ -301,8 +304,8 @@ class TransferController extends Controller
             'seo.meta_title' => 'nullable|string|max:255',
             'seo.meta_description' => 'nullable|string',
             'seo.keywords' => 'nullable|string',
-            'seo.og_image_url' => 'nullable|url',
-            'seo.canonical_url' => 'nullable|url',
+            'seo.og_image_url' => 'nullable|string',
+            'seo.canonical_url' => 'nullable|string',
             'seo.schema_type' => 'nullable|string',
             'seo.schema_data' => 'nullable|json',
         ]);
