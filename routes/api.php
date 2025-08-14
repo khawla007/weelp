@@ -111,7 +111,8 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
 
 
     // Admin Side Destination Countries Routes
-    Route::apiResource('/countries', CountryController::class);
+    // Route::apiResource('/countries', CountryController::class);
+
 
 
     Route::post('/import-countries', [CountryImportController::class, 'import']);
@@ -119,6 +120,13 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
     Route::post('/import-cities', [CityImportController::class, 'import']);
     Route::post('/import-places', [PlaceImportController::class, 'import']);
 
+    Route::prefix('/countries')->group(function () {
+        Route::get('/', [CountryController::class, 'index']);
+        Route::get('/{id}', [CountryController::class, 'show']);
+        Route::post('/', [CountryController::class, 'store']);
+        Route::delete('/{id}', [CountryController::class, 'destroy']);
+    });
+    
     Route::prefix('/cities')->group(function () {
         Route::get('/', [CityController::class, 'index']);
         Route::get('/{id}', [CityController::class, 'show']);
@@ -181,11 +189,11 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
     // Admin Side Transfer route
     Route::prefix('/transfers')->group(function () {
         Route::post('/', [TransferController::class, 'store']); // Create
-        Route::put('/{id}', [TransferController::class, 'save']); // Update
-        Route::patch('/{id}', [TransferController::class, 'save']); // Partial Update
+        Route::put('/{id}', [TransferController::class, 'update']); // Update
         Route::get('/', [TransferController::class, 'index']);
         Route::get('/{id}', [TransferController::class, 'show']);
         Route::delete('/{id}', [TransferController::class, 'destroy']);
+        Route::post('/bulk-delete', [TransferController::class, 'destroyMultiple']);
     });
 
     // Admin Side activity route

@@ -33,6 +33,11 @@ class Country extends Model
     //     return $this->hasMany(City::class);
     // }
 
+    public function mediaGallery()
+    {
+        return $this->hasMany(CountryMediaGallery::class);
+    }
+    
     public function locationDetails() {
         return $this->hasOne(CountryLocationDetail::class);
     }

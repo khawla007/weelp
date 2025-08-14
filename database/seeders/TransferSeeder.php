@@ -16,6 +16,7 @@ class TransferSeeder extends Seeder
         $transfers = [
             [
                 'name'            => 'Airport Transfer',
+                'slug'            => 'airport-transfer',
                 'description'     => 'Airport to Hotel transfer service',
                 'transfer_type'   => 'One-way',
                 'vendor_id'       => 1,
@@ -42,6 +43,7 @@ class TransferSeeder extends Seeder
             ],
             [
                 'name'            => 'City Tour',
+                'slug'            => 'city-tour',
                 'description'     => 'Full day city tour with private guide',
                 'transfer_type'   => 'Round-trip',
                 'vendor_id'       => 2,
@@ -68,6 +70,7 @@ class TransferSeeder extends Seeder
             ],
             [
                 'name'            => 'Hotel Transfer',
+                'slug'            => 'hotel-transfer',
                 'description'     => 'Hotel to Train Station transfer service',
                 'transfer_type'   => 'One-way',
                 'vendor_id'       => 3,
@@ -94,6 +97,7 @@ class TransferSeeder extends Seeder
             ],
             [
                 'name'            => 'Adventure Trip',
+                'slug'            => 'adventure-trip',
                 'description'     => 'Mountain hiking trip with professional guide',
                 'transfer_type'   => 'Round-trip',
                 'vendor_id'       => 4,
@@ -123,6 +127,7 @@ class TransferSeeder extends Seeder
         foreach ($transfers as $data) {
             $transfer = Transfer::create([
                 'name'          => $data['name'],
+                'slug'          => $data['slug'],
                 'description'   => $data['description'],
                 'transfer_type' => $data['transfer_type'],
             ]);

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Country;
+use App\Models\CountryMediaGallery;
 use App\Models\CountryLocationDetail;
 use App\Models\CountryTravelInfo;
 use App\Models\CountrySeason;
@@ -16,78 +17,120 @@ class CountrySeeder extends Seeder
 {
     public function run()
     {
-        // 1️⃣ Insert Countries
         $countries = [
             [
                 'name' => 'India',
                 'country_code' => 'IN',
                 'slug' => 'india',
-                'description' => 'USA details',
-                'feature_image' => 'https://example.com/usa.jpg',
+                'description' => 'India details',
+                'feature_image' => 'https://example.com/india.jpg',
                 'featured_destination' => false,
             ],
             [
                 'name' => 'China',
-                'country_code' => 'CH',
+                'country_code' => 'CN',
                 'slug' => 'china',
                 'description' => 'A beautiful country',
-                'feature_image' => 'https://example.com/india.jpg',
+                'feature_image' => 'https://example.com/china.jpg',
                 'featured_destination' => true,
             ],
             [
                 'name' => 'Japan',
                 'country_code' => 'JP',
                 'slug' => 'japan',
-                'description' => 'USA details',
+                'description' => 'Land of the Rising Sun',
+                'feature_image' => 'https://example.com/japan.jpg',
+                'featured_destination' => true,
+            ],
+            [
+                'name' => 'USA',
+                'country_code' => 'US',
+                'slug' => 'usa',
+                'description' => 'United States of America',
                 'feature_image' => 'https://example.com/usa.jpg',
-                'featured_destination' => false,
+                'featured_destination' => true,
             ],
             [
                 'name' => 'France',
                 'country_code' => 'FR',
                 'slug' => 'france',
-                'description' => 'A beautiful country',
-                'feature_image' => 'https://example.com/india.jpg',
+                'description' => 'The country of love and Eiffel Tower',
+                'feature_image' => 'https://example.com/france.jpg',
                 'featured_destination' => true,
             ],
             [
                 'name' => 'Germany',
-                'country_code' => 'GR',
+                'country_code' => 'DE',
                 'slug' => 'germany',
-                'description' => 'USA details',
-                'feature_image' => 'https://example.com/usa.jpg',
+                'description' => 'Engineering and cultural hub',
+                'feature_image' => 'https://example.com/germany.jpg',
                 'featured_destination' => false,
             ],
             [
+                'name' => 'Italy',
+                'country_code' => 'IT',
+                'slug' => 'italy',
+                'description' => 'Famous for Rome and Venice',
+                'feature_image' => 'https://example.com/italy.jpg',
+                'featured_destination' => true,
+            ],
+            [
                 'name' => 'Spain',
-                'country_code' => 'SPN',
+                'country_code' => 'ES',
                 'slug' => 'spain',
-                'description' => 'A beautiful country',
-                'feature_image' => 'https://example.com/india.jpg',
+                'description' => 'Land of Flamenco and Football',
+                'feature_image' => 'https://example.com/spain.jpg',
+                'featured_destination' => true,
+            ],
+            [
+                'name' => 'Australia',
+                'country_code' => 'AU',
+                'slug' => 'australia',
+                'description' => 'The land of Kangaroos',
+                'feature_image' => 'https://example.com/australia.jpg',
+                'featured_destination' => true,
+            ],
+            [
+                'name' => 'Brazil',
+                'country_code' => 'BR',
+                'slug' => 'brazil',
+                'description' => 'Carnival and Football country',
+                'feature_image' => 'https://example.com/brazil.jpg',
                 'featured_destination' => true,
             ],
         ];
 
+        $mediaIds = range(1, 5);
+    
         foreach ($countries as $data) {
             $country = Country::create($data);
+    
+            // Country_Media (Array of Objects )
+            $randomMedias = collect($mediaIds)->random(3); // ek country ko 3 random media milega
+            foreach ($randomMedias as $mediaId) {
+                CountryMediaGallery::create([
+                    'country_id' => $country->id,
+                    'media_id'   => $mediaId,
+                ]);
+            }
 
-            // 2️⃣ Insert Country Details
+            // Location Details
             CountryLocationDetail::create([
                 'country_id' => $country->id,
                 'latitude' => '20.5937',
                 'longitude' => '78.9629',
-                'capital_city' => 'New Delhi',
-                'population' => 1393409038,
-                'currency' => 'INR',
+                'capital_city' => 'Capital City Example',
+                'population' => 1000000,
+                'currency' => 'USD',
                 'timezone' => 'GMT+5:30',
-                'language' => 'Hindi, English',
-                'local_cuisine' => 'Dal Makhani, Biryani, Samosa'
+                'language' => ["English"],   // array
+                'local_cuisine' => ["Cuisine1", "Cuisine2"], 
             ]);
-
-            // 3️⃣ Insert Travel Information
+    
+            // Travel Info
             CountryTravelInfo::create([
                 'country_id' => $country->id,
-                'airport' => 'Indira Gandhi International Airport',
+                'airport' => 'Main International Airport',
                 'public_transportation' => 'Metro, Buses, Trains',
                 'taxi_available' => true,
                 'rental_cars_available' => true,
@@ -95,94 +138,115 @@ class CountrySeeder extends Seeder
                 'hostels' => true,
                 'apartments' => true,
                 'resorts' => true,
-                'visa_requirements' => 'Visa on arrival available',
+                'visa_requirements' => 'Visa info',
                 'best_time_to_visit' => 'October - March',
                 'travel_tips' => 'Carry local currency',
-                'safety_information' => 'Safe for tourists'
+                'safety_information' => 'Safe for tourists',
             ]);
-
-            // 4️⃣ Insert Seasons
-            CountrySeason::create([
-                'country_id' => $country->id,
-                'name' => 'Winter',
-                'months' => 'December - February',
-                'weather' => 'Cold with snowfall in northern regions',
-                'activities' => 'Skiing, Trekking'
-            ]);
-
-            // 5️⃣ Insert Events
-            CountryEvent::create([
-                'country_id' => $country->id,
-                'name' => 'Diwali',
-                'type' => 'Festival',
-                'date_time' => '2025-10-24 18:00:00',
-                'location' => 'All over India',
-                'description' => 'Festival of Lights celebrated across India'
-            ]);
-
-            // 6️⃣ Insert Additional Information
-            CountryAdditionalInfo::create([
-                'country_id' => $country->id,
-                'title' => 'Famous Tourist Attractions',
-                'content' => 'Taj Mahal, Jaipur, Kerala Backwaters'
-            ]);
-
-            $countryId = $country->id;
-
-            // Fetch last question number for the country
-            $lastQuestion = CountryFaq::where('country_id', $countryId)
-                ->orderBy('question_number', 'desc')
-                ->first();
-            
-            $questionNumber = ($lastQuestion && $lastQuestion->question_number) 
-                ? $lastQuestion->question_number + 1 
-                : 1;
-
-            $faqs = [
+    
+            // Seasons
+            $seasons = [
                 [
-                    'question' => 'Do I need a visa to visit India?',
-                    'answer' => 'Yes, but Visa on arrival is available for many countries.'
+                    'name' => 'Winter',
+                    'months' => ['December', 'January', 'February'],
+                    'weather' => 'Cold',
+                    'activities' => ['Skiing', 'Trekking'],
                 ],
                 [
-                    'question' => 'What is the currency in India?',
-                    'answer' => 'The Indian Rupee (INR) is the official currency.'
-                ]
+                    'name' => 'Summer',
+                    'months' => ['April', 'May', 'June'],
+                    'weather' => 'Hot',
+                    'activities' => ['Beach trips'],
+                ],
             ];
-            
+            foreach ($seasons as $season) {
+                CountrySeason::create(array_merge($season, [
+                    'country_id' => $country->id,
+                ]));
+            }
+    
+            // Events
+            $events = [
+                [
+                    'name' => 'New Year Festival',
+                    'type' => ['Festival', 'Holiday'],
+                    'date_time' => '2025-01-01 00:00:00',
+                    "location" => ["Main Cities", "Villages"],
+                    'description' => 'New Year celebrations',
+                ],
+                [
+                    'name' => 'National Day',
+                    "type"=> ["Festival", "Holiday"],
+                    'date_time' => '2025-08-15 00:00:00',
+                    "location"=> ["Main Cities", "Villages"],
+                    'description' => 'National holiday celebrations',
+                ],
+            ];
+            foreach ($events as $event) {
+                CountryEvent::create(array_merge($event, [
+                    'country_id' => $country->id,
+                ]));
+            }
+    
+            // Additional Info (Array of Objects ✅)
+            $additionalInfos = [
+                [
+                    'title' => 'Famous Tourist Attractions',
+                    'content' => 'Monuments, Museums, National Parks',
+                ],
+                [
+                    'title' => 'Popular Food',
+                    'content' => 'Street food, Traditional Dishes',
+                ],
+                [
+                    'title' => 'Culture',
+                    'content' => 'Music, Dance, Art',
+                ],
+            ];
+            foreach ($additionalInfos as $info) {
+                CountryAdditionalInfo::create(array_merge($info, [
+                    'country_id' => $country->id,
+                ]));
+            }
+    
+            // FAQs
+            $faqs = [
+                [
+                    'question' => 'Do I need a visa?',
+                    'answer' => 'Depends on your nationality.',
+                ],
+                [
+                    'question' => 'What is the currency?',
+                    'answer' => 'The official currency is local.',
+                ],
+            ];
+            $qNum = 1;
             foreach ($faqs as $faq) {
                 CountryFaq::create([
                     'country_id' => $country->id,
-                    'question_number' => $questionNumber,
+                    'question_number' => $qNum++,
                     'question' => $faq['question'],
-                    'answer' => $faq['answer']
+                    'answer' => $faq['answer'],
                 ]);
-                $questionNumber++;
             }
-
-            // 8️⃣ Insert SEO Data
+    
+            // SEO
             CountrySeo::create([
                 'country_id' => $country->id,
-                'meta_title' => 'Visit India - Travel Guide',
-                'meta_description' => 'Explore the beauty of India with our ultimate travel guide.',
-                'keywords' => 'India, Travel, Taj Mahal, Tourism',
-                'og_image_url' => 'https://example.com/og-india.jpg',
-                'canonical_url' => 'https://example.com/india',
+                'meta_title' => 'Visit ' . $country->name,
+                'meta_description' => 'Explore ' . $country->name,
+                'keywords' => $country->name . ', Travel, Tourism',
+                'og_image_url' => 'https://example.com/' . $country->slug . '.jpg',
+                'canonical_url' => 'https://example.com/' . $country->slug,
                 'schema_type' => 'TravelDestination',
-                // 'schema_data' => json_encode([
-                //     "@context" => "https://schema.org",
-                //     "@type" => "TravelDestination",
-                //     "name" => "India",
-                //     "description" => "A beautiful country with rich heritage.",
-                //     "image" => "https://example.com/india.jpg"
-                // ], JSON_UNESCAPED_UNICODE)
                 'schema_data' => [
                     "@context" => "https://schema.org",
                     "@type" => "TravelDestination",
-                    "name" => "India",
-                    "description" => "A beautiful country with rich heritage.",
-                    "image" => "https://example.com/india.jpg"
+                    "name" => $country->name,
+                    "description" => "A beautiful country.",
+                    "image" => 'https://example.com/' . $country->slug . '.jpg',
                 ],
             ]);
         }
-    }
+    }    
 }

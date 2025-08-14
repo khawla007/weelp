@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('transfer_id')->constrained('transfers')->onDelete('cascade');
             $table->foreignId('media_id')->constrained('media')->onDelete('cascade');
-            // $table->unsignedBigInteger('media_id')->nullable();
             $table->timestamps();
         });
     }

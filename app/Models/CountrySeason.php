@@ -18,7 +18,8 @@ class CountrySeason extends Model
     ];
 
     protected $casts = [
-        'activities' => 'array',
+        'months' => 'array',     // ✅ DB से आते ही array बन जाएगा
+        'activities' => 'array', // ✅ DB से आते ही array बन जाएगा
     ];
 
     public function country() {

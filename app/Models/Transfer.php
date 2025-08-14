@@ -10,7 +10,9 @@ class Transfer extends Model
     use HasFactory;
     protected $fillable = [
         'name',
+        'slug',
         'description',
+        'item_type', // Fixed value 'transfer'
         'transfer_type',
     ];
 
@@ -30,6 +32,12 @@ class Transfer extends Model
     public function mediaGallery()
     {
         return $this->hasMany(TransferMediaGallery::class);
+    }
+
+    // Relationship with Schedule
+    public function schedule()
+    {
+        return $this->hasOne(TransferSchedule::class);
     }
 
     // Relationship with SEO

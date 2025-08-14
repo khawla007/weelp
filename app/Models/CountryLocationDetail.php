@@ -14,6 +14,11 @@ class CountryLocationDetail extends Model
         'population', 'currency', 'timezone', 'language', 'local_cuisine'
     ];
 
+    protected $casts = [
+        'language' => 'array',
+        'local_cuisine' => 'array',
+    ];
+
     public function country() {
         return $this->belongsTo(Country::class);
     }

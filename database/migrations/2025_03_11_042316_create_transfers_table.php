@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('transfers', function (Blueprint $table) {
             $table->id();
             $table->text('name');
+            $table->string('slug')->unique();
             $table->text('description');
             $table->string('item_type')->default('transfer'); // Fixed value 'package'
             $table->text('transfer_type');

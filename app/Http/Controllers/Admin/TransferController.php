@@ -21,52 +21,95 @@ class TransferController extends Controller
         $perPage = 3;
         $page = $request->get('page', 1);
         $sortBy = $request->get('sort_by', 'id_desc');
-
+    
         $vehicleType = $request->get('vehicle_type');
         $capacity = $request->get('capacity');
         $minPrice = $request->get('min_price', 0);
         $maxPrice = $request->get('max_price');
         $availabilityDate = $request->get('availability_date');
-
+    
         $query = Transfer::query()
             ->with([
                 'vendorRoutes.route',
+                'vendorRoutes.vendor.vehicles',
+                'vendorRoutes.vendor.availabilityTimeSlots',
                 'pricingAvailability.pricingTier',
                 'pricingAvailability.availability',
                 'mediaGallery.media',
                 'seo',
             ])
+            // Vehicle type & Capacity filter
             ->when($vehicleType || $capacity, function ($q) use ($vehicleType, $capacity) {
-                // Filter by vehicle attributes via whereHas
-                $q->whereHas('vendorRoutes.vendor.vehicles', function ($q2) use ($vehicleType, $capacity) {
-                    if ($vehicleType) {
-                        $q2->where('vehicle_type', $vehicleType);
-                    }
-                    if ($capacity) {
-                        $q2->where('capacity', '>=', $capacity);
-                    }
+                $q->whereHas('vendorRoutes', function ($q1) use ($vehicleType, $capacity) {
+                    $q1->where(function ($q2) use ($vehicleType, $capacity) {
+                        // Case 1: is_vendor = true → vendor's vehicles filter
+                        $q2->where('is_vendor', true)
+                            ->whereHas('vendor.vehicles', function ($q3) use ($vehicleType, $capacity) {
+                                if ($vehicleType) {
+                                    $q3->where('vehicle_type', $vehicleType);
+                                }
+                                if ($capacity) {
+                                    $q3->where('capacity', $capacity);
+                                }
+                            });
+                    })
+                    ->orWhere(function ($q2) use ($vehicleType, $capacity) {
+                        // Case 2: is_vendor = false → filter directly on transfer_vendor_routes
+                        $q2->where('is_vendor', false);
+                        if ($vehicleType) {
+                            $q2->where('vehicle_type', $vehicleType);
+                        }
+                        // if ($capacity) {
+                        //     $q2->where('capacity', '>=', $capacity);
+                        // }
+                    });
                 });
             })
-            ->when($minPrice !== null && $maxPrice !== null, function ($q) use ($minPrice, $maxPrice) {
-                $q->whereHas('pricingAvailability.pricingTier', function ($q2) use ($minPrice, $maxPrice) {
-                    $q2->whereBetween('base_price', [$minPrice, $maxPrice]);
+            // Price filter
+            ->when($minPrice !== null || $maxPrice !== null, function ($q) use ($minPrice, $maxPrice) {
+                $q->whereHas('pricingAvailability', function ($q1) use ($minPrice, $maxPrice) {
+                    $q1->where(function ($q2) use ($minPrice, $maxPrice) {
+                        // Vendor side
+                        $q2->where('is_vendor', true)
+                           ->whereHas('pricingTier', function ($q3) use ($minPrice, $maxPrice) {
+                               if ($minPrice !== null && $maxPrice !== null) {
+                                   $q3->whereBetween('base_price', [$minPrice, $maxPrice]);
+                               } elseif ($minPrice !== null) {
+                                   $q3->where('base_price', '>=', $minPrice);
+                               } elseif ($maxPrice !== null) {
+                                   $q3->where('base_price', '<=', $maxPrice);
+                               }
+                           });
+                    })
+                    ->orWhere(function ($q2) use ($minPrice, $maxPrice) {
+                        // Transfer side
+                        $q2->where('is_vendor', false);
+                        if ($minPrice !== null && $maxPrice !== null) {
+                            $q2->whereBetween('base_price', [$minPrice, $maxPrice]);
+                        } elseif ($minPrice !== null) {
+                            $q2->where('base_price', '>=', $minPrice);
+                        } elseif ($maxPrice !== null) {
+                            $q2->where('base_price', '<=', $maxPrice);
+                        }
+                    });
                 });
-            })
+            })                             
+            // Availability date filter
             ->when($availabilityDate, function ($q) use ($availabilityDate) {
-                $q->whereHas('pricingAvailability.availability', function ($q2) use ($availabilityDate) {
-                    $q2->whereDate('date', $availabilityDate);
+                $q->whereHas('vendorRoutes.vendor.availabilityTimeSlots', function ($q3) use ($availabilityDate) {
+                    $q3->whereDate('date', $availabilityDate);
                 });
             });
-
+    
         // Sorting
         switch ($sortBy) {
             case 'price_asc':
-                $query->with(['pricingAvailability.pricingTier' => function($q){
+                $query->with(['pricingAvailability.pricingTier' => function ($q) {
                     $q->orderBy('base_price', 'asc');
                 }]);
                 break;
             case 'price_desc':
-                $query->with(['pricingAvailability.pricingTier' => function($q){
+                $query->with(['pricingAvailability.pricingTier' => function ($q) {
                     $q->orderBy('base_price', 'desc');
                 }]);
                 break;
@@ -83,12 +126,12 @@ class TransferController extends Controller
                 $query->orderBy('id', 'desc');
                 break;
         }
-
+    
         $paginated = $query->paginate($perPage, ['*'], 'page', $page);
-
+    
         $transformed = $paginated->getCollection()->map(function ($transfer) {
             $data = $transfer->toArray();
-
+    
             $data['media_gallery'] = collect($transfer->mediaGallery)->map(function ($media) {
                 return [
                     'id'       => $media->id,
@@ -98,10 +141,10 @@ class TransferController extends Controller
                     'url'      => $media->media->url ?? null,
                 ];
             });
-
+    
             return $data;
         });
-
+    
         return response()->json([
             'success'      => true,
             'data'         => $transformed,
@@ -109,7 +152,7 @@ class TransferController extends Controller
             'per_page'     => $paginated->perPage(),
             'total'        => $paginated->total(),
         ]);
-    }
+    }    
 
     /**
      * Store a newly created transfers in storage.
@@ -119,6 +162,7 @@ class TransferController extends Controller
         // Base validation rules
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
+            'slug' => 'required|string|unique:transfers,slug',
             'description' => 'nullable|string',
             'transfer_type' => 'required|string',
             'is_vendor' => 'required|boolean',
@@ -195,6 +239,7 @@ class TransferController extends Controller
         // Create Transfer
         $transfer = Transfer::create([
             'name' => $validatedData['name'],
+            'slug' => $validatedData['slug'],
             'description' => $validatedData['description'] ?? null,
             'transfer_type' => $validatedData['transfer_type'],
         ]);
@@ -273,163 +318,210 @@ class TransferController extends Controller
     /**
      * Display the specified transfers.
      */
+    // public function show(string $id)
+    // {
+    //     $transfer = Transfer::with(['vendorRoutes', 'pricingAvailability', 'mediaGallery.media', 'schedule', 'seo'])->find($id);
+    //     if (!$transfer) {
+    //         return response()->json(['message' => 'Transfer not found'], 404);
+    //     }
+    //     return response()->json($transfer);
+    // }
+
     public function show(string $id)
     {
-        $transfer = Transfer::with(['vendorRoutes', 'pricingAvailability', 'mediaGallery.media', 'seo'])->find($id);
+        $transfer = Transfer::with([
+            'vendorRoutes', 
+            'pricingAvailability', 
+            'mediaGallery.media', 
+            'schedule', 
+            'seo'
+        ])->find($id);
+    
         if (!$transfer) {
             return response()->json(['message' => 'Transfer not found'], 404);
         }
+    
+        // अगर schedule मौजूद है तो उसकी fields को array में बदलना
+        if ($transfer->schedule) {
+            if (!empty($transfer->schedule->available_days)) {
+                $transfer->schedule->available_days = explode(',', $transfer->schedule->available_days);
+            }
+    
+            if (!empty($transfer->schedule->time_slots)) {
+                $transfer->schedule->time_slots = json_decode($transfer->schedule->time_slots, true);
+            }
+    
+            if (!empty($transfer->schedule->blackout_dates)) {
+                $transfer->schedule->blackout_dates = json_decode($transfer->schedule->blackout_dates, true);
+            }
+        }
+
+        // media_gallery ko transform karna
+        if ($transfer->mediaGallery && $transfer->mediaGallery->count()) {
+            $transfer->media_gallery = $transfer->mediaGallery->map(function ($gallery) {
+                return [
+                    'id' => $gallery->id,
+                    'transfer_id' => $gallery->transfer_id,
+                    'media_id' => $gallery->media_id,
+                    'name' => $gallery->media->name ?? null,
+                    'alt_text' => $gallery->media->alt_text ?? null,
+                    'url' => $gallery->media->url ?? null,
+                ];
+            })->values();
+            unset($transfer->mediaGallery); // nested relation hatane ke liye
+        }
+    
         return response()->json($transfer);
-    }
+    }    
 
     /**
      * Update the specified transfers in storage.
      */
     public function update(Request $request, $id)
     {
+        // Find existing Transfer
         $transfer = Transfer::findOrFail($id);
     
+        // Validate only the fields coming in request
         $validatedData = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'description' => 'nullable|string',
-            'transfer_type' => 'sometimes|string',
-            'vendor_id' => 'sometimes|integer',
-            'route_id' => 'sometimes|integer',
-            'pricing_tier_id' => 'sometimes|integer',
-            'availability_id' => 'sometimes|integer',
-            'media' => 'nullable|array',
-            'media.*.media_type' => 'required_with:media|string',
-            'media.*.media_url' => 'required_with:media|url',
-            'seo' => 'nullable|array',
-            'seo.meta_title' => 'nullable|string|max:255',
-            'seo.meta_description' => 'nullable|string',
-            'seo.keywords' => 'nullable|string',
-            'seo.og_image_url' => 'nullable|string',
-            'seo.canonical_url' => 'nullable|string',
-            'seo.schema_type' => 'nullable|string',
-            'seo.schema_data' => 'nullable|json',
+            'name' => 'sometimes|required|string|max:255',
+            'slug' => 'sometimes|required|string|unique:transfers,slug,',
+            'description' => 'sometimes|nullable|string',
+            'transfer_type' => 'sometimes|required|string',
+            'is_vendor' => 'sometimes|required|boolean',
+    
+            // Vendor related
+            'vendor_id' => 'sometimes|nullable|integer|exists:vendors,id',
+            'route_id' => 'sometimes|nullable|integer|exists:vendor_routes,id',
+    
+            // Non-vendor location fields
+            'pickup_location'  => 'sometimes|nullable|string|max:255',
+            'dropoff_location' => 'sometimes|nullable|string|max:255',
+            'vehicle_type'     => 'sometimes|nullable|string|max:255',
+            'inclusion'        => 'sometimes|nullable|string',
+    
+            // Vendor pricing/availability
+            'pricing_tier_id' => 'sometimes|nullable|integer|exists:vendor_pricing_tiers,id',
+            'availability_id' => 'sometimes|nullable|integer|exists:vendor_availability_time_slots,id',
+    
+            // Non-vendor pricing fields
+            'base_price'           => 'sometimes|nullable|numeric',
+            'currency'             => 'sometimes|nullable|string|max:10',
+            'price_type'           => 'sometimes|nullable|string|max:255',
+            'extra_luggage_charge' => 'sometimes|nullable|numeric',
+            'waiting_charge'       => 'sometimes|nullable|numeric',
+    
+            // Schedule fields
+            'availability_type' => 'sometimes|nullable|in:always_available,specific_date,custom_schedule',
+            'available_days'    => 'sometimes|nullable|array',
+            'available_days.*'  => 'string',
+            'time_slots'        => 'sometimes|nullable|array',
+            'time_slots.*.start'=> 'required_with:time_slots|date_format:H:i',
+            'time_slots.*.end'  => 'required_with:time_slots|date_format:H:i',
+            'blackout_dates'    => 'sometimes|nullable|array',
+            'blackout_dates.*'  => 'date',
+            'minimum_lead_time' => 'sometimes|nullable|integer',
+            'maximum_passengers'=> 'sometimes|nullable|integer',
+    
+            // Media
+            'media_gallery'     => 'sometimes|nullable|array',
+    
+            // SEO
+            'seo' => 'sometimes|array',
+            'seo.meta_title'       => 'sometimes|nullable|string|max:255',
+            'seo.meta_description' => 'sometimes|nullable|string',
+            'seo.keywords'         => 'sometimes|nullable|string',
+            'seo.og_image_url'     => 'sometimes|nullable|string',
+            'seo.canonical_url'    => 'sometimes|nullable|string',
+            'seo.schema_type'      => 'sometimes|nullable|string',
+            'seo.schema_data'      => 'sometimes|nullable|array',
         ]);
     
-        $transfer->fill($request->only(['name', 'description', 'transfer_type']));
+        // === Update Transfer ===
+        $transfer->fill($validatedData);
         $transfer->save();
     
-        if ($request->hasAny(['vendor_id', 'route_id'])) {
-            TransferVendorRoute::updateOrCreate(
-                ['transfer_id' => $transfer->id],
-                [
-                    'vendor_id' => $validatedData['vendor_id'] ?? null,
-                    'route_id' => $validatedData['route_id'] ?? null,
-                ]
-            );
-        }
-    
-        if ($request->hasAny(['pricing_tier_id', 'availability_id'])) {
-            TransferPricingAvailability::updateOrCreate(
-                ['transfer_id' => $transfer->id],
-                [
-                    'pricing_tier_id' => $validatedData['pricing_tier_id'] ?? null,
-                    'availability_id' => $validatedData['availability_id'] ?? null,
-                ]
-            );
-        }
-    
-        if ($request->has('media')) {
-            TransferMedia::where('transfer_id', $transfer->id)->delete();
-            foreach ($validatedData['media'] as $media) {
-                TransferMedia::create([
-                    'transfer_id' => $transfer->id,
-                    'media_type' => $media['media_type'],
-                    'media_url' => $media['media_url'],
+        // === Update TransferVendorRoute ===
+        if (!empty($validatedData['is_vendor']) || $request->hasAny(['vendor_id', 'route_id', 'pickup_location', 'dropoff_location', 'vehicle_type', 'inclusion'])) {
+            $vendorRoute = TransferVendorRoute::where('transfer_id', $transfer->id)->first();
+            if ($vendorRoute) {
+                $vendorRoute->update([
+                    'is_vendor'        => $validatedData['is_vendor'] ?? $vendorRoute->is_vendor,
+                    'vendor_id'        => $validatedData['vendor_id'] ?? $vendorRoute->vendor_id,
+                    'route_id'         => $validatedData['route_id'] ?? $vendorRoute->route_id,
+                    'pickup_location'  => $validatedData['pickup_location'] ?? $vendorRoute->pickup_location,
+                    'dropoff_location' => $validatedData['dropoff_location'] ?? $vendorRoute->dropoff_location,
+                    'vehicle_type'     => $validatedData['vehicle_type'] ?? $vendorRoute->vehicle_type,
+                    'inclusion'        => $validatedData['inclusion'] ?? $vendorRoute->inclusion,
                 ]);
             }
         }
     
-        if ($request->has('seo')) {
-            TransferSeo::updateOrCreate(
-                ['transfer_id' => $transfer->id],
-                $validatedData['seo']
-            );
+        // === Update TransferPricingAvailability ===
+        if ($request->hasAny(['pricing_tier_id', 'availability_id', 'base_price', 'currency', 'price_type', 'extra_luggage_charge', 'waiting_charge'])) {
+            $pricingAvailability = TransferPricingAvailability::where('transfer_id', $transfer->id)->first();
+            if ($pricingAvailability) {
+                $pricingAvailability->update([
+                    'pricing_tier_id'      => $validatedData['pricing_tier_id'] ?? $pricingAvailability->pricing_tier_id,
+                    'availability_id'      => $validatedData['availability_id'] ?? $pricingAvailability->availability_id,
+                    'base_price'           => $validatedData['base_price'] ?? $pricingAvailability->base_price,
+                    'currency'             => $validatedData['currency'] ?? $pricingAvailability->currency,
+                    'price_type'           => $validatedData['price_type'] ?? $pricingAvailability->price_type,
+                    'extra_luggage_charge' => $validatedData['extra_luggage_charge'] ?? $pricingAvailability->extra_luggage_charge,
+                    'waiting_charge'       => $validatedData['waiting_charge'] ?? $pricingAvailability->waiting_charge,
+                ]);
+            }
         }
     
-        return response()->json(['message' => 'Transfer updated successfully', 'transfer' => $transfer->fresh()]);
+        // === Update TransferSchedule ===
+        if ($request->hasAny(['availability_type', 'available_days', 'time_slots', 'blackout_dates', 'minimum_lead_time', 'maximum_passengers'])) {
+            $schedule = TransferSchedule::where('transfer_id', $transfer->id)->first();
+            if ($schedule) {
+                $schedule->update([
+                    'availability_type' => $validatedData['availability_type'] ?? $schedule->availability_type,
+                    'available_days'    => isset($validatedData['available_days']) ? implode(',', $validatedData['available_days']) : $schedule->available_days,
+                    'time_slots'        => isset($validatedData['time_slots']) ? json_encode($validatedData['time_slots']) : $schedule->time_slots,
+                    'blackout_dates'    => isset($validatedData['blackout_dates']) ? json_encode($validatedData['blackout_dates']) : $schedule->blackout_dates,
+                    'minimum_lead_time' => $validatedData['minimum_lead_time'] ?? $schedule->minimum_lead_time,
+                    'maximum_passengers'=> $validatedData['maximum_passengers'] ?? $schedule->maximum_passengers,
+                ]);
+            }
+        }
+    
+        // === Update Media Gallery ===
+        if (isset($validatedData['media_gallery'])) {
+            TransferMediaGallery::where('transfer_id', $transfer->id)->delete();
+            foreach ($validatedData['media_gallery'] as $media) {
+                TransferMediaGallery::create([
+                    'transfer_id' => $transfer->id,
+                    'media_id'    => $media['media_id'],
+                ]);
+            }
+        }
+    
+        // === Update SEO ===
+        if (isset($validatedData['seo'])) {
+            $seo = TransferSeo::where('transfer_id', $transfer->id)->first();
+            if ($seo) {
+                $seo->update([
+                    'meta_title'       => $validatedData['seo']['meta_title'] ?? $seo->meta_title,
+                    'meta_description' => $validatedData['seo']['meta_description'] ?? $seo->meta_description,
+                    'keywords'         => $validatedData['seo']['keywords'] ?? $seo->keywords,
+                    'og_image_url'     => $validatedData['seo']['og_image_url'] ?? $seo->og_image_url,
+                    'canonical_url'    => $validatedData['seo']['canonical_url'] ?? $seo->canonical_url,
+                    'schema_type'      => $validatedData['seo']['schema_type'] ?? $seo->schema_type,
+                    'schema_data'      => isset($validatedData['seo']['schema_data'])
+                                            ? json_encode($validatedData['seo']['schema_data'])
+                                            : $seo->schema_data,
+                ]);
+            }
+        }
+    
+        return response()->json([
+            'message' => 'Transfer updated successfully',
+            'transfer' => $transfer
+        ]);
     }    
-
-    /**
-     * Create / Update the transfers in storage.
-     */
-    // public function save(Request $request, $id = null)
-    // {
-    //     $validatedData = $request->validate([
-    //         'name' => 'required|string|max:255',
-    //         'description' => 'nullable|string',
-    //         'transfer_type' => 'required|string',
-    //         'vendor_id' => 'required|integer',
-    //         'route_id' => 'required|integer',
-    //         'pricing_tier_id' => 'required|integer',
-    //         'availability_id' => 'required|integer',
-    //         'media' => 'array',
-    //         'media.*.media_type' => 'required|string',
-    //         'media.*.media_url' => 'required|url',
-    //         'seo' => 'array',
-    //         'seo.meta_title' => 'nullable|string|max:255',
-    //         'seo.meta_description' => 'nullable|string',
-    //         'seo.keywords' => 'nullable|string',
-    //         'seo.og_image_url' => 'nullable|url',
-    //         'seo.canonical_url' => 'nullable|url',
-    //         'seo.schema_type' => 'nullable|string',
-    //         'seo.schema_data' => 'nullable|json',
-    //     ]);
-
-    //     // Create or update Transfer
-    //     $transfer = Transfer::updateOrCreate(
-    //         ['id' => $id],
-    //         [
-    //             'name' => $validatedData['name'],
-    //             'description' => $validatedData['description'] ?? null,
-    //             'transfer_type' => $validatedData['transfer_type'],
-    //         ]
-    //     );
-
-    //     // Update or Create Vendor & Route
-    //     TransferVendorRoute::updateOrCreate(
-    //         ['transfer_id' => $transfer->id],
-    //         [
-    //             'vendor_id' => $validatedData['vendor_id'],
-    //             'route_id' => $validatedData['route_id'],
-    //         ]
-    //     );
-
-    //     // Update or Create Pricing & Availability
-    //     TransferPricingAvailability::updateOrCreate(
-    //         ['transfer_id' => $transfer->id],
-    //         [
-    //             'pricing_tier_id' => $validatedData['pricing_tier_id'],
-    //             'availability_id' => $validatedData['availability_id'],
-    //         ]
-    //     );
-
-    //     // Update or Create Media
-    //     if (isset($validatedData['media'])) {
-    //         TransferMedia::where('transfer_id', $transfer->id)->delete();
-    //         foreach ($validatedData['media'] as $media) {
-    //             TransferMedia::create([
-    //                 'transfer_id' => $transfer->id,
-    //                 'media_type' => $media['media_type'],
-    //                 'media_url' => $media['media_url'],
-    //             ]);
-    //         }
-    //     }
-
-    //     // Update or Create SEO
-    //     if (isset($validatedData['seo'])) {
-    //         TransferSeo::updateOrCreate(
-    //             ['transfer_id' => $transfer->id],
-    //             $validatedData['seo']
-    //         );
-    //     }
-
-    //     return response()->json(['message' => 'Transfer saved successfully', 'transfer' => $transfer]);
-    // }
 
     /**
      * Remove the specified transfers from storage.
@@ -443,5 +535,20 @@ class TransferController extends Controller
 
         $transfer->delete();
         return response()->json(['message' => 'Transfer deleted successfully']);
+    }
+
+    public function destroyMultiple(Request $request)
+    {
+        $ids = $request->input('ids', []);
+    
+        if (empty($ids)) {
+            return response()->json(['message' => 'No IDs provided'], 400);
+        }
+    
+        $deletedCount = Transfer::whereIn('id', $ids)->delete();
+    
+        return response()->json([
+            'message' => "$deletedCount transfers deleted successfully"
+        ]);
     }
 }

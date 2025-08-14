@@ -15,9 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('country_id')->constrained()->onDelete('cascade'); 
             $table->string('name');
-            $table->string('months');
+            // $table->string('months');
+            // $table->text('activities');
+            $table->json('months')->nullable();
             $table->text('weather');
-            $table->text('activities');
+            $table->json('activities')->nullable();
             $table->timestamps();
         });
     }

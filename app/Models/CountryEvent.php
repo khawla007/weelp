@@ -17,6 +17,11 @@ class CountryEvent extends Model
         'location',
         'description',
     ];
+    protected $casts = [
+        'type'     => 'array',
+        'location' => 'array',
+        'date_time'=> 'datetime',
+    ];
 
     public function country() {
         return $this->belongsTo(Country::class);
