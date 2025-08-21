@@ -23,6 +23,11 @@ class Place extends Model {
         'featured_destination' => 'boolean'
     ];
 
+    public function mediaGallery()
+    {
+        return $this->hasMany(CityMediaGallery::class, 'city_id');
+    }
+    
     public function locationDetails() {
         return $this->hasOne(PlaceLocationDetail::class);
     }

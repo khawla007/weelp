@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Place;
+use App\Models\PlaceMediaGallery;
 use App\Models\PlaceLocationDetail;
 use App\Models\PlaceTravelInfo;
 use App\Models\PlaceSeason;
@@ -40,8 +41,18 @@ class PlaceSeeder extends Seeder
             ]
         ];
 
+        $mediaIds = range(1, 5);
+        
         foreach ($places as $data) {
             $place = Place::create($data);
+
+            $randomMedias = collect($mediaIds)->random(3);
+            foreach ($randomMedias as $mediaId) {
+                PlaceMediaGallery::create([
+                    'place_id'   => $place->id,
+                    'media_id'  => $mediaId,
+                ]);
+            }
 
             // 2️ Insert Place Location Details
             PlaceLocationDetail::create([
@@ -51,15 +62,15 @@ class PlaceSeeder extends Seeder
                 'population' => 100000,
                 'currency' => 'INR',
                 'timezone' => 'GMT+5:30',
-                'language' => 'Hindi, English',
-                'local_cuisine' => 'Rajasthani Thali, Ghewar'
+                'language' => ['Hindi', 'Rajasthani'],
+                'local_cuisine' => ['Dal Baati', 'Churma', 'Ghewar']
             ]);
 
             // 3️ Insert Travel Information
             PlaceTravelInfo::create([
                 'place_id' => $place->id,
                 'airport' => 'Jaipur International Airport',
-                'public_transportation' => 'Buses, Auto Rickshaws, Taxis',
+                'public_transportation' => ['Buses', 'Rickshaws', 'Metro'],
                 'taxi_available' => true,
                 'rental_cars_available' => true,
                 'hotels' => true,
@@ -76,17 +87,17 @@ class PlaceSeeder extends Seeder
             PlaceSeason::create([
                 'place_id' => $place->id,
                 'name' => 'Winter',
-                'months' => 'November - February',
+                'months' => ['November', 'February'],
                 'weather' => 'Cool and perfect for sightseeing',
-                'activities' => 'Photography, Guided Tours, Light & Sound Show'
+                'activities' => ['Heritage Walks', 'Sightseeing', 'Shopping']
             ]);
 
             // 5️ Insert Events
             PlaceEvent::create([
                 'place_id' => $place->id,
                 'name' => 'Light & Sound Show',
-                'type' => 'Cultural Event',
-                'date_time' => '2025-02-15 19:00:00',
+                'type' => ['Cultural', 'Festival'],
+                'date' => '2025-01-21',
                 'location' => 'Amber Fort, Jaipur',
                 'description' => 'A historical show depicting the history of Amber Fort.'
             ]);

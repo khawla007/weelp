@@ -11,7 +11,7 @@ return new class extends Migration {
             $table->foreignId('place_id')->constrained('places')->onDelete('cascade');
             $table->string('name');
             $table->string('type');
-            $table->dateTime('date_time');
+            $table->dateTime('date')->nullable();
             $table->string('location');
             $table->text('description')->nullable();
             $table->timestamps();

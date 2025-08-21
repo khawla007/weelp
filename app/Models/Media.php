@@ -24,6 +24,11 @@ class Media extends Model
     {
         return $this->hasMany(CityMediaGallery::class, 'media_id');
     }
+
+    public function placeMedia()
+    {
+        return $this->hasMany(PlaceMediaGallery::class, 'media_id');
+    }
     
     public function blogs()
     {

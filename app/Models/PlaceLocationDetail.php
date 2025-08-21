@@ -13,6 +13,11 @@ class PlaceLocationDetail extends Model {
         'timezone', 'language', 'local_cuisine'
     ];
 
+    protected $casts = [
+        'language' => 'array',
+        'local_cuisine' => 'array',
+    ];
+
     public function place() {
         return $this->belongsTo(Place::class);
     }

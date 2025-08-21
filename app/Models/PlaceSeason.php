@@ -16,6 +16,11 @@ class PlaceSeason extends Model {
         'activities',
     ];
 
+    protected $casts = [
+        'months' => 'array',     
+        'activities' => 'array', 
+    ];
+
     public function place() {
         return $this->belongsTo(Place::class);
     }

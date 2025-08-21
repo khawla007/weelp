@@ -16,6 +16,10 @@ class PlaceTravelInfo extends Model {
         'travel_tips', 'safety_information'
     ];
 
+    protected $casts = [
+        'public_transportation'     => 'array'
+    ];
+
     public function place() {
         return $this->belongsTo(Place::class);
     }

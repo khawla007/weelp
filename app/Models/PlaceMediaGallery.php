@@ -5,17 +5,25 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PlaceAdditionalInfo extends Model {
+class PlaceMediaGallery extends Model
+{
     use HasFactory;
 
-    // protected $table = 'place_additional_info';
+    protected $table = 'place_media_gallery';
+
     protected $fillable = [
         'place_id',
-        'title',
-        'content',
+        'media_id',
     ];
 
-    public function place() {
+    // Relations
+    public function place()
+    {
         return $this->belongsTo(Place::class);
+    }
+
+    public function media()
+    {
+        return $this->belongsTo(Media::class, 'media_id');
     }
 }

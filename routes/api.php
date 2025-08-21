@@ -153,12 +153,11 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
 
     Route::prefix('/places')->group(function () {
         Route::get('/', [PlaceController::class, 'index']);
-        Route::get('/place-dropdown', [PlaceController::class, 'getPlaceDropdown']);
-
-        Route::post('/', [PlaceController::class, 'store']);
-
+        Route::get('/list', [PlaceController::class, 'placeList']);
         Route::get('/{id}', [PlaceController::class, 'show']);
+        Route::post('/', [PlaceController::class, 'store']);
         Route::put('/{id}', [PlaceController::class, 'update']);
+        Route::post('/{id}/partial-remove', [PlaceController::class, 'partialRemove']);
         Route::delete('/{id}', [PlaceController::class, 'destroy']);
     });
 
