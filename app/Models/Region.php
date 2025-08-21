@@ -10,7 +10,7 @@ class Region extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'slug', 'description', 'image_url'];
+    protected $fillable = ['name', 'slug', 'type', 'description', 'image_url'];
 
     public function setNameAttribute($value)
     {

@@ -45,6 +45,7 @@ class CityController extends Controller
                 'name' => $city->name,
                 'code' => $city->code,
                 'slug' => $city->slug,
+                'type' => $city->type,
                 'description' => $city->description,
                 'feature_image' => $city->feature_image,
                 'featured_destination' => $city->featured_destination,
@@ -78,7 +79,7 @@ class CityController extends Controller
     public function cityList()
     {
         try {
-            $cities = City::select('id', 'name')->orderBy('name')->get();
+            $cities = City::select('id', 'name', 'type')->orderBy('name')->get();
 
             if ($cities->isEmpty()) {
                 return response()->json([
@@ -113,6 +114,7 @@ class CityController extends Controller
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:10',
             'slug' => 'required|string|max:255',
+            'type' => 'required|string|max:255',
             'state_id' => 'required|integer|exists:states,id',
             'description' => 'nullable|string',
             'feature_image' => 'nullable|url',
@@ -194,6 +196,7 @@ class CityController extends Controller
             'name' => $validated['name'],
             'code' => $validated['code'],
             'slug' => $validated['slug'],
+            'type' => $validated['type'],
             'state_id' => $validated['state_id'],
             'description' => $validated['description'] ?? null,
             'feature_image' => $validated['feature_image'] ?? null,
@@ -320,6 +323,7 @@ class CityController extends Controller
             'name' => 'nullable|string|max:255',
             'code' => 'nullable|string|max:10',
             'slug' => 'nullable|string|max:255',
+            'type' => 'nullable|string|max:255',
             'state_id' => 'nullable|integer|exists:states,id',
             'description' => 'nullable|string',
             'feature_image' => 'nullable|url',
@@ -396,6 +400,7 @@ class CityController extends Controller
             'name' => $validated['name'] ?? $city->name,
             'code' => $validated['code'] ?? $city->code,
             'slug' => $validated['slug'] ?? $city->slug,
+            'type' => $validated['type'] ?? $city->slug,
             'state_id' => $validated['state_id'] ?? $city->state_id,
             'description' => $validated['description'] ?? $city->description,
             'feature_image' => $validated['feature_image'] ?? $city->feature_image,

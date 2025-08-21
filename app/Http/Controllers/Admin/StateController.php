@@ -45,6 +45,7 @@ class StateController extends Controller
                 'name' => $state->name,
                 'code' => $state->code,
                 'slug' => $state->slug,
+                'type' => $state->type,
                 'description' => $state->description,
                 'feature_image' => $state->feature_image,
                 'featured_destination' => $state->featured_destination,
@@ -78,7 +79,7 @@ class StateController extends Controller
     public function stateList()
     {
         try {
-            $states = State::select('id', 'name')->orderBy('name')->get();
+            $states = State::select('id', 'name', 'type')->orderBy('name')->get();
 
             if ($states->isEmpty()) {
                 return response()->json([
@@ -113,6 +114,7 @@ class StateController extends Controller
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:10',
             'slug' => 'required|string|max:255',
+            'type' => 'required|string|max:255',
             'country_id' => 'required|integer|exists:countries,id',
             'description' => 'nullable|string',
             'feature_image' => 'nullable|url',
@@ -194,6 +196,7 @@ class StateController extends Controller
             'name' => $validated['name'],
             'code' => $validated['code'],
             'slug' => $validated['slug'],
+            'type' => $validated['type'],
             'country_id' => $validated['country_id'],
             'description' => $validated['description'] ?? null,
             'feature_image' => $validated['feature_image'] ?? null,
@@ -320,6 +323,7 @@ class StateController extends Controller
             'name' => 'nullable|string|max:255',
             'code' => 'nullable|string|max:10',
             'slug' => 'nullable|string|max:255',
+            'type' => 'nullable|string|max:255',
             'country_id' => 'nullable|integer|exists:countries,id',
             'description' => 'nullable|string',
             'feature_image' => 'nullable|url',
@@ -396,6 +400,7 @@ class StateController extends Controller
             'name' => $validated['name'] ?? $state->name,
             'code' => $validated['code'] ?? $state->code,
             'slug' => $validated['slug'] ?? $state->slug,
+            'type' => $validated['type'] ?? $state->type,
             'country_id' => $validated['country_id'] ?? $state->country_id,
             'description' => $validated['description'] ?? $state->description,
             'feature_image' => $validated['feature_image'] ?? $state->feature_image,

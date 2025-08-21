@@ -10,7 +10,7 @@ class City extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'code', 'slug', 'state_id', 'description', 
+        'name', 'code', 'slug', 'type', 'state_id', 'description', 
         'feature_image', 'featured_city'
     ];
     protected $casts = [

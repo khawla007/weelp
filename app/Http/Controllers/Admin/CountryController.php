@@ -45,6 +45,7 @@ class CountryController extends Controller
                 'name' => $country->name,
                 'code' => $country->code,
                 'slug' => $country->slug,
+                'type' => $country->type,
                 'description' => $country->description,
                 'feature_image' => $country->feature_image,
                 'featured_destination' => $country->featured_destination,
@@ -78,7 +79,7 @@ class CountryController extends Controller
     public function countryList()
     {
         try {
-            $countries = Country::select('id', 'name')->orderBy('name')->get();
+            $countries = Country::select('id', 'name', 'type')->orderBy('name')->get();
 
             if ($countries->isEmpty()) {
                 return response()->json([
@@ -113,6 +114,7 @@ class CountryController extends Controller
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:10',
             'slug' => 'required|string|max:255',
+            'type' => 'required|string|max:255',
             'description' => 'nullable|string',
             'feature_image' => 'nullable|url',
             'featured_destination' => 'boolean',
@@ -193,6 +195,7 @@ class CountryController extends Controller
             'name' => $validated['name'],
             'code' => $validated['code'],
             'slug' => $validated['slug'],
+            'type' => $validated['type'],
             'description' => $validated['description'] ?? null,
             'feature_image' => $validated['feature_image'] ?? null,
             'featured_destination' => $validated['featured_destination'] ?? false,
@@ -318,6 +321,7 @@ class CountryController extends Controller
             'name' => 'nullable|string|max:255',
             'code' => 'nullable|string|max:10',
             'slug' => 'nullable|string|max:255',
+            'type' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'feature_image' => 'nullable|url',
             'featured_destination' => 'boolean',
@@ -393,6 +397,7 @@ class CountryController extends Controller
             'name' => $validated['name'] ?? $country->name,
             'code' => $validated['code'] ?? $country->code,
             'slug' => $validated['slug'] ?? $country->slug,
+            'type' => $validated['type'] ?? $country->type,
             'description' => $validated['description'] ?? $country->description,
             'feature_image' => $validated['feature_image'] ?? $country->feature_image,
             'featured_destination' => $validated['featured_destination'] ?? $country->featured_destination,

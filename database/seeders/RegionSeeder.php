@@ -14,6 +14,7 @@ class RegionSeeder extends Seeder
             [
                 'name' => 'Europe',
                 'slug' => 'europe',
+                'type' => 'region',
                 'description' => 'European region',
                 'image_url' => 'https://example.com/europe.jpg',
                 'countries' => ['France', 'Germany', 'Spain']
@@ -21,6 +22,7 @@ class RegionSeeder extends Seeder
             [
                 'name' => 'Asia',
                 'slug' => 'asia',
+                'type' => 'region',
                 'description' => 'Asian region',
                 'image_url' => 'https://example.com/asia.jpg',
                 'countries' => ['India', 'China', 'Japan']
@@ -30,6 +32,8 @@ class RegionSeeder extends Seeder
         foreach ($regions as $regionData) {
             $region = Region::create([
                 'name' => $regionData['name'],
+                'slug' => $regionData['slug'],
+                'type' => $regionData['type'],
                 'description' => $regionData['description'],
                 'image_url' => $regionData['image_url']
             ]);

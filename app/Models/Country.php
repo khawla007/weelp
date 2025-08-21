@@ -13,6 +13,7 @@ class Country extends Model
         'name',
         'code',
         'slug',
+        'type', 
         'description',
         'feature_image',
         'featured_destination'

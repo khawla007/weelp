@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name'); // State Name
             $table->string('code')->nullable();
             $table->string('slug')->unique(); // Unique Slug
+            $table->string('type')->nullable();
             $table->unsignedBigInteger('country_id'); // Foreign Key
             $table->text('description')->nullable(); // Optional Description
             $table->string('feature_image')->nullable(); // Image URL

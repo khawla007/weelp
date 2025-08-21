@@ -12,6 +12,7 @@ class Place extends Model {
         'name',
         'place_code',
         'slug',
+        'type', 
         'city_id',
         'description',
         'feature_image',
