@@ -22,7 +22,7 @@ class PlaceSeeder extends Seeder
             [
                 'city_id' => 1, // Jaipur
                 'name' => 'Amber Fort',
-                'place_code' => 'AF',
+                'code' => 'AF',
                 'slug' => 'amber-fort',
                 'type' => 'place',
                 'description' => 'A magnificent fort known for its artistic Hindu style elements.',
@@ -32,7 +32,7 @@ class PlaceSeeder extends Seeder
             [
                 'city_id' => 1,
                 'name' => 'Hawa Mahal',
-                'place_code' => 'HM',
+                'code' => 'HM',
                 'slug' => 'hawa-mahal',
                 'type' => 'place',
                 'description' => 'A palace made of red and pink sandstone, also called the Palace of Winds.',

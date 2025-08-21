@@ -9,16 +9,16 @@ return new class extends Migration {
         Schema::create('places', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('place_code');
+            $table->string('code');
             $table->string('slug')->unique();
-            $table->string('type')->nullable();
-
-            $table->foreignId('city_id')->constrained('cities')->onDelete('cascade');
-            
+            $table->string('type')->default('place');
+            $table->bigInteger('city_id')->unsigned();
             $table->text('description')->nullable();
             $table->string('feature_image')->nullable();
             $table->boolean('featured_destination')->default(false);
             $table->timestamps();
+
+            $table->foreign('city_id')->references('id')->on('cities')->onDelete('cascade');
         });
     }
 

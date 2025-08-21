@@ -114,7 +114,7 @@ class PlaceController extends Controller
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:10',
             'slug' => 'required|string|max:255',
-            'type' => 'required|string|max:255',
+            // 'type' => 'required|string|max:255',
             'city_id' => 'required|integer|exists:cities,id',
             'description' => 'nullable|string',
             'feature_image' => 'nullable|url',
@@ -193,13 +193,13 @@ class PlaceController extends Controller
         }
         // Create Place
         $place = Place::create([
-            'name' => $validated['name'],
-            'code' => $validated['code'],
-            'slug' => $validated['slug'],
-            'type' => $validated['type'],
-            'city_id' => $validated['city_id'],
-            'description' => $validated['description'] ?? null,
-            'feature_image' => $validated['feature_image'] ?? null,
+            'name'                 => $validated['name'],
+            'code'                 => $validated['code'],
+            'slug'                 => $validated['slug'],
+            // 'type'                 => $validated['type'],
+            'city_id'              => $validated['city_id'],
+            'description'          => $validated['description'] ?? null,
+            'feature_image'        => $validated['feature_image'] ?? null,
             'featured_destination' => $validated['featured_destination'] ?? false,
         ]);
 
@@ -208,7 +208,7 @@ class PlaceController extends Controller
             foreach ($validated['media_gallery'] as $media) {
                 PlaceMediaGallery::create([
                     'place_id' => $place->id,
-                    'media_id'    => $media['media_id'],
+                    'media_id' => $media['media_id'],
                 ]);
             }
         }
@@ -252,10 +252,10 @@ class PlaceController extends Controller
             $questionNumber = 1;
             foreach ($validated['faqs'] as $faq) {
                 PlaceFaq::create([
-                    'place_id' => $place->id,
+                    'place_id'        => $place->id,
                     'question_number' => $questionNumber++,
-                    'question' => $faq['question'],
-                    'answer' => $faq['answer'],
+                    'question'        => $faq['question'],
+                    'answer'          => $faq['answer'],
                 ]);
             }
         }
@@ -323,7 +323,7 @@ class PlaceController extends Controller
             'name' => 'nullable|string|max:255',
             'code' => 'nullable|string|max:10',
             'slug' => 'nullable|string|max:255',
-            'type' => 'nullable|string|max:255',
+            // 'type' => 'nullable|string|max:255',
             'city_id' => 'nullable|integer|exists:cities,id',
             'description' => 'nullable|string',
             'feature_image' => 'nullable|url',
@@ -400,7 +400,7 @@ class PlaceController extends Controller
             'name' => $validated['name'] ?? $place->name,
             'code' => $validated['code'] ?? $place->code,
             'slug' => $validated['slug'] ?? $place->slug,
-            'type' => $validated['type'] ?? $place->slug,
+            // 'type' => $validated['type'] ?? $place->slug,
             'city_id' => $validated['city_id'] ?? $place->city_id,
             'description' => $validated['description'] ?? $place->description,
             'feature_image' => $validated['feature_image'] ?? $place->feature_image,

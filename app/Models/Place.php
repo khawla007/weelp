@@ -10,7 +10,7 @@ class Place extends Model {
 
     protected $fillable = [
         'name',
-        'place_code',
+        'code',
         'slug',
         'type', 
         'city_id',
@@ -25,7 +25,7 @@ class Place extends Model {
 
     public function mediaGallery()
     {
-        return $this->hasMany(CityMediaGallery::class, 'city_id');
+        return $this->hasMany(PlaceMediaGallery::class, 'place_id');
     }
     
     public function locationDetails() {
