@@ -375,7 +375,7 @@ class CityController extends Controller
     
             // Additional Info
             'additional_info' => 'nullable|array',
-            'additional_info.*.id' => 'nullable|integer|exists:City_additional_infos,id',
+            'additional_info.*.id' => 'nullable|integer|exists:city_additional_infos,id',
             'additional_info.*.title' => 'required|string',
             'additional_info.*.content' => 'required|string',
     
