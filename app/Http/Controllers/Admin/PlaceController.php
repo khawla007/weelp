@@ -358,7 +358,7 @@ class PlaceController extends Controller
     
             // Season (array of objects)
             'seasons' => 'nullable|array',
-            'seasons.*.id' => 'nullable|integer|exists:Place_seasons,id',
+            'seasons.*.id' => 'nullable|integer|exists:place_seasons,id',
             'seasons.*.name' => 'nullable|string',
             'seasons.*.months' => 'nullable|array',
             'seasons.*.weather' => 'nullable|string',
@@ -366,7 +366,7 @@ class PlaceController extends Controller
     
             // Event (array of objects)
             'events' => 'nullable|array',
-            'events.*.id' => 'nullable|integer|exists:Place_events,id',
+            'events.*.id' => 'nullable|integer|exists:place_events,id',
             'events.*.name' => 'nullable|string',
             'events.*.type' => 'nullable|array',
             'events.*.date' => 'nullable|date',
@@ -381,7 +381,7 @@ class PlaceController extends Controller
     
             // FAQs
             'faqs' => 'nullable|array',
-            'faqs.*.id' => 'nullable|integer|exists:Place_faqs,id',
+            'faqs.*.id' => 'nullable|integer|exists:place_faqs,id',
             'faqs.*.question' => 'required|string',
             'faqs.*.answer' => 'required|string',
     

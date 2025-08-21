@@ -358,7 +358,7 @@ class CityController extends Controller
     
             // Season (array of objects)
             'seasons' => 'nullable|array',
-            'seasons.*.id' => 'nullable|integer|exists:City_seasons,id',
+            'seasons.*.id' => 'nullable|integer|exists:city_seasons,id',
             'seasons.*.name' => 'nullable|string',
             'seasons.*.months' => 'nullable|array',
             'seasons.*.weather' => 'nullable|string',
@@ -366,7 +366,7 @@ class CityController extends Controller
     
             // Event (array of objects)
             'events' => 'nullable|array',
-            'events.*.id' => 'nullable|integer|exists:City_events,id',
+            'events.*.id' => 'nullable|integer|exists:city_events,id',
             'events.*.name' => 'nullable|string',
             'events.*.type' => 'nullable|array',
             'events.*.date' => 'nullable|date',
@@ -381,7 +381,7 @@ class CityController extends Controller
     
             // FAQs
             'faqs' => 'nullable|array',
-            'faqs.*.id' => 'nullable|integer|exists:City_faqs,id',
+            'faqs.*.id' => 'nullable|integer|exists:city_faqs,id',
             'faqs.*.question' => 'required|string',
             'faqs.*.answer' => 'required|string',
     
