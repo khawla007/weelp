@@ -11,9 +11,9 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('state_id')->constrained('states')->onDelete('cascade'); // Foreign key reference
             $table->string('name'); // Name of the season (e.g., Winter, Summer)
-            $table->string('months'); // Months covered (e.g., "December - February")
+            $table->json('months'); // Months covered (e.g., "December - February")
             $table->text('weather')->nullable(); // Description of weather conditions
-            $table->text('activities')->nullable(); // Multiple activities separated by commas
+            $table->json('activities')->nullable(); // Multiple activities separated by commas
             $table->timestamps();
         });
     }

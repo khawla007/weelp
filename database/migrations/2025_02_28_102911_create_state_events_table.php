@@ -11,8 +11,8 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('state_id')->constrained()->onDelete('cascade');
             $table->string('name');
-            $table->string('type'); // Festival, Conference, etc.
-            $table->dateTime('date_time');
+            $table->json('type')->nullable();
+            $table->date('date')->nullable();
             $table->string('location');
             $table->text('description')->nullable();
             $table->timestamps();

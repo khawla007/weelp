@@ -26,6 +26,10 @@ class CountryTravelInfo extends Model
         'safety_information'
     ];
 
+    protected $casts = [
+        'public_transportation'     => 'array'
+    ];
+
     public function country()
     {
         return $this->belongsTo(Country::class);

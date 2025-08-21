@@ -17,6 +17,10 @@ class CityTravelInfo extends Model
         'travel_tips', 'safety_information'
     ];
 
+    protected $casts = [
+        'public_transportation'     => 'array'
+    ];
+
     public function city()
     {
         return $this->belongsTo(City::class);

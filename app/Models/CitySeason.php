@@ -13,6 +13,11 @@ class CitySeason extends Model
         'city_id', 'name', 'months', 'weather', 'activities'
     ];
 
+    protected $casts = [
+        'months' => 'array',     
+        'activities' => 'array', 
+    ];
+
     public function city()
     {
         return $this->belongsTo(City::class);

@@ -18,11 +18,12 @@ class CountrySeason extends Model
     ];
 
     protected $casts = [
-        'months' => 'array',     // ✅ DB से आते ही array बन जाएगा
-        'activities' => 'array', // ✅ DB से आते ही array बन जाएगा
+        'months' => 'array',     
+        'activities' => 'array', 
     ];
-
-    public function country() {
-        return $this->belongsTo(Country::class);
+    
+    public function country()
+    {
+        return $this->belongsTo(Country::class, 'country_id', 'id');
     }
 }

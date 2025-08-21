@@ -9,7 +9,7 @@ class StateAdditionalInfo extends Model
 {
     use HasFactory;
 
-    protected $table = 'state_additional_info';
+    // protected $table = 'state_additional_info';
     protected $fillable = [
         'state_id',
         'title',

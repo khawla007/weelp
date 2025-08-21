@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('cities', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');
-            $table->string('city_code');
+            $table->string('code')->nullable();
             $table->string('slug')->unique();
             $table->bigInteger('state_id')->unsigned();
             $table->text('description')->nullable();

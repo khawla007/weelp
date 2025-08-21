@@ -13,10 +13,17 @@ class StateEvent extends Model
         'state_id',
         'name',
         'type',
-        'date_time',
+        'date',
         'location',
         'description',
     ];
+
+    protected $casts = [
+        'type'     => 'array',
+        // 'location' => 'array',
+        'date'=> 'date:Y-m-d', 
+    ];
+
 
     public function state()
     {

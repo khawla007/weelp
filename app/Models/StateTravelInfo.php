@@ -26,6 +26,10 @@ class StateTravelInfo extends Model
         'safety_information',
     ];
 
+    protected $casts = [
+        'public_transportation'     => 'array'
+    ];
+
     public function state()
     {
         return $this->belongsTo(State::class);

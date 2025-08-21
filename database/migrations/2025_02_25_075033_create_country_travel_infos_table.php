@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('country_id')->constrained('countries')->onDelete('cascade');
             $table->string('airport')->nullable();
-            $table->text('public_transportation')->nullable();
+            $table->json('public_transportation')->nullable();
             $table->boolean('taxi_available')->default(false);
             $table->boolean('rental_cars_available')->default(false);
             $table->boolean('hotels')->default(false);

@@ -11,13 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('country_seasons', function (Blueprint $table) {
+        
+        Schema::create('country_media_gallery', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('country_id')->constrained()->onDelete('cascade'); 
-            $table->string('name');
-            $table->json('months')->nullable();
-            $table->text('weather');
-            $table->json('activities')->nullable();
+            $table->foreignId('country_id')->constrained('countries')->onDelete('cascade');
+            $table->foreignId('media_id')->constrained('media')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('country_seasons');
+        Schema::dropIfExists('country_media_gallery');
     }
 };

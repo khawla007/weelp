@@ -16,8 +16,8 @@ return new class extends Migration
             $table->foreignId('country_id')->constrained()->onDelete('cascade');
             $table->string('name');
             $table->json('type')->nullable();
-            $table->dateTime('date_time');
-            $table->json('location')->nullable();
+            $table->date('date')->nullable();
+            $table->string('location');
             $table->text('description');
             $table->timestamps();
         });

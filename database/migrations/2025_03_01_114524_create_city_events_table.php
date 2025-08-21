@@ -15,8 +15,8 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('city_id')->unsigned();
             $table->string('name'); // Event name
-            $table->string('type'); // Type of event (Festival, Conference, etc.)
-            $table->dateTime('date_time'); // Date and time of the event
+            $table->json('type'); // Type of event (Festival, Conference, etc.)
+            $table->date('date'); // Date and time of the event
             $table->string('location')->nullable(); // Event location
             $table->text('description')->nullable(); // Event description
             $table->timestamps();

@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\CountryController;
 use App\Http\Controllers\Admin\CountryImportController;
 
+use App\Http\Controllers\Admin\StateController;
 use App\Http\Controllers\Admin\StateImportController;
 
 use App\Http\Controllers\Admin\CityImportController;
@@ -122,15 +123,31 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
 
     Route::prefix('/countries')->group(function () {
         Route::get('/', [CountryController::class, 'index']);
+        Route::get('/list', [CountryController::class, 'countryList']);
         Route::get('/{id}', [CountryController::class, 'show']);
         Route::post('/', [CountryController::class, 'store']);
+        Route::put('/{id}', [CountryController::class, 'update']);
+        Route::post('/{id}/partial-remove', [CountryController::class, 'partialRemove']);
         Route::delete('/{id}', [CountryController::class, 'destroy']);
+    });
+
+    Route::prefix('/states')->group(function () {
+        Route::get('/', [StateController::class, 'index']);
+        Route::get('/list', [StateController::class, 'stateList']);
+        Route::get('/{id}', [StateController::class, 'show']);
+        Route::post('/', [StateController::class, 'store']);
+        Route::put('/{id}', [StateController::class, 'update']);
+        Route::post('/{id}/partial-remove', [StateController::class, 'partialRemove']);
+        Route::delete('/{id}', [StateController::class, 'destroy']);
     });
     
     Route::prefix('/cities')->group(function () {
         Route::get('/', [CityController::class, 'index']);
+        Route::get('/list', [CityController::class, 'cityList']);
         Route::get('/{id}', [CityController::class, 'show']);
-        Route::post('/{id?}', [CityController::class, 'store']);
+        Route::post('/', [CityController::class, 'store']);
+        Route::put('/{id}', [CityController::class, 'update']);
+        Route::post('/{id}/partial-remove', [CityController::class, 'partialRemove']);
         Route::delete('/{id}', [CityController::class, 'destroy']);
     });
 

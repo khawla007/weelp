@@ -5,17 +5,25 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class CityAdditionalInfo extends Model
+class CityMediaGallery extends Model
 {
     use HasFactory;
 
-    // protected $table = 'city_additional_info';
+    protected $table = 'city_media_gallery';
+
     protected $fillable = [
-        'city_id', 'title', 'content'
+        'city_id',
+        'media_id',
     ];
 
+    // Relations
     public function city()
     {
         return $this->belongsTo(City::class);
+    }
+
+    public function media()
+    {
+        return $this->belongsTo(Media::class, 'media_id');
     }
 }

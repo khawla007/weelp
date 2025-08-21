@@ -17,6 +17,11 @@ class StateSeason extends Model
         'activities',
     ];
 
+    protected $casts = [
+        'months' => 'array',     
+        'activities' => 'array', 
+    ];
+    
     public function state()
     {
         return $this->belongsTo(State::class);

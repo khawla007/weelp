@@ -11,7 +11,7 @@ class Country extends Model
 
     protected $fillable = [
         'name',
-        'country_code',
+        'code',
         'slug',
         'description',
         'feature_image',
@@ -35,7 +35,7 @@ class Country extends Model
 
     public function mediaGallery()
     {
-        return $this->hasMany(CountryMediaGallery::class);
+        return $this->hasMany(CountryMediaGallery::class, 'country_id');
     }
     
     public function locationDetails() {
@@ -46,12 +46,13 @@ class Country extends Model
         return $this->hasOne(CountryTravelInfo::class);
     }
 
-    public function seasons() {
-        return $this->hasMany(CountrySeason::class);
+    public function seasons()
+    {
+        return $this->hasMany(CountrySeason::class, 'country_id', 'id');
     }
     
     public function events() {
-        return $this->hasMany(CountryEvent::class);
+        return $this->hasMany(CountryEvent::class, 'country_id', 'id');
     }
 
     public function additionalInfo() {

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('city_additional_info', function (Blueprint $table) {
+        Schema::create('city_additional_infos', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('city_id')->unsigned();
             $table->string('title'); // Title of the information
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('city_additional_info');
+        Schema::dropIfExists('city_additional_infos');
     }
 };

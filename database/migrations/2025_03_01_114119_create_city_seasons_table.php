@@ -15,9 +15,9 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('city_id')->unsigned();
             $table->string('name'); // Season name (Winter, Summer, etc.)
-            $table->string('months'); // e.g., "December - February"
+            $table->json('months')->nullable(); // e.g., "December - February"
             $table->text('weather')->nullable(); // Description of weather conditions
-            $table->text('activities')->nullable(); // Activities available during the season
+            $table->json('activities')->nullable(); // Activities available during the season
             $table->timestamps();
 
             // Foreign Key Constraint

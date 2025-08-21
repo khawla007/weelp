@@ -10,7 +10,7 @@ class City extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'city_code', 'slug', 'state_id', 'description', 
+        'name', 'code', 'slug', 'state_id', 'description', 
         'feature_image', 'featured_city'
     ];
     protected $casts = [
@@ -41,6 +41,11 @@ class City extends Model
             'state_id', // Local key on cities table
             'region_id' // Local key on region_country table
         );
+    }
+
+    public function mediaGallery()
+    {
+        return $this->hasMany(CityMediaGallery::class, 'city_id');
     }
 
     public function locationDetails()

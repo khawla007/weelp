@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up()
     {
-        Schema::create('state_additional_info', function (Blueprint $table) {
+        Schema::create('state_additional_infos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('state_id')->constrained()->onDelete('cascade');
             $table->string('title');
@@ -18,7 +18,7 @@ return new class extends Migration {
 
     public function down()
     {
-        Schema::dropIfExists('state_additional_info');
+        Schema::dropIfExists('state_additional_infos');
     }
 };
 

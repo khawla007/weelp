@@ -10,7 +10,13 @@ class CityEvent extends Model
     use HasFactory;
 
     protected $fillable = [
-        'city_id', 'name', 'type', 'date_time', 'location', 'description'
+        'city_id', 'name', 'type', 'date', 'location', 'description'
+    ];
+
+    protected $casts = [
+        'type'     => 'array',
+        // 'location' => 'array',
+        'date'=> 'date:Y-m-d', 
     ];
 
     public function city()

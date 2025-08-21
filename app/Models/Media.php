@@ -10,9 +10,19 @@ class Media extends Model
 
     protected $fillable = ['name', 'alt_text', 'url'];
 
-    public function countrieyMedia()
+    public function countryMedia()
     {
         return $this->hasMany(CountryMediaGallery::class, 'media_id');
+    }
+
+    public function stateMedia()
+    {
+        return $this->hasMany(StateMediaGallery::class, 'media_id');
+    }
+
+    public function cityMedia()
+    {
+        return $this->hasMany(CityMediaGallery::class, 'media_id');
     }
     
     public function blogs()

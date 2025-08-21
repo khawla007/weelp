@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use App\Models\State;
+use App\Models\StateMediaGallery;
 use App\Models\StateLocationDetail;
 use App\Models\StateTravelInfo;
 use App\Models\StateSeason;
@@ -17,12 +18,12 @@ class StateSeeder extends Seeder
 {
     public function run()
     {
-        // 1️⃣ Insert States
+        // Insert States
         $states = [
             [
                 'country_id' => 1, // India
                 'name' => 'Rajasthan',
-                'state_code' => 'RJ',
+                'code' => 'RJ',
                 'slug' => 'rajasthan',
                 'description' => 'The land of kings and palaces.',
                 'feature_image' => 'https://example.com/rajasthan.jpg',
@@ -31,7 +32,7 @@ class StateSeeder extends Seeder
             [
                 'country_id' => 1,
                 'name' => 'Goa',
-                'state_code' => 'GA',
+                'code' => 'GA',
                 'slug' => 'goa',
                 'description' => 'The party capital of India.',
                 'feature_image' => 'https://example.com/goa.jpg',
@@ -39,10 +40,21 @@ class StateSeeder extends Seeder
             ]
         ];
 
+        $mediaIds = range(1, 5);
+
         foreach ($states as $data) {
             $state = State::create($data);
 
-            // 2️⃣ Insert State Details
+            // Country_Media (Array of Objects )
+            $randomMedias = collect($mediaIds)->random(3); // ek state ko 3 random media milega
+            foreach ($randomMedias as $mediaId) {
+                StateMediaGallery::create([
+                    'state_id' => $state->id,
+                    'media_id'   => $mediaId,
+                ]);
+            }
+
+            // Insert State Details
             StateLocationDetail::create([
                 'state_id' => $state->id,
                 'latitude' => '26.9124',
@@ -51,15 +63,15 @@ class StateSeeder extends Seeder
                 'population' => 80000000,
                 'currency' => 'INR',
                 'timezone' => 'GMT+5:30',
-                'language' => 'Hindi, Rajasthani',
-                'local_cuisine' => 'Dal Baati Churma, Gatte ki Sabzi'
+                'language' => ['Hindi', 'Rajasthani'],
+                'local_cuisine' => ['Dal Baati Churma', 'Gatte ki Sabzi']
             ]);
 
-            // 3️⃣ Insert Travel Information
+            // Insert Travel Information
             StateTravelInfo::create([
                 'state_id' => $state->id,
                 'airport' => 'Jaipur International Airport',
-                'public_transportation' => 'Buses, Rickshaws, Trains',
+                'public_transportation' => ['Buses', 'Rickshaws', 'Trains'],
                 'taxi_available' => true,
                 'rental_cars_available' => true,
                 'hotels' => true,
@@ -72,26 +84,26 @@ class StateSeeder extends Seeder
                 'safety_information' => 'Safe but be cautious of local scams'
             ]);
 
-            // 4️⃣ Insert Seasons
+            // Insert Seasons
             StateSeason::create([
                 'state_id' => $state->id,
                 'name' => 'Winter',
-                'months' => 'November - February',
+                'months' => ['November', 'February'],
                 'weather' => 'Pleasant during the day, cold at night',
-                'activities' => 'Camel Safari, Sightseeing'
+                'activities' => ['Camel Safari', 'Sightseeing']
             ]);
 
-            // 5️⃣ Insert Events
+            // Insert Events
             StateEvent::create([
                 'state_id' => $state->id,
                 'name' => 'Pushkar Fair',
-                'type' => 'Cultural Festival',
-                'date_time' => '2025-11-14 10:00:00',
+                'type' => ['Cultural', 'Festival'],
+                'date' => '2025-11-14',
                 'location' => 'Pushkar, Rajasthan',
                 'description' => 'A vibrant fair with camels, cultural performances, and shopping'
             ]);
 
-            // 6️⃣ Insert Additional Information
+            // Insert Additional Information
             StateAdditionalInfo::create([
                 'state_id' => $state->id,
                 'title' => 'Must-Visit Places',
@@ -136,13 +148,6 @@ class StateSeeder extends Seeder
                 'og_image_url' => 'https://example.com/og-rajasthan.jpg',
                 'canonical_url' => 'https://example.com/rajasthan',
                 'schema_type' => 'TravelDestination',
-                // 'schema_data' => json_encode([
-                //     "@context" => "https://schema.org",
-                //     "@type" => "TravelDestination",
-                //     "name" => "Rajasthan",
-                //     "description" => "The land of kings and royal heritage.",
-                //     "image" => "https://example.com/rajasthan.jpg"
-                // ], JSON_UNESCAPED_UNICODE)
                 'schema_data' => [
                     "@context" => "https://schema.org",
                     "@type" => "TravelDestination",

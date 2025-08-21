@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('states', function (Blueprint $table) {
             $table->bigIncrements('id'); // Primary Key
             $table->string('name'); // State Name
-            $table->string('state_code')->nullable();
+            $table->string('code')->nullable();
             $table->string('slug')->unique(); // Unique Slug
             $table->unsignedBigInteger('country_id'); // Foreign Key
             $table->text('description')->nullable(); // Optional Description

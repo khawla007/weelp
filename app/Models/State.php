@@ -10,7 +10,7 @@ class State extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'state_code', 'slug', 'country_id', 'description', 'feature_image', 'featured_destination'
+        'name', 'code', 'slug', 'country_id', 'description', 'feature_image', 'featured_destination'
     ];
 
     protected $casts = [
@@ -21,7 +21,12 @@ class State extends Model
         return $this->belongsTo(Country::class);
     }
 
-    public function locationDetail()
+    public function mediaGallery()
+    {
+        return $this->hasMany(StateMediaGallery::class, 'state_id');
+    }
+    
+    public function locationDetails()
     {
         return $this->hasOne(StateLocationDetail::class);
     }

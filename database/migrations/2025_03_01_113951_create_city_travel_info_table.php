@@ -15,7 +15,7 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('city_id')->unsigned();
             $table->text('airport')->nullable();
-            $table->text('public_transportation')->nullable();
+            $table->json('public_transportation')->nullable();
             $table->boolean('taxi_available')->default(false);
             $table->boolean('rental_cars_available')->default(false);
             $table->boolean('hotels')->default(false);

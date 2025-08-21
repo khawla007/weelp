@@ -13,14 +13,14 @@ class CountryEvent extends Model
         'country_id',
         'name',
         'type',
-        'date_time',
+        'date',
         'location',
         'description',
     ];
     protected $casts = [
         'type'     => 'array',
-        'location' => 'array',
-        'date_time'=> 'datetime',
+        // 'location' => 'array',
+        'date'=> 'date:Y-m-d', 
     ];
 
     public function country() {

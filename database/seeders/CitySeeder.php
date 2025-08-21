@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\City;
+use App\Models\CityMediaGallery;
 use App\Models\CityLocationDetail;
 use App\Models\CityTravelInfo;
 use App\Models\CitySeason;
@@ -21,7 +22,7 @@ class CitySeeder extends Seeder
             [
                 'state_id' => 1, // Rajasthan
                 'name' => 'Jaipur',
-                'city_code' => 'JA',
+                'code' => 'JA',
                 'slug' => 'jaipur',
                 'description' => 'The Pink City of India.',
                 'feature_image' => 'https://example.com/jaipur.jpg',
@@ -30,7 +31,7 @@ class CitySeeder extends Seeder
             [
                 'state_id' => 1,
                 'name' => 'Udaipur',
-                'city_code' => 'UD',
+                'code' => 'UD',
                 'slug' => 'udaipur',
                 'description' => 'The City of Lakes.',
                 'feature_image' => 'https://example.com/udaipur.jpg',
@@ -39,7 +40,7 @@ class CitySeeder extends Seeder
             [
                 'state_id' => 1,
                 'name' => 'Bihad',
-                'city_code' => 'UD',
+                'code' => 'UD',
                 'slug' => 'bihad',
                 'description' => 'The City of Lakes.',
                 'feature_image' => 'https://example.com/udaipur.jpg',
@@ -48,7 +49,7 @@ class CitySeeder extends Seeder
             [
                 'state_id' => 1,
                 'name' => 'Jeend',
-                'city_code' => 'UD',
+                'code' => 'UD',
                 'slug' => 'jeend',
                 'description' => 'The City of Lakes.',
                 'feature_image' => 'https://example.com/udaipur.jpg',
@@ -56,8 +57,18 @@ class CitySeeder extends Seeder
             ]
         ];
 
+        $mediaIds = range(1, 5);
+
         foreach ($cities as $data) {
             $city = City::create($data);
+
+            $randomMedias = collect($mediaIds)->random(3);
+            foreach ($randomMedias as $mediaId) {
+                CityMediaGallery::create([
+                    'city_id'   => $city->id,
+                    'media_id'  => $mediaId,
+                ]);
+            }
 
             // 2️⃣ Insert City Location Details
             CityLocationDetail::create([
@@ -67,15 +78,15 @@ class CitySeeder extends Seeder
                 'population' => 3000000,
                 'currency' => 'INR',
                 'timezone' => 'GMT+5:30',
-                'language' => 'Hindi, Rajasthani',
-                'local_cuisine' => 'Dal Baati Churma, Ghewar'
+                'language' => ['Hindi', 'Rajasthani'],
+                'local_cuisine' => ['Dal Baati', 'Churma', 'Ghewar']
             ]);
 
             // 3️⃣ Insert Travel Information
             CityTravelInfo::create([
                 'city_id' => $city->id,
                 'airport' => 'Jaipur International Airport',
-                'public_transportation' => 'Buses, Rickshaws, Metro',
+                'public_transportation' => ['Buses', 'Rickshaws', 'Metro'],
                 'taxi_available' => true,
                 'rental_cars_available' => true,
                 'hotels' => true,
@@ -92,17 +103,17 @@ class CitySeeder extends Seeder
             CitySeason::create([
                 'city_id' => $city->id,
                 'name' => 'Winter',
-                'months' => 'November - February',
+                'months' => ['November', 'February'],
                 'weather' => 'Cool and pleasant',
-                'activities' => 'Heritage Walks, Sightseeing, Shopping'
+                'activities' => ['Heritage Walks', 'Sightseeing', 'Shopping']
             ]);
 
             // 5️⃣ Insert Events
             CityEvent::create([
                 'city_id' => $city->id,
                 'name' => 'Jaipur Literature Festival',
-                'type' => 'Cultural Festival',
-                'date_time' => '2025-01-21 10:00:00',
+                'type' => ['Cultural', 'Festival'],
+                'date' => '2025-01-21',
                 'location' => 'Jaipur, Rajasthan',
                 'description' => 'A gathering of authors, thinkers, and readers from across the world.'
             ]);
@@ -152,13 +163,6 @@ class CitySeeder extends Seeder
                 'og_image_url' => 'https://example.com/og-jaipur.jpg',
                 'canonical_url' => 'https://example.com/jaipur',
                 'schema_type' => 'TravelDestination',
-                // 'schema_data' => json_encode([
-                //     "@context" => "https://schema.org",
-                //     "@type" => "TravelDestination",
-                //     "name" => "Jaipur",
-                //     "description" => "The capital of Rajasthan, known for its royal heritage.",
-                //     "image" => "https://example.com/jaipur.jpg"
-                // ], JSON_UNESCAPED_UNICODE)
                 'schema_data' => [
                     "@context" => "https://schema.org",
                     "@type" => "TravelDestination",

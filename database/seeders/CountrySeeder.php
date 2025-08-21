@@ -20,7 +20,7 @@ class CountrySeeder extends Seeder
         $countries = [
             [
                 'name' => 'India',
-                'country_code' => 'IN',
+                'code' => 'IN',
                 'slug' => 'india',
                 'description' => 'India details',
                 'feature_image' => 'https://example.com/india.jpg',
@@ -28,7 +28,7 @@ class CountrySeeder extends Seeder
             ],
             [
                 'name' => 'China',
-                'country_code' => 'CN',
+                'code' => 'CN',
                 'slug' => 'china',
                 'description' => 'A beautiful country',
                 'feature_image' => 'https://example.com/china.jpg',
@@ -36,7 +36,7 @@ class CountrySeeder extends Seeder
             ],
             [
                 'name' => 'Japan',
-                'country_code' => 'JP',
+                'code' => 'JP',
                 'slug' => 'japan',
                 'description' => 'Land of the Rising Sun',
                 'feature_image' => 'https://example.com/japan.jpg',
@@ -44,7 +44,7 @@ class CountrySeeder extends Seeder
             ],
             [
                 'name' => 'USA',
-                'country_code' => 'US',
+                'code' => 'US',
                 'slug' => 'usa',
                 'description' => 'United States of America',
                 'feature_image' => 'https://example.com/usa.jpg',
@@ -52,7 +52,7 @@ class CountrySeeder extends Seeder
             ],
             [
                 'name' => 'France',
-                'country_code' => 'FR',
+                'code' => 'FR',
                 'slug' => 'france',
                 'description' => 'The country of love and Eiffel Tower',
                 'feature_image' => 'https://example.com/france.jpg',
@@ -60,7 +60,7 @@ class CountrySeeder extends Seeder
             ],
             [
                 'name' => 'Germany',
-                'country_code' => 'DE',
+                'code' => 'DE',
                 'slug' => 'germany',
                 'description' => 'Engineering and cultural hub',
                 'feature_image' => 'https://example.com/germany.jpg',
@@ -68,7 +68,7 @@ class CountrySeeder extends Seeder
             ],
             [
                 'name' => 'Italy',
-                'country_code' => 'IT',
+                'code' => 'IT',
                 'slug' => 'italy',
                 'description' => 'Famous for Rome and Venice',
                 'feature_image' => 'https://example.com/italy.jpg',
@@ -76,7 +76,7 @@ class CountrySeeder extends Seeder
             ],
             [
                 'name' => 'Spain',
-                'country_code' => 'ES',
+                'code' => 'ES',
                 'slug' => 'spain',
                 'description' => 'Land of Flamenco and Football',
                 'feature_image' => 'https://example.com/spain.jpg',
@@ -84,7 +84,7 @@ class CountrySeeder extends Seeder
             ],
             [
                 'name' => 'Australia',
-                'country_code' => 'AU',
+                'code' => 'AU',
                 'slug' => 'australia',
                 'description' => 'The land of Kangaroos',
                 'feature_image' => 'https://example.com/australia.jpg',
@@ -92,7 +92,7 @@ class CountrySeeder extends Seeder
             ],
             [
                 'name' => 'Brazil',
-                'country_code' => 'BR',
+                'code' => 'BR',
                 'slug' => 'brazil',
                 'description' => 'Carnival and Football country',
                 'feature_image' => 'https://example.com/brazil.jpg',
@@ -131,7 +131,7 @@ class CountrySeeder extends Seeder
             CountryTravelInfo::create([
                 'country_id' => $country->id,
                 'airport' => 'Main International Airport',
-                'public_transportation' => 'Metro, Buses, Trains',
+                'public_transportation' => ['Metro', 'Buses', 'Trains'],
                 'taxi_available' => true,
                 'rental_cars_available' => true,
                 'hotels' => true,
@@ -170,15 +170,15 @@ class CountrySeeder extends Seeder
                 [
                     'name' => 'New Year Festival',
                     'type' => ['Festival', 'Holiday'],
-                    'date_time' => '2025-01-01 00:00:00',
-                    "location" => ["Main Cities", "Villages"],
+                    'date' => '2025-01-01',
+                    "location" => "kangra",
                     'description' => 'New Year celebrations',
                 ],
                 [
                     'name' => 'National Day',
                     "type"=> ["Festival", "Holiday"],
-                    'date_time' => '2025-08-15 00:00:00',
-                    "location"=> ["Main Cities", "Villages"],
+                    'date' => '2025-08-15',
+                    "location"=> "hamirpur",
                     'description' => 'National holiday celebrations',
                 ],
             ];

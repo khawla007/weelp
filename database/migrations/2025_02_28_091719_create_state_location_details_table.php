@@ -16,8 +16,8 @@ return new class extends Migration {
             $table->bigInteger('population')->nullable();
             $table->string('currency')->nullable();
             $table->string('timezone')->nullable();
-            $table->string('language')->nullable();
-            $table->text('local_cuisine')->nullable();
+            $table->json('language')->nullable();
+            $table->json('local_cuisine')->nullable();
             $table->timestamps();
         });
     }

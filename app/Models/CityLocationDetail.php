@@ -14,6 +14,11 @@ class CityLocationDetail extends Model
         'timezone', 'language', 'local_cuisine'
     ];
 
+    protected $casts = [
+        'language' => 'array',
+        'local_cuisine' => 'array',
+    ];
+
     public function city()
     {
         return $this->belongsTo(City::class);

@@ -3,56 +3,56 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Country;
-use App\Models\CountryMediaGallery;
-use App\Models\CountryLocationDetail;
-use App\Models\CountryTravelInfo;
-use App\Models\CountrySeason;
-use App\Models\CountryEvent;
-use App\Models\CountryAdditionalInfo;
-use App\Models\CountryFaq;
-use App\Models\CountrySeo;
+use App\Models\State;
+use App\Models\StateMediaGallery;
+use App\Models\StateLocationDetail;
+use App\Models\StateTravelInfo;
+use App\Models\StateSeason;
+use App\Models\StateEvent;
+use App\Models\StateAdditionalInfo;
+use App\Models\StateFaq;
+use App\Models\StateSeo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
-class CountryController extends Controller
+class StateController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     // public function index()
     // {
-    //     return response()->json(Country::all());
+    //     return response()->json(State::all());
     // }
 
     public function index(Request $request)
     {
-        $query = Country::query()->with('mediaGallery.media');
+        $query = State::query()->with('mediaGallery.media');
     
-        // 🔍 Name search
+        // Name search
         if ($request->has('name') && !empty($request->name)) {
             $query->where('name', 'like', '%' . $request->name . '%');
         }
         
-        // 📄 Pagination (perPage fix)
+        // Pagination (perPage fix)
         $perPage = 4;
-        $countries = $query->orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $request->input('page', 1));
+        $states = $query->orderBy('id', 'desc')->paginate($perPage, ['*'], 'page', $request->input('page', 1));
     
-        // 🎯 Transform response
-        $data = $countries->map(function ($country) {
+        // Transform response
+        $data = $states->map(function ($state) {
             return [
-                'id' => $country->id,
-                'name' => $country->name,
-                'code' => $country->code,
-                'slug' => $country->slug,
-                'description' => $country->description,
-                'feature_image' => $country->feature_image,
-                'featured_destination' => $country->featured_destination,
-                // ✅ Custom Media format
-                'media_gallery' => $country->mediaGallery->map(function ($gallery) {
+                'id' => $state->id,
+                'name' => $state->name,
+                'code' => $state->code,
+                'slug' => $state->slug,
+                'description' => $state->description,
+                'feature_image' => $state->feature_image,
+                'featured_destination' => $state->featured_destination,
+                // Custom Media format
+                'media_gallery' => $state->mediaGallery->map(function ($gallery) {
                     return [
                         'id' => $gallery->id,
-                        'country_id' => $gallery->country_id,
+                        'state_id' => $gallery->state_id,
                         'media_id' => $gallery->media_id,
                         'name' => $gallery->media->name ?? null,
                         'alt_text' => $gallery->media->alt_text ?? null,
@@ -64,40 +64,40 @@ class CountryController extends Controller
         // 🎯 Custom response format
         return response()->json([
             'success' => true,
-            'data' => $data, 
-            'total' => $countries->total(),
-            'per_page' => $countries->perPage(),
-            'last_page' => $countries->lastPage(),
-            'current_page' => $countries->currentPage(),
+            'data' => $data,
+            'total' => $states->total(),
+            'per_page' => $states->perPage(),
+            'last_page' => $states->lastPage(),
+            'current_page' => $states->currentPage(), 
         ]);
     }
     
     /**
-     * List of counntry dropdown
+     * List of states dropdown
     */
-    public function countryList()
+    public function stateList()
     {
         try {
-            $countries = Country::select('id', 'name')->orderBy('name')->get();
+            $states = State::select('id', 'name')->orderBy('name')->get();
 
-            if ($countries->isEmpty()) {
+            if ($states->isEmpty()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No countries found',
+                    'message' => 'No State found',
                     'data' => []
                 ], 404);
             }
 
             return response()->json([
                 'success' => true,
-                'message' => 'Country list fetched successfully',
-                'data' => $countries
+                'message' => 'State list fetched successfully',
+                'data' => $states
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Something went wrong while fetching country list',
+                'message' => 'Something went wrong while fetching State list',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -109,10 +109,11 @@ class CountryController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            // Country fields
+            // State fields
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:10',
             'slug' => 'required|string|max:255',
+            'country_id' => 'required|integer|exists:countries,id',
             'description' => 'nullable|string',
             'feature_image' => 'nullable|url',
             'featured_destination' => 'boolean',
@@ -179,20 +180,21 @@ class CountryController extends Controller
             'seo.schema_data' => 'nullable|array',
         ]);
 
-        $exists = Country::where('name', $request->name)
+        $exists = State::where('name', $request->name)
             ->orWhere('slug', $request->slug)
             ->exists();
 
         if ($exists) {
             return response()->json([
-                'message' => 'This country already exists, please choose another name.'
+                'message' => 'This State already exists, please choose another name.'
             ], 422); // 422 = Unprocessable Entity (validation error)
         }
-        // Create Country
-        $country = Country::create([
+        // Create State
+        $state = State::create([
             'name' => $validated['name'],
             'code' => $validated['code'],
             'slug' => $validated['slug'],
+            'country_id' => $validated['country_id'],
             'description' => $validated['description'] ?? null,
             'feature_image' => $validated['feature_image'] ?? null,
             'featured_destination' => $validated['featured_destination'] ?? false,
@@ -201,8 +203,8 @@ class CountryController extends Controller
         // Media Details
         if (!empty($validated['media_gallery'])) {
             foreach ($validated['media_gallery'] as $media) {
-                CountryMediaGallery::create([
-                    'country_id' => $country->id,
+                StateMediaGallery::create([
+                    'state_id' => $state->id,
                     'media_id'    => $media['media_id'],
                 ]);
             }
@@ -210,35 +212,35 @@ class CountryController extends Controller
 
         // Location Details
         if (!empty($validated['location_details'])) {
-            $validated['location_details']['country_id'] = $country->id;
-            CountryLocationDetail::create($validated['location_details']);
+            $validated['location_details']['state_id'] = $state->id;
+            StateLocationDetail::create($validated['location_details']);
         }
 
         // Travel Info
         if (!empty($validated['travel_info'])) {
-            $validated['travel_info']['country_id'] = $country->id;
-            CountryTravelInfo::create($validated['travel_info']);
+            $validated['travel_info']['state_id'] = $state->id;
+            StateTravelInfo::create($validated['travel_info']);
         }
 
         // Season
         if ($request->has('seasons')) {
             foreach ($request->seasons as $season) {
-                $country->seasons()->create($season);
+                $state->seasons()->create($season);
             }
         }
 
         // Event
         if ($request->has('events')) {
             foreach ($request->events as $event) {
-                $country->events()->create($event);
+                $state->events()->create($event);
             }
         }
 
         // Additional Info
         if (!empty($validated['additional_info'])) {
             foreach ($validated['additional_info'] as $additional) {
-                $additional['country_id'] = $country->id;
-                CountryAdditionalInfo::create($additional);
+                $additional['state_id'] = $state->id;
+                StateAdditionalInfo::create($additional);
             }
         }
 
@@ -246,8 +248,8 @@ class CountryController extends Controller
         if (!empty($validated['faqs'])) {
             $questionNumber = 1;
             foreach ($validated['faqs'] as $faq) {
-                CountryFaq::create([
-                    'country_id' => $country->id,
+                StateFaq::create([
+                    'state_id' => $state->id,
                     'question_number' => $questionNumber++,
                     'question' => $faq['question'],
                     'answer' => $faq['answer'],
@@ -257,13 +259,13 @@ class CountryController extends Controller
 
         // SEO
         if (!empty($validated['seo'])) {
-            $validated['seo']['country_id'] = $country->id;
-            CountrySeo::create($validated['seo']);
+            $validated['seo']['state_id'] = $state->id;
+            StateSeo::create($validated['seo']);
         }
 
         return response()->json([
-            'message' => 'Country created successfully',
-            'country' => $country
+            'message' => 'State created successfully',
+            'state' => $state
         ], 201);
     }
 
@@ -272,8 +274,8 @@ class CountryController extends Controller
      */
     public function show(string $id)
     {
-        // return response()->json(Country::findOrFail($id));
-        $country = Country::with([
+        // return response()->json(State::findOrFail($id));
+        $state = State::with([
             'mediaGallery.media',
             'locationDetails',
             'travelInfo',
@@ -285,25 +287,25 @@ class CountryController extends Controller
         ])->find($id);
     
         // media_gallery ko transform karna
-        if ($country->mediaGallery && $country->mediaGallery->count()) {
-            $country->media_gallery = $country->mediaGallery->map(function ($gallery) {
+        if ($state->mediaGallery && $state->mediaGallery->count()) {
+            $state->media_gallery = $state->mediaGallery->map(function ($gallery) {
                 return [
                     'id' => $gallery->id,
-                    'country_id' => $gallery->country_id,
+                    'state_id' => $gallery->state_id,
                     'media_id' => $gallery->media_id,
                     'name' => $gallery->media->name ?? null,
                     'alt_text' => $gallery->media->alt_text ?? null,
                     'url' => $gallery->media->url ?? null,
                 ];
             })->values();
-            unset($country->mediaGallery); // nested relation hatane ke liye
+            unset($state->mediaGallery); // nested relation hatane ke liye
         }
 
-        if (!$country) {
-            return response()->json(['message' => 'Country not found'], 404);
+        if (!$state) {
+            return response()->json(['message' => 'State not found'], 404);
         }
     
-        return response()->json($country);
+        return response()->json($state);
     }
 
     /**
@@ -311,13 +313,14 @@ class CountryController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $country = Country::findOrFail($id);
+        $state = State::findOrFail($id);
     
         $validated = $request->validate([
-            // Country fields
+            // State fields
             'name' => 'nullable|string|max:255',
             'code' => 'nullable|string|max:10',
             'slug' => 'nullable|string|max:255',
+            'country_id' => 'nullable|integer|exists:countries,id',
             'description' => 'nullable|string',
             'feature_image' => 'nullable|url',
             'featured_destination' => 'boolean',
@@ -351,7 +354,7 @@ class CountryController extends Controller
     
             // Season (array of objects)
             'seasons' => 'nullable|array',
-            'seasons.*.id' => 'nullable|integer|exists:country_seasons,id',
+            'seasons.*.id' => 'nullable|integer|exists:state_seasons,id',
             'seasons.*.name' => 'nullable|string',
             'seasons.*.months' => 'nullable|array',
             'seasons.*.weather' => 'nullable|string',
@@ -359,7 +362,7 @@ class CountryController extends Controller
     
             // Event (array of objects)
             'events' => 'nullable|array',
-            'events.*.id' => 'nullable|integer|exists:country_events,id',
+            'events.*.id' => 'nullable|integer|exists:state_events,id',
             'events.*.name' => 'nullable|string',
             'events.*.type' => 'nullable|array',
             'events.*.date' => 'nullable|date',
@@ -368,13 +371,13 @@ class CountryController extends Controller
     
             // Additional Info
             'additional_info' => 'nullable|array',
-            'additional_info.*.id' => 'nullable|integer|exists:country_additional_infos,id',
+            'additional_info.*.id' => 'nullable|integer|exists:state_additional_infos,id',
             'additional_info.*.title' => 'required|string',
             'additional_info.*.content' => 'required|string',
     
             // FAQs
             'faqs' => 'nullable|array',
-            'faqs.*.id' => 'nullable|integer|exists:country_faqs,id',
+            'faqs.*.id' => 'nullable|integer|exists:state_faqs,id',
             'faqs.*.question' => 'required|string',
             'faqs.*.answer' => 'required|string',
     
@@ -388,22 +391,23 @@ class CountryController extends Controller
             'seo.schema_data' => 'nullable|array',
         ]);
     
-        // === Country main fields update ===
-        $country->update([
-            'name' => $validated['name'] ?? $country->name,
-            'code' => $validated['code'] ?? $country->code,
-            'slug' => $validated['slug'] ?? $country->slug,
-            'description' => $validated['description'] ?? $country->description,
-            'feature_image' => $validated['feature_image'] ?? $country->feature_image,
-            'featured_destination' => $validated['featured_destination'] ?? $country->featured_destination,
+        // === State main fields update ===
+        $state->update([
+            'name' => $validated['name'] ?? $state->name,
+            'code' => $validated['code'] ?? $state->code,
+            'slug' => $validated['slug'] ?? $state->slug,
+            'country_id' => $validated['country_id'] ?? $state->country_id,
+            'description' => $validated['description'] ?? $state->description,
+            'feature_image' => $validated['feature_image'] ?? $state->feature_image,
+            'featured_destination' => $validated['featured_destination'] ?? $state->featured_destination,
         ]);
     
         // === Media (delete old & insert new) ===
         if (isset($validated['media_gallery'])) {
-            CountryMediaGallery::where('country_id', $country->id)->delete();
+            StateMediaGallery::where('state_id', $state->id)->delete();
             foreach ($validated['media_gallery'] as $media) {
-                CountryMediaGallery::create([
-                    'country_id' => $country->id,
+                StateMediaGallery::create([
+                    'state_id' => $state->id,
                     'media_id'    => $media['media_id'],
                 ]);
             }
@@ -411,16 +415,16 @@ class CountryController extends Controller
     
         // === Location Details (hasOne) ===
         if (!empty($validated['location_details'])) {
-            $country->locationDetails()
-                ? $country->locationDetails->update($validated['location_details'])
-                : $country->locationDetails()->create($validated['location_details']);
+            $state->locationDetails()
+                ? $state->locationDetails->update($validated['location_details'])
+                : $state->locationDetails()->create($validated['location_details']);
         }
     
         // === Travel Info (hasOne) ===
         if (!empty($validated['travel_info'])) {
-            $country->travelInfo()
-                ? $country->travelInfo->update($validated['travel_info'])
-                : $country->travelInfo()->create($validated['travel_info']);
+            $state->travelInfo()
+                ? $state->travelInfo->update($validated['travel_info'])
+                : $state->travelInfo()->create($validated['travel_info']);
         }
     
         // === Seasons (hasMany) ===
@@ -428,15 +432,15 @@ class CountryController extends Controller
             $sentIds = collect($request->seasons)->pluck('id')->filter()->toArray();
     
             // delete missing
-            CountrySeason::where('country_id', $country->id)
+            StateSeason::where('state_id', $state->id)
                 ->whereNotIn('id', $sentIds)
                 ->delete();
     
             foreach ($request->seasons as $season) {
                 if (!empty($season['id'])) {
-                    CountrySeason::where('id', $season['id'])->update($season);
+                    StateSeason::where('id', $season['id'])->update($season);
                 } else {
-                    $country->seasons()->create($season);
+                    $state->seasons()->create($season);
                 }
             }
         }
@@ -445,15 +449,15 @@ class CountryController extends Controller
         if ($request->has('events')) {
             $sentIds = collect($request->events)->pluck('id')->filter()->toArray();
     
-            CountryEvent::where('country_id', $country->id)
+            StateEvent::where('state_id', $state->id)
                 ->whereNotIn('id', $sentIds)
                 ->delete();
     
             foreach ($request->events as $event) {
                 if (!empty($event['id'])) {
-                    CountryEvent::where('id', $event['id'])->update($event);
+                    StateEvent::where('id', $event['id'])->update($event);
                 } else {
-                    $country->events()->create($event);
+                    $state->events()->create($event);
                 }
             }
         }
@@ -462,16 +466,16 @@ class CountryController extends Controller
         if ($request->has('additional_info')) {
             $sentIds = collect($request->additional_info)->pluck('id')->filter()->toArray();
     
-            CountryAdditionalInfo::where('country_id', $country->id)
+            StateAdditionalInfo::where('state_id', $state->id)
                 ->whereNotIn('id', $sentIds)
                 ->delete();
     
             foreach ($request->additional_info as $info) {
                 if (!empty($info['id'])) {
-                    CountryAdditionalInfo::where('id', $info['id'])->update($info);
+                    StateAdditionalInfo::where('id', $info['id'])->update($info);
                 } else {
-                    $info['country_id'] = $country->id;
-                    CountryAdditionalInfo::create($info);
+                    $info['state_id'] = $state->id;
+                    StateAdditionalInfo::create($info);
                 }
             }
         }
@@ -480,21 +484,21 @@ class CountryController extends Controller
         if ($request->has('faqs')) {
             $sentIds = collect($request->faqs)->pluck('id')->filter()->toArray();
     
-            CountryFaq::where('country_id', $country->id)
+            StateFaq::where('state_id', $state->id)
                 ->whereNotIn('id', $sentIds)
                 ->delete();
     
             $questionNumber = 1;
             foreach ($request->faqs as $faq) {
                 if (!empty($faq['id'])) {
-                    CountryFaq::where('id', $faq['id'])->update([
+                    StateFaq::where('id', $faq['id'])->update([
                         'question_number' => $questionNumber++,
                         'question' => $faq['question'],
                         'answer' => $faq['answer'],
                     ]);
                 } else {
-                    CountryFaq::create([
-                        'country_id' => $country->id,
+                    StateFaq::create([
+                        'state_id' => $state->id,
                         'question_number' => $questionNumber++,
                         'question' => $faq['question'],
                         'answer' => $faq['answer'],
@@ -505,47 +509,47 @@ class CountryController extends Controller
     
         // === SEO (hasOne) ===
         if (!empty($validated['seo'])) {
-            $country->seo()
-                ? $country->seo->update($validated['seo'])
-                : $country->seo()->create($validated['seo']);
+            $state->seo()
+                ? $state->seo->update($validated['seo'])
+                : $state->seo()->create($validated['seo']);
         }
     
         return response()->json([
-            'message' => 'Country updated successfully',
-            'country' => $country->fresh()
+            'message' => 'State updated successfully',
+            'state' => $state->fresh()
         ], 200);
     }    
 
     /**
      * Remove the specified resource from array of object tables.
     */
-    public function partialRemove(Request $request, $countryId)
+    public function partialRemove(Request $request, $stateId)
     {
         // Events delete
         if ($request->has('deleted_event_ids')) {
-            CountryEvent::whereIn('id', $request->deleted_event_ids)
-                ->where('country_id', $countryId)
+            StateEvent::whereIn('id', $request->deleted_event_ids)
+                ->where('state_id', $stateId)
                 ->delete();
         }
     
         // Seasons delete
         if ($request->has('deleted_season_ids')) {
-            CountrySeason::whereIn('id', $request->deleted_season_ids)
-                ->where('country_id', $countryId)
+            StateSeason::whereIn('id', $request->deleted_season_ids)
+                ->where('state_id', $stateId)
                 ->delete();
         }
     
         // FAQs delete
         if ($request->has('deleted_faq_ids')) {
-            CountryFaq::whereIn('id', $request->deleted_faq_ids)
-                ->where('country_id', $countryId)
+            StateFaq::whereIn('id', $request->deleted_faq_ids)
+                ->where('state_id', $stateId)
                 ->delete();
         }
     
         // Additional Info delete
         if ($request->has('deleted_additional_info_ids')) {
-            CountryAdditionalInfo::whereIn('id', $request->deleted_additional_info_ids)
-                ->where('country_id', $countryId)
+            StateAdditionalInfo::whereIn('id', $request->deleted_additional_info_ids)
+                ->where('state_id', $stateId)
                 ->delete();
         }
     
@@ -560,10 +564,7 @@ class CountryController extends Controller
      */
     public function destroy(string $id)
     {
-        Country::findOrFail($id)->delete();
-        return response()->json([
-            'success' => true,
-            'message' => 'Country deleted successfully'
-        ]);
+        State::findOrFail($id)->delete();
+        return response()->json(['message' => 'State deleted successfully']);
     }
 }

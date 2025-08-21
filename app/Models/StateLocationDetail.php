@@ -13,6 +13,11 @@ class StateLocationDetail extends Model
         'state_id', 'latitude', 'longitude', 'capital_city', 'population', 'currency', 'timezone', 'language', 'local_cuisine'
     ];
 
+    protected $casts = [
+        'language' => 'array',
+        'local_cuisine' => 'array',
+    ];
+
     public function state()
     {
         return $this->belongsTo(State::class);
