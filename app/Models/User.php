@@ -143,4 +143,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasOne(UserMeta::class, 'user_id', 'id');
     }
+
+    public function avatarMedia()
+    {
+        return $this->belongsTo(Media::class, 'avatar');
+    }
 }

@@ -10,6 +10,11 @@ class Media extends Model
 
     protected $fillable = ['name', 'alt_text', 'url'];
 
+    public function userAvatar()
+    {
+        return $this->hasOne(User::class, 'avatar');
+    }
+
     public function countryMedia()
     {
         return $this->hasMany(CountryMediaGallery::class, 'media_id');

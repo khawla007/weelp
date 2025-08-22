@@ -14,6 +14,9 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->string('role')->default('customer')->after('email');
             $table->string('status')->default('pending')->after('role');
+            $table->unsignedBigInteger('avatar')->nullable()->after('status');
+
+            $table->foreign('avatar')->references('id')->on('media')->onDelete('set null');
         });
     }
 

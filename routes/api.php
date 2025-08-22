@@ -92,8 +92,13 @@ Route::get('/order/thankyou', [StripeController::class, 'getOrderByPaymentIntent
 Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
 
     // Admin Side Users Routes
-    Route::post('/users/create', [UserController::class, 'createUser']);
-    Route::get('/users', [UserController::class, 'getAllUsers']); 
+    Route::prefix('users')->group(function () {
+        Route::get('/', [UserController::class, 'getAllUsers']); 
+        Route::post('/create', [UserController::class, 'createUser']);
+        Route::get('/{id}', [UserController::class, 'show']);
+        Route::put('/update', [UserController::class, 'update']);
+        Route::delete('/{id}', [UserController::class, 'destroy']);
+    });
 
     // Admin Side Category Routes
     Route::apiResource('/categories', CategoryController::class);
