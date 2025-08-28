@@ -61,4 +61,9 @@ class Transfer extends Model
     public function packages() {
         return $this->hasManyThrough(Package::class, PackageTransferMapping::class, 'transfer_id', 'id', 'id', 'package_id');
     }
+
+    public function reviews()
+    {
+        return $this->morphMany(Review::class, 'item', 'item_type', 'item_id');
+    }
 }

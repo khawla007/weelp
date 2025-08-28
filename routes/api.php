@@ -34,6 +34,7 @@ use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\BlogController;
+use App\Http\Controllers\Admin\ReviewController;
 
 
 // Public
@@ -270,6 +271,16 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::post('/', [BlogController::class, 'store']); // Store a new blog
         Route::put('{id}', [BlogController::class, 'update']); // Update an existing blog
         Route::delete('{id}', [BlogController::class, 'destroy']); // Delete a blog
+    });
+
+    Route::prefix('reviews')->group(function () {
+        Route::get('/', [ReviewController::class, 'index']); // सब reviews की list
+        Route::get('/items', [ReviewController::class, 'getItemsByType']);
+        Route::post('/', [ReviewController::class, 'store']); // नया review create
+        Route::get('/{id}', [ReviewController::class, 'show']); // single review detail
+        Route::put('/{id}', [ReviewController::class, 'update']); // review update
+        Route::delete('/{id}', [ReviewController::class, 'destroy']); // review delete
+        Route::post('/bulk-delete', [ReviewController::class, 'bulkDelete']);
     });
 
 });

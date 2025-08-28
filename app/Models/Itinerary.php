@@ -72,18 +72,13 @@ class Itinerary extends Model
     {
         return $this->hasOne(ItineraryAvailability::class);
     }
-
-    // public function activities()
-    // {
-    //     return $this->hasMany(ItineraryActivity::class);
-    // }
-
-    // public function transfers()
-    // {
-    //     return $this->hasMany(ItineraryTransfer::class);
-    // }
     public function orders()
     {
         return $this->morphMany(Order::class, 'orderable');
+    }
+
+    public function reviews()
+    {
+        return $this->morphMany(Review::class, 'item', 'item_type', 'item_id');
     }
 }

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('item_id');
             $table->unsignedTinyInteger('rating')->default(1);
             $table->text('review_text')->nullable();
-            $table->json('gallery_images')->nullable();
+            $table->json('media_gallery')->nullable();
             $table->enum('status', ['approved', 'pending'])->default('pending');
 
             $table->timestamps();

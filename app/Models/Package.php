@@ -91,4 +91,9 @@ class Package extends Model
         return $this->morphMany(Order::class, 'orderable');
     }
 
+    public function reviews()
+    {
+        return $this->morphMany(Review::class, 'item', 'item_type', 'item_id');
+    }
+
 }

@@ -59,5 +59,10 @@ class Media extends Model
     {
         return $this->hasMany(TransferyMediaGallery::class, 'media_id');
     }
+
+    public function reviews()
+    {
+        return $this->belongsToMany(Review::class, 'review_media', 'media_id', 'review_id');
+    }
     
 }

@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
             TransferSeeder::class,
             ItinerarySeeder::class,
             PackageSeeder::class,
+            ReviewSeeder::class,
         ]);
     }
 }

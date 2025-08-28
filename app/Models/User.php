@@ -148,4 +148,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->belongsTo(Media::class, 'avatar');
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'user_id');
+    }
 }
