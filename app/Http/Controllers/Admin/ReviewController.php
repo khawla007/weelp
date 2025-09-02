@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Pagination\Paginator;
 use App\Models\Activity;
 use App\Models\Package;
 use App\Models\Transfer;
@@ -12,19 +13,31 @@ use Illuminate\Http\Request;
 
 class ReviewController extends Controller
 {
+
     public function index(Request $request)
     {
-        $frontendBase = env('FRONTEND_URL', 'http://localhost:3000');
+        $frontendBase = env('FRONTEND_URL', 'http://192.168.29.202:3000');
     
-        // Base query
+        // Force current page
+        Paginator::currentPageResolver(function () use ($request) {
+            return (int) $request->input('page', 1);
+        });
+    
         $query = Review::with(['user', 'item']);
     
-        if ($request->has('item_type') && $request->has('item_id')) {
-            $query->where('item_type', $request->item_type)
-                  ->where('item_id', $request->item_id);
+        if ($request->filled('item_type')) {
+            $query->where('item_type', $request->item_type);
         }
     
-        $reviews = $query->orderBy('id', 'desc')->paginate(10);
+        if ($request->filled('item_name')) {
+            $query->whereHas('item', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->item_name . '%');
+            });
+        }
+    
+        $reviews = $query->orderBy('id', 'desc')
+            ->paginate(5)
+            ->appends($request->query());
     
         $reviews->getCollection()->transform(function ($review) use ($frontendBase) {
             $item = $review->item;
@@ -69,8 +82,8 @@ class ReviewController extends Controller
                         'url'  => $media->url,
                     ])
                     : [],
-                'created_at'  => $review->created_at,
-                'updated_at'  => $review->updated_at,
+                    'created_at' => $review->created_at ? $review->created_at->format('Y-m-d') : null,
+                    'updated_at' => $review->updated_at ? $review->updated_at->format('Y-m-d') : null,
             ];
         });
     
@@ -80,7 +93,80 @@ class ReviewController extends Controller
             'per_page'     => $reviews->perPage(),
             'total'        => $reviews->total(),
         ]);
+        // return response()->json($reviews);
     }
+    
+     
+
+    // public function index(Request $request)
+    // {
+    //     $frontendBase = env('FRONTEND_URL', 'http://192.168.29.202:3000');
+    
+    //     // Base query
+    //     $query = Review::with(['user', 'item']);
+    
+    //     if ($request->has('item_type') && $request->has('item_id')) {
+    //         $query->where('item_type', $request->item_type)
+    //               ->where('item_id', $request->item_id);
+    //     }
+    
+    //     $reviews = $query->orderBy('id', 'desc')->paginate(10);
+    
+    //     $reviews->getCollection()->transform(function ($review) use ($frontendBase) {
+    //         $item = $review->item;
+    
+    //         $city = null;
+    //         $region = null;
+    
+    //         // Agar item Transfer nahi hai tabhi locations load karo
+    //         if ($item && !($item instanceof \App\Models\Transfer)) {
+    //             $location = $item?->locations?->first();
+    //             $city     = $location?->city;
+    //             $state    = $city?->state;
+    //             $country  = $state?->country;
+    //             $region   = $country?->regions?->first();
+    //         }
+    
+    //         return [
+    //             'id'          => $review->id,
+    //             'rating'      => $review->rating,
+    //             'review_text' => $review->review_text,
+    //             'status'      => $review->status,
+    //             'item'        => $item ? [
+    //                 'id'   => $item->id,
+    //                 'name' => $item->name,
+    //                 'type' => $item->item_type,
+    //                 // Transfer ke liye frontend_url null hoga
+    //                 'frontend_url' => ($item instanceof \App\Models\Transfer)
+    //                     ? null
+    //                     : (($city && $region)
+    //                         ? "{$frontendBase}/{$region->slug}/{$city->slug}/{$item->slug}"
+    //                         : null),
+    //             ] : null,
+    //             'user'        => $review->user ? [
+    //                 'id'   => $review->user->id,
+    //                 'name' => $review->user->name,
+    //             ] : null,
+    //             'media_gallery' => $review->medias()
+    //                 ? $review->medias()->map(fn($media) => [
+    //                     'id'   => $media->id,
+    //                     'name' => $media->name,
+    //                     'alt'  => $media->alt_text,
+    //                     'url'  => $media->url,
+    //                 ])
+    //                 : [],
+    //             'created_at'  => $review->created_at,
+    //             'updated_at'  => $review->updated_at,
+    //         ];
+    //     });
+    
+    //     return response()->json([
+    //         'data'         => $reviews->items(),
+    //         'current_page' => $reviews->currentPage(),
+    //         'per_page'     => $reviews->perPage(),
+    //         'total'        => $reviews->total(),
+    //     ]);
+    // }
     
     // 2.1. Get item anme and by there type
     public function getItemsByType(Request $request)
