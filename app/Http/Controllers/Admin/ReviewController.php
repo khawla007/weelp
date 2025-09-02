@@ -279,8 +279,8 @@ class ReviewController extends Controller
                                     'url'  => $media->url,
                                 ]) 
                                 : [],
-            'created_at'   => $review->created_at,
-            'updated_at'   => $review->updated_at,
+            'created_at' => $review->created_at ? $review->created_at->format('Y-m-d') : null,
+            'updated_at' => $review->updated_at ? $review->updated_at->format('Y-m-d') : null,
         ];
     
         return response()->json([
