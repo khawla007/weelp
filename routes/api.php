@@ -35,7 +35,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\ReviewController;
-
+use App\Http\Controllers\Admin\AddonController;
 
 // Public
 use App\Http\Controllers\Public\PublicRegionController;
@@ -281,6 +281,15 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::put('/{id}', [ReviewController::class, 'update']); // review update
         Route::delete('/{id}', [ReviewController::class, 'destroy']); // review delete
         Route::post('/bulk-delete', [ReviewController::class, 'bulkDelete']);
+    });
+
+    Route::prefix('addons')->group(function () {
+        Route::get('/', [AddonController::class, 'index']); 
+        Route::post('/', [AddonController::class, 'store']); // नया review create
+        Route::get('/{id}', [AddonController::class, 'show']); // single review detail
+        Route::put('/{id}', [AddonController::class, 'update']); // review update
+        Route::delete('/{id}', [AddonController::class, 'destroy']); // review delete
+        Route::post('/bulk-delete', [AddonController::class, 'bulkDelete']);
     });
 
 });
