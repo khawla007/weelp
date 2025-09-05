@@ -98,4 +98,13 @@ class Activity extends Model {
     {
         return $this->morphMany(Review::class, 'item', 'item_type', 'item_id');
     }
+
+    // public function addons()
+    // {
+    //     return $this->belongsToMany(Addon::class, 'activity_addons', 'activity_id', 'addon_id')->withTimestamps();
+    // }
+    public function addons()
+    {
+        return $this->hasMany(ActivityAddon::class);
+    }
 }

@@ -20,6 +20,8 @@ use App\Models\ItineraryCategory;
 use App\Models\ItineraryAttribute;
 use App\Models\ItineraryTag;
 use App\Models\ItineraryAvailability;
+use App\Models\Addon;
+use App\Models\ItineraryAddon;
 
 class ItinerarySeeder extends Seeder
 {
@@ -432,6 +434,19 @@ class ItinerarySeeder extends Seeder
                 'quantity_based_itinerary' => $quantityBased = fake()->boolean,
                 'max_quantity'             => $quantityBased ? fake()->numberBetween(1, 100) : null,
             ]);
+
+            $addonIds = Addon::where('type', 'itinerary')
+                ->where('active_status', true)   // ✅ sirf active addons
+                ->inRandomOrder()
+                ->limit(rand(2, 4))              // 2 se 4 addons random select
+                ->pluck('id');
+
+            foreach ($addonIds as $addonId) {
+                ItineraryAddon::create([
+                    'itinerary_id' => $itinerary->id,   // ✅ correct foreign key
+                    'addon_id'     => $addonId,
+                ]);
+            }
         }
     }
 

@@ -285,6 +285,7 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
 
     Route::prefix('addons')->group(function () {
         Route::get('/', [AddonController::class, 'index']); 
+        Route::get('/list-addon', [AddonController::class, 'dropdownAddon']); 
         Route::post('/', [AddonController::class, 'store']); // नया review create
         Route::get('/{id}', [AddonController::class, 'show']); // single review detail
         Route::put('/{id}', [AddonController::class, 'update']); // review update

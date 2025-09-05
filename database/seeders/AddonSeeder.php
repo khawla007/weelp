@@ -16,7 +16,7 @@ class AddonSeeder extends Seeder
         $addons = [
             [
                 'name' => 'Extra Luggage',
-                'type' => 'service',
+                'type' => 'transfer',
                 'description' => 'Additional luggage allowance',
                 'price' => 20.00,
                 'sale_price' => 15.00,
@@ -25,7 +25,7 @@ class AddonSeeder extends Seeder
             ],
             [
                 'name' => 'VIP Seat',
-                'type' => 'service',
+                'type' => 'package',
                 'description' => 'Upgrade to VIP seating',
                 'price' => 50.00,
                 'sale_price' => 40.00,
@@ -34,7 +34,7 @@ class AddonSeeder extends Seeder
             ],
             [
                 'name' => 'Meal Package',
-                'type' => 'food',
+                'type' => 'itinerary',
                 'description' => 'Includes breakfast and lunch',
                 'price' => 30.00,
                 'sale_price' => null,
@@ -43,7 +43,7 @@ class AddonSeeder extends Seeder
             ],
             [
                 'name' => 'Priority Boarding',
-                'type' => 'service',
+                'type' => 'transfer',
                 'description' => 'Board before other passengers',
                 'price' => 10.00,
                 'sale_price' => null,
@@ -52,7 +52,7 @@ class AddonSeeder extends Seeder
             ],
             [
                 'name' => 'Insurance',
-                'type' => 'service',
+                'type' => 'package',
                 'description' => 'Travel insurance coverage',
                 'price' => 25.00,
                 'sale_price' => 20.00,
@@ -61,7 +61,7 @@ class AddonSeeder extends Seeder
             ],
             [
                 'name' => 'WiFi Access',
-                'type' => 'service',
+                'type' => 'activity',
                 'description' => 'Onboard internet access',
                 'price' => 5.00,
                 'sale_price' => null,
@@ -70,7 +70,7 @@ class AddonSeeder extends Seeder
             ],
             [
                 'name' => 'Photography Package',
-                'type' => 'service',
+                'type' => 'activity',
                 'description' => 'Professional trip photos',
                 'price' => 40.00,
                 'sale_price' => 30.00,
@@ -79,7 +79,7 @@ class AddonSeeder extends Seeder
             ],
             [
                 'name' => 'Child Seat',
-                'type' => 'equipment',
+                'type' => 'transfer',
                 'description' => 'Child safety seat',
                 'price' => 10.00,
                 'sale_price' => 8.00,
@@ -88,7 +88,7 @@ class AddonSeeder extends Seeder
             ],
             [
                 'name' => 'Driver Guide',
-                'type' => 'service',
+                'type' => 'itinerary',
                 'description' => 'Personal driver and guide',
                 'price' => 100.00,
                 'sale_price' => 80.00,
@@ -97,7 +97,7 @@ class AddonSeeder extends Seeder
             ],
             [
                 'name' => 'Souvenir Package',
-                'type' => 'product',
+                'type' => 'package',
                 'description' => 'Gift items for travelers',
                 'price' => 15.00,
                 'sale_price' => 12.00,
@@ -106,7 +106,7 @@ class AddonSeeder extends Seeder
             ],
             [
                 'name' => 'Extended Warranty',
-                'type' => 'service',
+                'type' => 'package',
                 'description' => 'Warranty extension for products',
                 'price' => 12.00,
                 'sale_price' => null,
@@ -115,7 +115,7 @@ class AddonSeeder extends Seeder
             ],
             [
                 'name' => 'Spa Access',
-                'type' => 'service',
+                'type' => 'itinerary',
                 'description' => 'Full day spa access',
                 'price' => 70.00,
                 'sale_price' => 60.00,
@@ -124,7 +124,7 @@ class AddonSeeder extends Seeder
             ],
             [
                 'name' => 'Cocktail Package',
-                'type' => 'food',
+                'type' => 'itinerary',
                 'description' => 'Unlimited cocktails for 2 hours',
                 'price' => 25.00,
                 'sale_price' => 20.00,
@@ -133,7 +133,7 @@ class AddonSeeder extends Seeder
             ],
             [
                 'name' => 'Photography Prints',
-                'type' => 'product',
+                'type' => 'activity',
                 'description' => 'Printed copies of trip photos',
                 'price' => 18.00,
                 'sale_price' => 15.00,
@@ -142,7 +142,7 @@ class AddonSeeder extends Seeder
             ],
             [
                 'name' => 'Adventure Kit',
-                'type' => 'equipment',
+                'type' => 'activity',
                 'description' => 'Includes trekking sticks and gear',
                 'price' => 35.00,
                 'sale_price' => 30.00,
@@ -152,7 +152,8 @@ class AddonSeeder extends Seeder
         ];
 
         foreach ($addons as $addon) {
-            Addon::create($addon);
+            \App\Models\Addon::create($addon);
         }
     }
+
 }

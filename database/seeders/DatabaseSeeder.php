@@ -29,13 +29,13 @@ class DatabaseSeeder extends Seeder
             CitySeeder::class,
             PlaceSeeder::class,
             RegionSeeder::class,
+            AddonSeeder::class,
             ActivitySeeder::class,
             VendorSeeder::class,
             TransferSeeder::class,
             ItinerarySeeder::class,
             PackageSeeder::class,
             ReviewSeeder::class,
-            AddonSeeder::class,
         ]);
     }
 }

@@ -17,6 +17,8 @@ use App\Models\ActivityLastMinuteDiscount;
 use App\Models\ActivityPromoCode;
 use App\Models\ActivityMediaGallery;
 use App\Models\ActivityAvailability;
+use App\Models\Addon;
+use App\Models\ActivityAddon;
 
 class ActivitySeeder extends Seeder {
     public function run() {
@@ -427,6 +429,19 @@ class ActivitySeeder extends Seeder {
                 'quantity_based_activity' => $quantityBased = fake()->boolean, // Random true or false
                 'max_quantity' => $quantityBased ? fake()->numberBetween(1, 20) : null,
             ]);
+
+            $addonIds = Addon::where('type', 'activity')
+                ->where('active_status', true)   // ✅ sirf active addons
+                ->inRandomOrder()
+                ->limit(rand(2, 4))   // 2 से 4 addons random select
+                ->pluck('id');
+        
+            foreach ($addonIds as $addonId) {
+                ActivityAddon::create([
+                    'activity_id' => $activity->id,
+                    'addon_id'    => $addonId,
+                ]);
+            }
         }
     }
 }

@@ -20,4 +20,18 @@ class Addon extends Model
     protected $casts = [
         'active_status' => 'boolean',
     ];
+
+    // public function activitiesAddon()
+    // {
+    //     return $this->belongsToMany(ActivityAddon::class, 'activity_addons', 'addon_id', 'activity_id')->withTimestamps();
+    // }
+    public function activitiesAddon()
+    {
+        return $this->hasMany(ActivityAddon::class, 'addon_id');
+    }
+
+    public function itinerariesAddon()
+    {
+        return $this->hasMany(ActivityAddon::class, 'addon_id');
+    }
 }

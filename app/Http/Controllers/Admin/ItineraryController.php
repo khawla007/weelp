@@ -20,6 +20,7 @@ use App\Models\ItineraryTag;
 use App\Models\ItineraryFaq;
 use App\Models\ItinerarySeo;
 use App\Models\ItineraryAvailability;
+use App\Models\ItineraryAddon;
 use App\Models\Category;
 use App\Models\Attribute;
 use App\Models\Tag;
@@ -67,7 +68,7 @@ class ItineraryController extends Controller
                 'locations.city', 
                 'basePricing.variations', 
                 'attributes.attribute:id,name',
-                'mediaGallery.media'
+                'mediaGallery.media', 'addons.addon'
             ])
 
             ->when($name, fn($query) =>
@@ -145,6 +146,21 @@ class ItineraryController extends Controller
         $transformed = $paginatedItems->map(function ($itinerary) {
             $data = $itinerary->toArray(); // keep all original fields
         
+            // Replace transformed fields for addons
+            $data['addons'] = collect($activity->addons)->map(function ($addon) {
+                return [
+                    'id'                      => $addon->id,
+                    'addon_id'                => $addon->addon_id,
+                    'addon_name'              => $addon->addon->name ?? null,
+                    'addon_type'              => $addon->addon->type ?? null,
+                    'addon_description'       => $addon->addon->description ?? null,
+                    'addon_price'             => $addon->addon->price ?? null,
+                    'addon_sale_price'        => $addon->addon->sale_price ?? null,
+                    'addon_price_calculation' => $addon->addon->price_calculation ?? null,
+                    'addon_active_status'     => $addon->addon->active_status ?? null,
+                ];
+            });
+            
             // Replace transformed fields
             $data['locations'] = collect($itinerary->locations)->map(function ($location) {
                 return [
@@ -221,6 +237,7 @@ class ItineraryController extends Controller
             'categories'            => 'nullable|array',
             'attributes'            => 'nullable|array',
             'tags'                  => 'nullable|array',
+            'addons'                => 'nullable|array',
             'availability'          => 'nullable|array',
         ];
     
@@ -403,6 +420,16 @@ class ItineraryController extends Controller
                 }
             }
 
+            // Itinerary Addons
+            if ($request->has('addons')) {
+                foreach ($request->addons as $addon_id) {
+                    ItineraryAddon::create([
+                        'itinerary_id' => $itinerary->id,
+                        'addon_id'    => $addon_id,
+                    ]);
+                }
+            }
+
             if ($request->has('attributes')) {
             
                 foreach ($request->input('attributes') as $attribute) {
@@ -470,7 +497,7 @@ class ItineraryController extends Controller
             // 'basePricing.variations',
             'inclusionsExclusions',
             'mediaGallery.media',
-            'availability',
+            'availability', 'addons.addon',
             'seo',
         ])->find($id);
         
@@ -588,6 +615,20 @@ class ItineraryController extends Controller
             ];
         });
 
+        $itineraryData['addons'] = collect($itinerary->addons)->map(function ($addon) {
+            return [
+                'id'                      => $addon->id,
+                'addon_id'                => $addon->addon_id,
+                'addon_name'              => $addon->addon->name ?? null,
+                'addon_type'              => $addon->addon->type ?? null,
+                'addon_description'       => $addon->addon->description ?? null,
+                'addon_price'             => $addon->addon->price ?? null,
+                'addon_sale_price'        => $addon->addon->sale_price ?? null,
+                'addon_price_calculation' => $addon->addon->price_calculation ?? null,
+                'addon_active_status'     => $addon->addon->active_status ?? null,
+            ];
+        });
+
         // Replace mediaobject with just `media data`
         $itineraryData['media_gallery'] = collect($itinerary->mediaGallery)->map(function ($media) {
             return [
@@ -658,6 +699,7 @@ class ItineraryController extends Controller
             'categories'            => 'nullable|array',
             'attributes'            => 'nullable|array',
             'tags'                  => 'nullable|array',
+            'addons'                => 'nullable|array',
             'availability'          => 'nullable|array',
         ];
     
@@ -825,6 +867,15 @@ class ItineraryController extends Controller
                 foreach ($request->categories as $categoryId) {
                     $itinerary->categories()->create([
                         'category_id' => $categoryId
+                    ]);
+                }
+            }
+
+            if ($request->has('addons')) {
+                $itinerary->addons()->delete();
+                foreach ($request->addons as $addonId) {
+                    $itinerary->addons()->create([
+                        'addon_id' => $addonId
                     ]);
                 }
             }

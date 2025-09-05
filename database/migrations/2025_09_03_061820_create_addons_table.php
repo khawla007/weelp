@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('addons', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('type')->nullable(); // e.g. service, product, extra
+            $table->enum('type', ['itinerary', 'activity', 'package', 'transfer'])->nullable();
             $table->text('description')->nullable();
             $table->decimal('price', 10, 2)->default(0);
             $table->decimal('sale_price', 10, 2)->nullable();

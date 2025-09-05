@@ -21,6 +21,24 @@ class AddonController extends Controller
 
         $query = Addon::orderBy('id', 'desc');
 
+        // Filter by type (if passed)
+        if ($request->has('type') && in_array($request->type, ['activity', 'package', 'itinerary', 'transfer'])) {
+            $query->where('type', $request->type);
+        }
+
+        // Filter by active_status (active/inactive)
+        if ($request->has('status')) {
+            if ($request->status === 'active') {
+                $query->where('active_status', true);
+            } elseif ($request->status === 'inactive') {
+                $query->where('active_status', false);
+            }
+        }
+
+        if ($request->has('name') && !empty($request->name)) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
         $addons = $query->paginate(5);
 
         // Custom clean response
@@ -32,6 +50,18 @@ class AddonController extends Controller
         ]);
     }
 
+    public function dropdownAddon()
+    {
+        $addons = Addon::select('id', 'name', 'active_status')
+            ->where('active_status', true)
+            ->orderBy('name', 'asc')
+            ->get();
+
+        return response()->json([
+            'data' => $addons
+        ]);
+    }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -39,7 +69,7 @@ class AddonController extends Controller
     {
         $validated = $request->validate([
             'name'              => 'required|string|max:255',
-            'type'              => 'nullable|string|max:100',
+            'type'              => 'nullable|in:itinerary,activity,package,transfer',
             'description'       => 'nullable|string',
             'price'             => 'required|numeric|min:0',
             'sale_price'        => 'nullable|numeric|min:0',
@@ -72,11 +102,11 @@ class AddonController extends Controller
     {
         $validated = $request->validate([
             'name'              => 'sometimes|string|max:255',
-            'type'              => 'nullable|string|max:100',
+            'type'              => 'nullable|in:itinerary,activity,package,transfer',
             'description'       => 'nullable|string',
             'price'             => 'sometimes|numeric|min:0',
             'sale_price'        => 'nullable|numeric|min:0',
-            'price_calculation' => 'sometimes|in:per_person,per_activity,per_package,per_transfer',
+            'price_calculation' => 'required|string',
             'active_status'     => 'boolean',
         ]);
     
