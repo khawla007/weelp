@@ -21,6 +21,7 @@ use App\Models\PackageTag;
 use App\Models\PackageFaq;
 use App\Models\PackageSeo;
 use App\Models\PackageAvailability;
+use App\Models\PackageAddon;
 use App\Models\Category;
 use App\Models\Attribute;
 use App\Models\Tag;
@@ -69,7 +70,7 @@ class PackageController extends Controller
                 'locations.city', 
                 'basePricing.variations', 
                 'attributes.attribute:id,name',
-                'mediaGallery'
+                'mediaGallery.media', 'addons.addon'
             ])
 
             ->when($name, fn($query) =>
@@ -144,7 +145,23 @@ class PackageController extends Controller
         $paginatedItems = $allItems->forPage($page, $perPage);
 
         $transformed = $paginatedItems->map(function ($package) {
+            
             $data = $package->toArray(); // keep all original fields
+        
+            // Replace transformed fields for addons
+            $data['addons'] = collect($package->addons)->map(function ($addon) {
+                return [
+                    'id'                      => $addon->id,
+                    'addon_id'                => $addon->addon_id,
+                    'addon_name'              => $addon->addon->name ?? null,
+                    'addon_type'              => $addon->addon->type ?? null,
+                    'addon_description'       => $addon->addon->description ?? null,
+                    'addon_price'             => $addon->addon->price ?? null,
+                    'addon_sale_price'        => $addon->addon->sale_price ?? null,
+                    'addon_price_calculation' => $addon->addon->price_calculation ?? null,
+                    'addon_active_status'     => $addon->addon->active_status ?? null,
+                ];
+            });
         
             // Replace transformed fields
             $data['locations'] = collect($package->locations)->map(function ($location) {
@@ -221,6 +238,7 @@ class PackageController extends Controller
             'categories'            => 'nullable|array',
             'attributes'            => 'nullable|array',
             'tags'                  => 'nullable|array',
+            'addons'                => 'nullable|array',
             'availability'          => 'nullable|array',
         ];
     
@@ -425,6 +443,16 @@ class PackageController extends Controller
                 }
             }
 
+            // Package Addons
+            if ($request->has('addons')) {
+                foreach ($request->addons as $addon_id) {
+                    PackageAddon::create([
+                        'package_id' => $package->id,
+                        'addon_id'   => $addon_id,
+                    ]);
+                }
+            }
+
             if ($request->has('attributes')) {
             
                 foreach ($request->input('attributes') as $attribute) {
@@ -493,7 +521,7 @@ class PackageController extends Controller
             // 'basePricing.variations',
             'inclusionsExclusions',
             'mediaGallery.media',
-            'availability',
+            'availability', 'addons.addon',
             'seo',
             'faqs',
         ])->find($id);
@@ -635,6 +663,20 @@ class PackageController extends Controller
                 'city_name'  => $location->city->name ?? null,
             ];
         });
+
+        $packageData['addons'] = collect($package->addons)->map(function ($addon) {
+            return [
+                'id'                      => $addon->id,
+                'addon_id'                => $addon->addon_id,
+                'addon_name'              => $addon->addon->name ?? null,
+                'addon_type'              => $addon->addon->type ?? null,
+                'addon_description'       => $addon->addon->description ?? null,
+                'addon_price'             => $addon->addon->price ?? null,
+                'addon_sale_price'        => $addon->addon->sale_price ?? null,
+                'addon_price_calculation' => $addon->addon->price_calculation ?? null,
+                'addon_active_status'     => $addon->addon->active_status ?? null,
+            ];
+        });
     
         // Replace mediaobject with just `media data`
         $packageData['media_gallery'] = collect($package->mediaGallery)->map(function ($media) {
@@ -706,6 +748,7 @@ class PackageController extends Controller
             'categories'            => 'nullable|array',
             'attributes'            => 'nullable|array',
             'tags'                  => 'nullable|array',
+            'addons'                => 'nullable|array',
             'availability'          => 'nullable|array',
         ];
     
@@ -853,6 +896,15 @@ class PackageController extends Controller
                 foreach ($request->categories as $categoryId) {
                     $package->categories()->create([
                         'category_id' => $categoryId
+                    ]);
+                }
+            }
+
+            if ($request->has('addons')) {
+                $package->addons()->delete();
+                foreach ($request->addons as $addonId) {
+                    $package->addons()->create([
+                        'addon_id' => $addonId
                     ]);
                 }
             }

@@ -142,8 +142,10 @@ class StripeController extends Controller
                 'coupons_applied' => $order->applied_coupons ?? [],
                 'media' => $orderable->mediaGallery->map(function ($mg) {
                     return [
-                        'url' => $mg->media?->url,
-                        'alt' => $mg->media?->alt_text,
+                        'id'   => $mg->media?->id,
+                        'name' => $mg->media?->name,
+                        'url'  => $mg->media?->url,
+                        'alt'  => $mg->media?->alt_text,
                     ];
                 }),
             ];

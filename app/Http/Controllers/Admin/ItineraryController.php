@@ -147,7 +147,7 @@ class ItineraryController extends Controller
             $data = $itinerary->toArray(); // keep all original fields
         
             // Replace transformed fields for addons
-            $data['addons'] = collect($activity->addons)->map(function ($addon) {
+            $data['addons'] = collect($itinerary->addons)->map(function ($addon) {
                 return [
                     'id'                      => $addon->id,
                     'addon_id'                => $addon->addon_id,

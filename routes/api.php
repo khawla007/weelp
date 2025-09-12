@@ -63,7 +63,8 @@ Route::post('/password/forgot', [AuthController::class, 'forgotPassword']);
 Route::post('/password/reset', [AuthController::class, 'resetPassword']);
 Route::post('/refresh-token', [AuthController::class, 'refreshToken']);
 
-Route::middleware('auth:api')->group(function () {
+// Route::middleware('auth:api')->group(function () {
+Route::middleware(['auth:api', 'customer'])->prefix('customer')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     // Route::get('/getuserdetails', [AuthController::class, 'getUserDetails']);
     // Route::get('/user', [UserController::class, 'getUser']);
@@ -72,6 +73,14 @@ Route::middleware('auth:api')->group(function () {
 
     // 👇 Logged-in user ke orders
     Route::get('/userorders', [UserProfileController::class, 'getUserOrders']);
+
+    Route::prefix('review')->group(function () {
+        Route::get('/', [UserProfileController::class, 'reviewIndex']);
+        Route::post('/', [UserProfileController::class, 'reviewStore']);
+        Route::get('/{id}', [UserProfileController::class, 'reviewShow']);
+        Route::post('/{id}', [UserProfileController::class, 'reviewUpdate']);
+        Route::delete('/{id}', [UserProfileController::class, 'reviewDelete']);
+    });
 });
 
 // Stripe Payment api

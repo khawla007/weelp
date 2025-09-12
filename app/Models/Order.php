@@ -33,5 +33,13 @@ class Order extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function review()
+    {
+        return $this->hasOne(\App\Models\Review::class, 'item_id', 'orderable_id')
+            ->where('user_id', $this->user_id)
+            ->where('item_type', strtolower(class_basename($this->orderable_type)));
+    }
+
 }
 

@@ -23,6 +23,8 @@ use App\Models\PackageCategory;
 use App\Models\PackageAttribute;
 use App\Models\PackageTag;
 use App\Models\PackageAvailability;
+use App\Models\Addon;
+use App\Models\PackageAddon;
 
 class PackageSeeder extends Seeder
 {
@@ -507,6 +509,19 @@ class PackageSeeder extends Seeder
                 'quantity_based_Package' => $quantityBased = fake()->boolean,
                 'max_quantity'           => $quantityBased ? fake()->numberBetween(1, 100) : null,
             ]);
+
+            $addonIds = Addon::where('type', 'package')
+            ->where('active_status', true)
+            ->inRandomOrder()
+            ->limit(rand(2, 4))
+            ->pluck('id');
+
+            foreach ($addonIds as $addonId) {
+                PackageAddon::create([
+                    'package_id' => $package->id,
+                    'addon_id'   => $addonId,
+                ]);
+            }
         }
     }
 
