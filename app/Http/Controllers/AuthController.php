@@ -139,11 +139,20 @@ class AuthController extends Controller
             ['token' => $hashedToken, 'created_at' => now()]
         );
     
-        // Send the original token in the email
-        Mail::send('emails.reset-password', ['token' => $token], function ($message) use ($request) {
+            // 👇 Yahan se frontend ka URL banao
+        $resetUrl = env('FRONTEND_URL') . '/reset-password?token=' . $token;
+
+        // Send the URL in the email
+        Mail::send('emails.reset-password', ['url' => $resetUrl], function ($message) use ($request) {
             $message->to($request->email);
             $message->subject('Reset Password Notification');
         });
+
+        // Send the original token in the email
+        // Mail::send('emails.reset-password', ['token' => $token], function ($message) use ($request) {
+        //     $message->to($request->email);
+        //     $message->subject('Reset Password Notification');
+        // });
     
         return response()->json([
             'success' => true,
