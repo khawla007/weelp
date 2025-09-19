@@ -4,6 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Mail\CustomerRefundedOrderMail;
+use App\Mail\CustomerCompletedOrderMail;
+use App\Mail\CustomerCancelledOrderMail;
+use Illuminate\Support\Facades\Mail; // ✅ Ye zaruri hai
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use App\Models\Order;
@@ -191,6 +195,97 @@ class OrderController extends Controller
         return response()->json([
             'success' => true,
             'data'    => $formatted
+        ]);
+    }
+
+    public function updateOrder(Request $request, $id)
+    {
+        // ---------------- Order Fetch ----------------
+        $order = Order::with(['payment', 'user'])->findOrFail($id);
+        $status = $request->status;
+
+        // ---------------- Refund Logic ----------------
+        if ($status === 'refunded') {
+            if (!$order->payment || $order->payment->payment_status !== 'paid') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Refund not possible. Payment not found or not paid.',
+                ], 400);
+            }
+
+            try {
+                \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+
+                $refund = \Stripe\Refund::create([
+                    'payment_intent' => $order->payment->payment_intent_id,
+                ]);
+
+                if (isset($refund->status) && $refund->status === 'succeeded') {
+                    $order->payment->update(['payment_status' => 'refunded']);
+                    $order->update(['status' => 'refunded']);
+                }
+
+                Mail::to($order->user->email)->send(new \App\Mail\CustomerRefundedOrderMail($order));
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Refund initiated successfully. Status updated in table.',
+                    'refund'  => $refund,
+                    'email'   => $order->user->email,
+                ]);
+
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Refund failed.',
+                    'error'   => $e->getMessage(),
+                ], 500);
+            }
+        }
+
+        // ---------------- Manual Status Update ----------------
+        $allowedStatuses = ['completed', 'cancelled'];
+        if (!in_array($status, $allowedStatuses)) {
+            return response()->json([
+                'success' => false,
+                'message' => "You can only update status to: " . implode(', ', $allowedStatuses),
+            ], 400);
+        }
+
+        // Completed only if payment_status is paid
+        if ($status === 'completed') {
+            if (!$order->payment || $order->payment->payment_status !== 'paid') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot mark order as completed. Payment not paid yet.',
+                ], 400);
+            }
+        }
+
+        // Cancelled only if payment_status is pending
+        if ($status === 'cancelled') {
+            if (!$order->payment || $order->payment->payment_status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot cancel order. Payment is not pending.',
+                ], 400);
+            }
+        }
+
+        // Update order status
+        $order->update(['status' => $status]);
+
+        // Email sending
+        if ($status === 'completed') {
+            Mail::to($order->user->email)->send(new \App\Mail\CustomerCompletedOrderMail($order));
+        } elseif ($status === 'cancelled') {
+            Mail::to($order->user->email)->send(new \App\Mail\CustomerCancelledOrderMail($order));
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Order status updated to {$status}.",
+            'data'    => $order,
         ]);
     }
     

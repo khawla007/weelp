@@ -3,6 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+
+use Illuminate\Support\Facades\Mail;
+use App\Mail\Customer\CustomerProcessingOrderMail;
+use App\Mail\Admin\AdminNewOrderMail;
+
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use App\Models\User;
@@ -12,72 +17,9 @@ use App\Models\OrderEmergencyContact;
 use Stripe\Stripe;
 use Stripe\Checkout\Session as StripeSession;
 
+
 class StripeController extends Controller
 {
-
-    // public function initializeCheckout(Request $request)
-    // {
-    //     \Stripe\Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
-    
-    //     $validated = $request->validate([
-    //         'amount' => 'required|integer|min:1',
-    //         'currency' => 'required|string|in:inr,usd,eur', // Add other currencies if needed
-    //     ]);
-    
-    //     $intent = \Stripe\PaymentIntent::create([
-    //         'amount' => $validated['amount'],
-    //         'currency' => $validated['currency'],
-    //         'automatic_payment_methods' => ['enabled' => true],
-    //     ]);
-    
-    //     return response()->json([
-    //         'clientSecret' => $intent->client_secret,
-    //     ]);
-    // }
-    
-    // public function initializeCheckout(Request $request)
-    // {
-    //     \Stripe\Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
-    
-    //     $validated = $request->validate([
-    //         'amount' => 'required|integer|min:1',
-    //         'currency' => 'required|string|in:inr,usd,eur',
-    //         'existing_intent_id' => 'nullable|string',
-    //     ]);
-    
-    //     // ✅ STEP 1: Check if frontend sent old intent to reuse
-    //     if (!empty($validated['existing_intent_id'])) {
-    //         try {
-    //             $existingIntent = \Stripe\PaymentIntent::retrieve($validated['existing_intent_id']);
-    
-    //             // ✅ STEP 2: Check if it's still usable
-    //             if (
-    //                 $existingIntent &&
-    //                 $existingIntent->status === 'requires_payment_method' &&
-    //                 $existingIntent->amount == $validated['amount'] &&
-    //                 $existingIntent->currency == $validated['currency']
-    //             ) {
-    //                 return response()->json([
-    //                     'clientSecret' => $existingIntent->client_secret,
-    //                 ]);
-    //             }
-    //         } catch (\Exception $e) {
-    //             // If something goes wrong, fallback to creating new intent
-    //         }
-    //     }
-    
-    //     // ✅ STEP 3: Create new intent if none found or invalid
-    //     $intent = \Stripe\PaymentIntent::create([
-    //         'amount' => $validated['amount'],
-    //         'currency' => $validated['currency'],
-    //         'automatic_payment_methods' => ['enabled' => true],
-    //     ]);
-    
-    //     return response()->json([
-    //         'clientSecret' => $intent->client_secret,
-    //         'intent_id' => $intent->id,
-    //     ]);
-    // }
 
     public function createOrder(Request $request)
     {
@@ -218,9 +160,69 @@ class StripeController extends Controller
             $order = Order::with(['emergencyContact', 'payment'])->find($payment->order_id);
 
             if ($payment->fresh()->payment_status === 'paid' && $order) {
+
                 $order->update([
-                    'status' => 'completed',
+                    'status' => 'processing',
                 ]);
+
+                // Send customer mail
+                Mail::to($order->user->email)->send(new \App\Mail\CustomerProcessingOrderMail($order));
+                // Send admin mail
+                Mail::to(config('mail.admin_address', 'khawla@fanaticcoders.com'))->send(new \App\Mail\AdminNewOrderMail($order));
+            }
+        }
+        
+        // ❌ Payment failed
+        elseif ($event->type == 'payment_intent.payment_failed') {
+            $intent_id = $event->data->object->id;
+
+            $payment = OrderPayment::where('payment_intent_id', $intent_id)->first();
+            if ($payment) {
+                $payment->update(['payment_status' => 'failed']);
+                $order = Order::with(['user'])->find($payment->order_id);
+
+                if ($order) {
+                    $order->update(['status' => 'failed']);
+
+                    // Customer mail
+                    Mail::to($order->user->email)->send(new CustomerFailedOrderMail($order));
+                }
+            }
+        }
+
+        // 💸 Refunded
+        elseif ($event->type == 'charge.refunded') {
+            $charge_id = $event->data->object->id;
+
+            $payment = OrderPayment::where('charge_id', $charge_id)->first();
+            if ($payment) {
+                $payment->update(['payment_status' => 'refunded']);
+                $order = Order::with(['user'])->find($payment->order_id);
+
+                if ($order) {
+                    $order->update(['status' => 'refunded']);
+
+                    // Customer mail
+                    Mail::to($order->user->email)->send(new CustomerRefundedOrderMail($order));
+                }
+            }
+        }
+
+        // ❌ Payment canceled
+        elseif ($event->type == 'payment_intent.canceled') {
+            $intent_id = $event->data->object->id;
+        
+            $payment = OrderPayment::where('payment_intent_id', $intent_id)->first();
+            if ($payment) {
+                $payment->update(['payment_status' => 'cancelled']);
+                $order = Order::with(['user'])->find($payment->order_id);
+        
+                if ($order) {
+                    $order->update(['status' => 'cancelled']);
+        
+                    // Customer mail
+                    Mail::to($order->user->email)->send(new CustomerCancelledOrderMail($order));
+                }
             }
         }
 
@@ -429,12 +431,10 @@ class StripeController extends Controller
             $order->item_snapshot_json = json_encode(collect($snapshot)->toArray());
             $order->save();
         }
-        // $order->item_snapshot_json = json_encode($snapshot);
-
-        // $order->save();
         
         // ✅ Setup Stripe
         Stripe::setApiKey(env('STRIPE_SECRET'));
+        // \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
 
         $checkoutSession = StripeSession::create([
             'payment_method_types' => ['card'],
@@ -476,6 +476,7 @@ class StripeController extends Controller
     public function confirmPayment(Request $request)
     {
         Stripe::setApiKey(env('STRIPE_SECRET'));
+        // \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
 
         $sessionId = $request->input('session_id');
 
@@ -504,7 +505,7 @@ class StripeController extends Controller
 
             if ($payment->fresh()->payment_status === 'paid' && $order) {
                 $order->update([
-                    'status' => 'completed',
+                    'status' => 'processing',
                 ]);
             }
             

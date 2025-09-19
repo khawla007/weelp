@@ -271,6 +271,7 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::post('/', [OrderController::class, 'store']);
         Route::get('/', [OrderController::class, 'index']);
         Route::get('/{id}', [OrderController::class, 'show']);
+        Route::put('/{id}', [OrderController::class, 'updateOrder']);
         Route::delete('/{id}', [OrderController::class, 'destroy']);
     });
 
@@ -313,6 +314,7 @@ Route::get('/categories', [PublicCategoryController::class, 'getAllCategories'])
 Route::get('/tags', [PublicTagController::class, 'getAllTags']);
 
 Route::prefix('region')->group(function () {
+    Route::get('/', [PublicRegionController::class, 'getRegions']);
     Route::get('/{slug}', [PublicRegionController::class, 'getRegionDetails']);
     Route::get('/{region_slug}/cities', [PublicRegionController::class, 'getCitiesByRegion']);
     Route::get('/{region_slug}/region-packages', [PublicRegionController::class, 'getPackagesByRegion']);

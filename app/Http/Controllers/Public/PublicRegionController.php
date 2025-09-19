@@ -16,6 +16,32 @@ use Illuminate\Http\Request;
 class PublicRegionController extends Controller
 {
 
+    // -----------------------Get all Regions--------------------------
+    public function getRegions()
+    {
+        $regions = Region::all();
+    
+        if ($regions->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No regions found'
+            ], 404);
+        }
+    
+        return response()->json([
+            'success' => true,
+            'data' => $regions->map(function ($region) {
+                return [
+                    'id' => $region->id,
+                    'name' => $region->name,
+                    'slug' => $region->slug,
+                    // 'description' => $region->description,
+                    // 'image_url' => $region->image_url,
+                ];
+            })
+        ], 200);
+    }
+
     // --------------------Getting Region Singel page details----------------------
     public function getRegionDetails($slug)
     {
