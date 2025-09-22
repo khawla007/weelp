@@ -157,7 +157,7 @@ class StripeController extends Controller
                 'payment_status' => 'paid',
             ]);
 
-            $order = Order::with(['emergencyContact', 'payment'])->find($payment->order_id);
+            $order = Order::with(['user', 'emergencyContact', 'payment'])->find($payment->order_id);
 
             if ($payment->fresh()->payment_status === 'paid' && $order) {
 
