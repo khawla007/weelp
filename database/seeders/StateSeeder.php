@@ -20,8 +20,9 @@ class StateSeeder extends Seeder
     {
         // Insert States
         $states = [
+            // India states
             [
-                'country_id' => 1, // India
+                'country_id' => 1,
                 'name' => 'Rajasthan',
                 'code' => 'RJ',
                 'slug' => 'rajasthan',
@@ -39,8 +40,90 @@ class StateSeeder extends Seeder
                 'description' => 'The party capital of India.',
                 'feature_image' => 'https://example.com/goa.jpg',
                 'featured_destination' => false,
-            ]
-        ];
+            ],
+            [
+                'country_id' => 1,
+                'name' => 'Maharashtra',
+                'code' => 'MH',
+                'slug' => 'maharashtra',
+                'type' => 'state',
+                'description' => 'The economic hub of India.',
+                'feature_image' => 'https://example.com/maharashtra.jpg',
+                'featured_destination' => true,
+            ],
+            [
+                'country_id' => 1,
+                'name' => 'Kerala',
+                'code' => 'KL',
+                'slug' => 'kerala',
+                'type' => 'state',
+                'description' => 'God\'s own country.',
+                'feature_image' => 'https://example.com/kerala.jpg',
+                'featured_destination' => false,
+            ],
+            [
+                'country_id' => 1,
+                'name' => 'Tamil Nadu',
+                'code' => 'TN',
+                'slug' => 'tamil-nadu',
+                'type' => 'state',
+                'description' => 'Land of temples and culture.',
+                'feature_image' => 'https://example.com/tamil-nadu.jpg',
+                'featured_destination' => true,
+            ],
+        
+            // France states
+            [
+                'country_id' => 5,
+                'name' => 'Île-de-France',
+                'code' => 'IDF',
+                'slug' => 'ile-de-france',
+                'type' => 'state',
+                'description' => 'The state around Paris.',
+                'feature_image' => 'https://example.com/ile-de-france.jpg',
+                'featured_destination' => true,
+            ],
+            [
+                'country_id' => 5,
+                'name' => 'Provence-Alpes-Côte d\'Azur',
+                'code' => 'PACA',
+                'slug' => 'provence-alpes-cote-dazur',
+                'type' => 'state',
+                'description' => 'Beautiful Mediterranean coastline.',
+                'feature_image' => 'https://example.com/paca.jpg',
+                'featured_destination' => true,
+            ],
+            [
+                'country_id' => 5,
+                'name' => 'Nouvelle-Aquitaine',
+                'code' => 'NAQ',
+                'slug' => 'nouvelle-aquitaine',
+                'type' => 'state',
+                'description' => 'The largest state of France.',
+                'feature_image' => 'https://example.com/nouvelle-aquitaine.jpg',
+                'featured_destination' => false,
+            ],
+            [
+                'country_id' => 5,
+                'name' => 'Occitanie',
+                'code' => 'OCC',
+                'slug' => 'occitanie',
+                'type' => 'state',
+                'description' => 'Southern France with rich history.',
+                'feature_image' => 'https://example.com/occitanie.jpg',
+                'featured_destination' => false,
+            ],
+            [
+                'country_id' => 5,
+                'name' => 'Brittany',
+                'code' => 'BRE',
+                'slug' => 'brittany',
+                'type' => 'state',
+                'description' => 'Coastal state with Celtic heritage.',
+                'feature_image' => 'https://example.com/brittany.jpg',
+                'featured_destination' => true,
+            ],
+        ];        
 
         $mediaIds = range(1, 5);
 

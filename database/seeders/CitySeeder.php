@@ -19,6 +19,7 @@ class CitySeeder extends Seeder
     {
         // 1️⃣ Insert Cities
         $cities = [
+            // Rajasthan (state_id = 1)
             [
                 'state_id' => 1, // Rajasthan
                 'name' => 'Jaipur',
@@ -42,24 +43,66 @@ class CitySeeder extends Seeder
             [
                 'state_id' => 1,
                 'name' => 'Bihad',
-                'code' => 'UD',
+                'code' => 'BI',
                 'slug' => 'bihad',
                 'type' => 'city',
-                'description' => 'The City of Lakes.',
-                'feature_image' => 'https://example.com/udaipur.jpg',
+                'description' => 'A historic region.',
+                'feature_image' => 'https://example.com/bihad.jpg',
                 'featured_destination' => false,
             ],
             [
                 'state_id' => 1,
                 'name' => 'Jeend',
-                'code' => 'UD',
+                'code' => 'JE',
                 'slug' => 'jeend',
                 'type' => 'city',
-                'description' => 'The City of Lakes.',
-                'feature_image' => 'https://example.com/udaipur.jpg',
+                'description' => 'A cultural city in Rajasthan.',
+                'feature_image' => 'https://example.com/jeend.jpg',
                 'featured_destination' => false,
-            ]
-        ];
+            ],
+        
+            // Île-de-France (state_id = 6)
+            [
+                'state_id' => 6,
+                'name' => 'Paris',
+                'code' => 'PAR',
+                'slug' => 'paris',
+                'type' => 'city',
+                'description' => 'The capital city of France, known as the City of Light.',
+                'feature_image' => 'https://example.com/paris.jpg',
+                'featured_destination' => true,
+            ],
+            [
+                'state_id' => 6,
+                'name' => 'Versailles',
+                'code' => 'VER',
+                'slug' => 'versailles',
+                'type' => 'city',
+                'description' => 'Famous for the Palace of Versailles.',
+                'feature_image' => 'https://example.com/versailles.jpg',
+                'featured_destination' => true,
+            ],
+            [
+                'state_id' => 6,
+                'name' => 'Boulogne-Billancourt',
+                'code' => 'BB',
+                'slug' => 'boulogne-billancourt',
+                'type' => 'city',
+                'description' => 'A major suburb of Paris.',
+                'feature_image' => 'https://example.com/boulogne.jpg',
+                'featured_destination' => false,
+            ],
+            [
+                'state_id' => 6,
+                'name' => 'Saint-Denis',
+                'code' => 'SD',
+                'slug' => 'saint-denis',
+                'type' => 'city',
+                'description' => 'Known for the Basilica of Saint-Denis.',
+                'feature_image' => 'https://example.com/saint-denis.jpg',
+                'featured_destination' => false,
+            ],
+        ];        
 
         $mediaIds = range(1, 5);
 

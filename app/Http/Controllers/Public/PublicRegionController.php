@@ -570,7 +570,7 @@ class PublicRegionController extends Controller
                 'basePricing.variations',
                 'mediaGallery',
                 'categories.category',
-                'tags',
+                'tags.tag',
                 'locations.city.state.country.regions'
             ])
             ->where('featured_package', true)
@@ -612,8 +612,8 @@ class PublicRegionController extends Controller
                 })->toArray(),
                 'tags' => $package->tags->map(function ($tag) {
                     return [
-                        'id' => $tag->id ?? null,
-                        'name' => $tag->name ?? null,
+                        'id' => $tag->tag->id ?? null,
+                        'name' => $tag->tag->name ?? null,
                     ];
                 })->toArray(),
                 'base_pricing' => $package->basePricing,

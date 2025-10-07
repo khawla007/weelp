@@ -38,6 +38,7 @@ use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Admin\AddonController;
 
 // Public
+use App\Http\Controllers\Public\PublicMenuController;
 use App\Http\Controllers\Public\PublicRegionController;
 use App\Http\Controllers\Public\PublicCountryController;
 use App\Http\Controllers\Public\PublicStateController;
@@ -309,6 +310,11 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
 // Public-------------------------API___________________Public API_________________Public -----------------------API
 
 // *****************************************************************************************************************
+
+// ____Menu Api
+Route::prefix('menu')->group(function () {
+    Route::get('/{region_slug}', [PublicMenuController::class, 'getAllRegionsWithCities']);
+});
 
 Route::get('/categories', [PublicCategoryController::class, 'getAllCategories']);
 Route::get('/tags', [PublicTagController::class, 'getAllTags']);
