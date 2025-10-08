@@ -2,6 +2,7 @@
 
 // Admin
 use Illuminate\Support\Facades\Route;
+use Stevebauman\Location\Facades\Location;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserProfileController;
@@ -266,6 +267,8 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
         Route::delete('/{id}/partial-delete', [PackageController::class, 'partialDelete']); //partialDelete
         Route::post('/bulk-delete', [PackageController::class, 'bulkDestroy']);
     });
+
+
 
     // Admin Side Order Create Update Delete route
     Route::prefix('orders')->group(function () {
