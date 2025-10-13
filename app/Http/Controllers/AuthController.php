@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 
 use Illuminate\Http\Request;
+use App\Mail\ResetPasswordMail;
 use Illuminate\Support\Facades\Password;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -110,41 +111,80 @@ class AuthController extends Controller
      * Handle the user forgot password request.
     */
 
+    // public function forgotPassword(Request $request)
+    // {
+    //     $request->validate([
+    //         'email' => 'required|email',
+    //     ]);
+    
+    //     $user = User::where('email', $request->email)->first();
+    
+    //     if (!$user) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Email address not found.',
+    //         ]);
+    //     }
+    
+    //     $payload = [
+    //         'email' => $request->email,
+    //         'exp' => now()->addMinutes(10)->timestamp,
+    //     ];
+    //     $token = JWTAuth::customClaims($payload)->fromUser($user);
+    
+    //     // Store only the hash of the token
+    //     $hashedToken = Hash::make($token);
+    
+    //     DB::table('password_resets')->updateOrInsert(
+    //         ['email' => $request->email],
+    //         ['token' => $hashedToken, 'created_at' => now()]
+    //     );
+
+    //     // Send the original token in the email
+    //     Mail::send('emails.reset-password', ['token' => $token], function ($message) use ($request) {
+    //         $message->to($request->email);
+    //         $message->subject('Reset Password Notification');
+    //     });
+    
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Password reset link sent to your email.',
+    //     ]);
+    // }
+
     public function forgotPassword(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
         ]);
-    
+
         $user = User::where('email', $request->email)->first();
-    
+
         if (!$user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Email address not found.',
             ]);
         }
-    
+
+        // Generate JWT token with 10 minutes expiry
         $payload = [
             'email' => $request->email,
             'exp' => now()->addMinutes(10)->timestamp,
         ];
         $token = JWTAuth::customClaims($payload)->fromUser($user);
-    
-        // Store only the hash of the token
+
+        // Store only the hashed token
         $hashedToken = Hash::make($token);
-    
+
         DB::table('password_resets')->updateOrInsert(
             ['email' => $request->email],
             ['token' => $hashedToken, 'created_at' => now()]
         );
 
-        // Send the original token in the email
-        Mail::send('emails.reset-password', ['token' => $token], function ($message) use ($request) {
-            $message->to($request->email);
-            $message->subject('Reset Password Notification');
-        });
-    
+        // Send mail using new Mailable
+        Mail::to($request->email)->send(new ResetPasswordMail($token));
+
         return response()->json([
             'success' => true,
             'message' => 'Password reset link sent to your email.',
