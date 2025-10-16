@@ -60,6 +60,11 @@ Route::get('/test', function () {
 });
 
 Route::post('/register', [AuthController::class, 'register']);
+
+Route::get('/verify-email', [AuthController::class, 'verifyEmail']);
+
+Route::post('/resend-verification', [AuthController::class, 'resendVerification']);
+
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/password/forgot', [AuthController::class, 'forgotPassword']);
 Route::post('/password/reset', [AuthController::class, 'resetPassword']);

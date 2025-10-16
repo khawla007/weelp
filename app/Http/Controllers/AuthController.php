@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Mail\ResetPasswordMail;
 use Illuminate\Support\Facades\Password;
 use App\Models\User;
+use App\Mail\VerifyEmailMail;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -19,40 +20,149 @@ class AuthController extends Controller
 {
 
      /**
-     * Handle the user register request.
+     * Handle the user register request Old.
+    */
+    // public function register(Request $request)
+    // {
+        
+    //     $validator = Validator::make($request->all(), [
+    //         'name' => 'required|string|max:255', 
+    //         'email' => 'required|email|unique:users,email',
+    //         'password' => 'required|string|min:8',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Validation Error',
+    //             'errors' => $validator->errors(),
+    //         ], 422);
+    //     }
+
+    //     $user = User::create([
+    //         'name' => $request->name,
+    //         'email' => $request->email,
+    //         'password' => Hash::make($request->password),
+    //         'role' => User::ROLE_CUSTOMER,
+    //     ]);
+
+    //     $token = auth()->login($user);
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'User registered successfully',
+    //         'user' => $user,
+    //         'token' => $token,
+    //     ], 201);
+    // }
+
+    /**
+     * Handle the user register request New.
     */
     public function register(Request $request)
     {
-        
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255', 
+        $request->validate([
+            'name' => 'required|string',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8',
+            'password' => 'required|min:6|confirmed',
         ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation Error',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => User::ROLE_CUSTOMER,
         ]);
 
-        $token = auth()->login($user);
+        // Generate JWT token valid for 24 hours
+        $payload = [
+            'email' => $user->email,
+            'exp' => now()->addDay()->timestamp,
+        ];
+        $token = JWTAuth::customClaims($payload)->fromUser($user);
+
+        // Store hashed token
+        DB::table('email_verifications')->updateOrInsert(
+            ['email' => $user->email],
+            ['token' => Hash::make($token), 'created_at' => now()]
+        );
+
+        // Send verification email
+        Mail::to($user->email)->send(new VerifyEmailMail($user, $token));
 
         return response()->json([
             'success' => true,
-            'message' => 'User registered successfully',
-            'user' => $user,
-            'token' => $token,
-        ], 201);
+            'message' => 'Registration successful! Please verify your email.',
+        ]);
+    }
+
+    /**
+     * Handle the user email verfication while regestring account.
+    */
+    public function verifyEmail(Request $request)
+    {
+        $token = $request->token;
+
+        try {
+            $payload = JWTAuth::setToken($token)->getPayload();
+            $email = $payload['email'];
+
+            $user = User::where('email', $email)->firstOrFail();
+
+            // Update email_verified_at
+            $user->email_verified_at = now();
+            $user->save();
+
+            // Delete verification token record
+            DB::table('email_verifications')->where('email', $email)->delete();
+
+            return response()->json([
+                'success' => true,
+                'email'   => $email,
+                'message' => 'Email verified successfully!'
+            ]);
+        } catch (\Exception $e) {
+            $payload = JWTAuth::setToken($token)->getPayload();
+            $email = $payload['email'];
+
+            return response()->json([
+                'success' => false,
+                'email'   => $email,
+                'message' => 'Invalid or expired token.'
+            ]);
+        }
+    }
+
+    public function resendVerification(Request $request)
+    {
+        $user = User::where('email', $request->email)->firstOrFail();
+
+        if ($user->email_verified_at) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Email already verified.'
+            ]);
+        }
+
+        // Generate new JWT token
+        $payload = [
+            'email' => $user->email,
+            'exp' => now()->addDay()->timestamp,
+        ];
+        $token = JWTAuth::customClaims($payload)->fromUser($user);
+
+        // Update DB token
+        DB::table('email_verifications')->updateOrInsert(
+            ['email' => $user->email],
+            ['token' => Hash::make($token), 'created_at' => now()]
+        );
+
+        // Send email again
+        Mail::to($user->email)->send(new VerifyEmailMail($user, $token));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Verification link resent successfully.'
+        ]);
     }
 
     /**
