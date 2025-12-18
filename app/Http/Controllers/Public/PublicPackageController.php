@@ -23,7 +23,7 @@ class PublicPackageController extends Controller
             'basePricing.variations',
             'basePricing.blackoutDates',
             'inclusionsExclusions',
-            'mediaGallery',
+            'mediaGallery.media',
             'seo',
             'categories.category', 
             'attributes',
@@ -67,8 +67,22 @@ class PublicPackageController extends Controller
                         'attribute_value' => $attribute->attribute_value,
                     ];
                 }),
-                'tags' => $package->tags->pluck('name')->toArray(),
-                'media_gallery' => $package->mediaGallery->pluck('url')->toArray(),
+                // 'tags' => $package->tags->pluck('name')->toArray(),
+                'tags' => $package->tags->map(function ($tag) {
+                    return [
+                        'id' => $tag->tag->id,
+                        'name' => $tag->tag->name,
+                    ];
+                })->toArray(),
+                // 'media_gallery' => $package->mediaGallery->pluck('url')->toArray(),
+                'media_gallery' => $package->mediaGallery->map(function ($media) {
+                    return [
+                        'id' => $media->media->id,
+                        'name' => $media->media->name,
+                        'alt_text' => $media->media->alt_text,
+                        'url' => $media->media->url,
+                    ];
+                })->toArray(),
             ];
         });
 
@@ -99,7 +113,7 @@ class PublicPackageController extends Controller
             'basePricing.variations',
             'basePricing.blackoutDates',
             'inclusionsExclusions',
-            'mediaGallery',
+            'mediaGallery.media',
             'seo',
             'categories.category', 
             'attributes',
@@ -144,8 +158,22 @@ class PublicPackageController extends Controller
                         'attribute_value' => $attribute->attribute_value,
                     ];
                 }),
-                'tags' => $package->tags->pluck('name')->toArray(),
-                'media_gallery' => $package->mediaGallery->pluck('url')->toArray(),
+                // 'tags' => $package->tags->pluck('name')->toArray(),
+                'tags' => $package->tags->map(function ($tag) {
+                    return [
+                        'id' => $tag->tag->id,
+                        'name' => $tag->tag->name,
+                    ];
+                })->toArray(),
+                // 'media_gallery' => $package->mediaGallery->pluck('url')->toArray(),
+                'media_gallery' => $package->mediaGallery->map(function ($media) {
+                    return [
+                        'id' => $media->media->id,
+                        'name' => $media->media->name,
+                        'alt_text' => $media->media->alt_text,
+                        'url' => $media->media->url,
+                    ];
+                })->toArray(),
             ];
         });
 
@@ -176,7 +204,7 @@ class PublicPackageController extends Controller
             'basePricing.variations',
             'basePricing.blackoutDates',
             'inclusionsExclusions',
-            'mediaGallery',
+            'mediaGallery.media',
             'seo',
             'faqs',
             'categories.category', 
@@ -260,13 +288,21 @@ class PublicPackageController extends Controller
             }),
             'tags' => $package->tags->map(function ($tag) {
                 return [
-                    'id' => $tag->id,
-                    'name' => $tag->name,
+                    'id' => $tag->tag->id,
+                    'name' => $tag->tag->name,
                 ];
             })->toArray(),
             'base_pricing' => $package->basePricing,
             'inclusions_exclusions' => $package->inclusionsExclusions,
-            'media_gallery' => $package->mediaGallery,
+            // 'media_gallery' => $package->mediaGallery,
+            'media_gallery' => $package->mediaGallery->map(function ($media) {
+                return [
+                    'id' => $media->media->id,
+                    'name' => $media->media->name,
+                    'alt_text' => $media->media->alt_text,
+                    'url' => $media->media->url,
+                ];
+            })->toArray(),
             'information' => $package->information,
             'faqs' => $package->faqs,
             'seo' => $package->seo,

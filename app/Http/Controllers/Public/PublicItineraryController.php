@@ -23,7 +23,7 @@ class PublicItineraryController extends Controller
             'basePricing.variations',
             'basePricing.blackoutDates',
             'inclusionsExclusions',
-            'mediaGallery',
+            'mediaGallery.media',
             'seo',
             'categories.category', 
             'attributes',
@@ -67,8 +67,22 @@ class PublicItineraryController extends Controller
                         'value' => $attribute->attribute_value,
                     ];
                 }),
-                'tags' => $itinerary->tags->pluck('name')->toArray(),
-                'media_gallery' => $itinerary->mediaGallery->pluck('url')->toArray(),
+                // 'tags' => $itinerary->tags->pluck('name')->toArray(),
+                'tags' => $itinerary->tags->map(function ($tag) {
+                    return [
+                        'id' => $tag->tag->id,
+                        'name' => $tag->tag->name,
+                    ];
+                })->toArray(),
+                // 'media_gallery' => $itinerary->mediaGallery->pluck('url')->toArray(),
+                'media_gallery' => $itinerary->mediaGallery->map(function ($media) {
+                    return [
+                        'id' => $media->media->id,
+                        'name' => $media->media->name,
+                        'alt_text' => $media->media->alt_text,
+                        'url' => $media->media->url,
+                    ];
+                })->toArray(),
                 'seo' => $itinerary->seo ? [
                     'meta_title' => $itinerary->seo->meta_title,
                     'meta_description' => $itinerary->seo->meta_description,
@@ -100,7 +114,7 @@ class PublicItineraryController extends Controller
             'basePricing.variations',
             'basePricing.blackoutDates',
             'inclusionsExclusions',
-            'mediaGallery',
+            'mediaGallery.media',
             'seo',
             'categories.category', 
             'attributes',
@@ -145,8 +159,22 @@ class PublicItineraryController extends Controller
                         'value' => $attribute->attribute_value,
                     ];
                 }),
-                'tags' => $itinerary->tags->pluck('name')->toArray(),
-                'media_gallery' => $itinerary->mediaGallery->pluck('url')->toArray(),
+                // 'tags' => $itinerary->tags->pluck('name')->toArray(),
+                'tags' => $itinerary->tags->map(function ($tag) {
+                    return [
+                        'id' => $tag->tag->id,
+                        'name' => $tag->tag->name,
+                    ];
+                })->toArray(),
+                // 'media_gallery' => $itinerary->mediaGallery->pluck('url')->toArray(),
+                'media_gallery' => $itinerary->mediaGallery->map(function ($media) {
+                    return [
+                        'id' => $media->media->id,
+                        'name' => $media->media->name,
+                        'alt_text' => $media->media->alt_text,
+                        'url' => $media->media->url,
+                    ];
+                })->toArray(),
                 'seo' => $itinerary->seo ? [
                     'meta_title' => $itinerary->seo->meta_title,
                     'meta_description' => $itinerary->seo->meta_description,
@@ -178,7 +206,7 @@ class PublicItineraryController extends Controller
             'basePricing.variations',
             'basePricing.blackoutDates',
             'inclusionsExclusions',
-            'mediaGallery',
+            'mediaGallery.media',
             'seo',
             'categories.category', 
             'attributes.attribute',
@@ -260,13 +288,21 @@ class PublicItineraryController extends Controller
             }),
             'tags' => $itinerary->tags->map(function ($tag) {
                 return [
-                    'id' => $tag->id,
-                    'name' => $tag->name,
+                    'id' => $tag->tag->id,
+                    'name' => $tag->tag->name,
                 ];
             })->toArray(),
             'base_pricing' => $itinerary->basePricing,
             'inclusions_exclusions' => $itinerary->inclusionsExclusions,
-            'media_gallery' => $itinerary->mediaGallery,
+            // 'media_gallery' => $itinerary->mediaGallery,
+            'media_gallery' => $itinerary->mediaGallery->map(function ($media) {
+                return [
+                    'id' => $media->media->id,
+                    'name' => $media->media->name,
+                    'alt_text' => $media->media->alt_text,
+                    'url' => $media->media->url,
+                ];
+            })->toArray(),
             'seo' => $itinerary->seo,
         ];
 

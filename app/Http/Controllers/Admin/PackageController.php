@@ -763,28 +763,47 @@ class PackageController extends Controller
             $package->save();
     
             $scheduleMap = [];
-    
+
             // $updateOrCreateRelation = function ($relationName, $data, $extra = []) use ($package) {
             //     $relation = $package->$relationName();
-            //     $existing = $relation->pluck('id')->toArray();
-    
+            //     $modelClass = get_class($relation->getRelated());
+            //     $packageKey = $relation->getForeignKeyName(); // e.g., package_id
+            
             //     foreach ($data as $item) {
             //         $attributes = array_merge($item, $extra);
-            //         if (!empty($item['id']) && in_array($item['id'], $existing)) {
-            //             $relation->where('id', $item['id'])->update($attributes);
+            //         if (!empty($item['id'])) {
+            //             $model = $modelClass::find($item['id']);
+            //             if ($model) {
+            //                 $model->fill($attributes)->save();
+            //             }
             //         } else {
+            //             $attributes[$packageKey] = $package->id;
             //             $relation->create($attributes);
             //         }
             //     }
             // };
 
             $updateOrCreateRelation = function ($relationName, $data, $extra = []) use ($package) {
-                $relation = $package->$relationName();
-                $modelClass = get_class($relation->getRelated());
-                $packageKey = $relation->getForeignKeyName(); // e.g., package_id
+
+                $relation      = $package->$relationName();
+                $modelClass    = get_class($relation->getRelated());
+                $packageKey  = $relation->getForeignKeyName();
             
+                // 🔥 NEW: existing & incoming IDs
+                $existingIds = $relation->pluck('id')->toArray();
+                $incomingIds = collect($data)->pluck('id')->filter()->toArray();
+            
+                // 🔥 NEW: delete missing records
+                $deleteIds = array_diff($existingIds, $incomingIds);
+                if (!empty($deleteIds)) {
+                    $relation->whereIn('id', $deleteIds)->delete();
+                }
+            
+                // 🔁 update / create (same as before)
                 foreach ($data as $item) {
+            
                     $attributes = array_merge($item, $extra);
+            
                     if (!empty($item['id'])) {
                         $model = $modelClass::find($item['id']);
                         if ($model) {
@@ -795,7 +814,7 @@ class PackageController extends Controller
                         $relation->create($attributes);
                     }
                 }
-            };
+            }; 
     
             foreach (['information', 'faqs', 'inclusionsExclusions', 'mediaGallery'] as $relation) {
                 if ($request->has(Str::snake($relation))) {

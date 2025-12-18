@@ -714,27 +714,47 @@ class ItineraryController extends Controller
             $itinerary->save();
     
             $scheduleMap = [];
-    
+
             // $updateOrCreateRelation = function ($relationName, $data, $extra = []) use ($itinerary) {
             //     $relation = $itinerary->$relationName();
-            //     $existing = $relation->pluck('id')->toArray();
-    
+            //     $modelClass = get_class($relation->getRelated());
+            //     $itineraryKey = $relation->getForeignKeyName(); // e.g., itinerary_id
+            
             //     foreach ($data as $item) {
             //         $attributes = array_merge($item, $extra);
-            //         if (!empty($item['id']) && in_array($item['id'], $existing)) {
-            //             $relation->where('id', $item['id'])->update($attributes);
+            //         if (!empty($item['id'])) {
+            //             $model = $modelClass::find($item['id']);
+            //             if ($model) {
+            //                 $model->fill($attributes)->save();
+            //             }
             //         } else {
+            //             $attributes[$itineraryKey] = $itinerary->id;
             //             $relation->create($attributes);
             //         }
             //     }
             // };
+
             $updateOrCreateRelation = function ($relationName, $data, $extra = []) use ($itinerary) {
-                $relation = $itinerary->$relationName();
-                $modelClass = get_class($relation->getRelated());
-                $itineraryKey = $relation->getForeignKeyName(); // e.g., itinerary_id
+
+                $relation      = $itinerary->$relationName();
+                $modelClass    = get_class($relation->getRelated());
+                $itineraryKey  = $relation->getForeignKeyName();
             
+                // 🔥 NEW: existing & incoming IDs
+                $existingIds = $relation->pluck('id')->toArray();
+                $incomingIds = collect($data)->pluck('id')->filter()->toArray();
+            
+                // 🔥 NEW: delete missing records
+                $deleteIds = array_diff($existingIds, $incomingIds);
+                if (!empty($deleteIds)) {
+                    $relation->whereIn('id', $deleteIds)->delete();
+                }
+            
+                // 🔁 update / create (same as before)
                 foreach ($data as $item) {
+            
                     $attributes = array_merge($item, $extra);
+            
                     if (!empty($item['id'])) {
                         $model = $modelClass::find($item['id']);
                         if ($model) {
@@ -745,7 +765,7 @@ class ItineraryController extends Controller
                         $relation->create($attributes);
                     }
                 }
-            };
+            };            
             
     
             // foreach (['information', 'locations', 'faqs', 'inclusionsExclusions', 'mediaGallery'] as $relation) {
@@ -827,30 +847,6 @@ class ItineraryController extends Controller
                 $updateOrCreateChild('blackoutDates', $request->blackout_dates, \App\Models\ItineraryBlackoutDate::class, 'base_pricing_id');
             }
 
-            // if ($request->has('categories')) {
-            //     foreach ($request->categories as $category) {
-            //         if (!empty($category['id'])) {
-            //             $itinerary->categories()->where('id', $category['id'])->update(['category_id' => $category['category_id']]);
-            //         } else {
-            //             $itinerary->categories()->create(['category_id' => $tag['category_id']]);
-            //         }
-            //     }
-            // }
-
-            // if ($request->has('tags')) {
-            //     foreach ($request->tags as $tag) {
-            //         if (!empty($tag['id'])) {
-            //             $itinerary->tags()->where('id', $tag['id'])->update(['tag_id' => $tag['tag_id']]);
-            //         } else {
-            //             $itinerary->tags()->create(['tag_id' => $tag['tag_id']]);
-            //         }
-            //     }
-            // }
-    
-            // if ($request->has('attributes')) {
-            //     $updateOrCreateRelation('attributes', $request->input('attributes'));
-            // }
-
             // Handle locations [1, 2, 3]
             if ($request->has('locations')) {
                 $itinerary->locations()->delete();
@@ -889,18 +885,6 @@ class ItineraryController extends Controller
                     ]);
                 }
             }
-
-            // Handle attributes with attribute_value
-            // if ($request->has('attributes')) {
-            //     $itinerary->attributes()->delete(); // Delete existing attributes
-            //     foreach ($request->attributes as $attribute) {
-            //         // Create or update each attribute with its value
-            //         $itinerary->attributes()->create([
-            //             'attribute_id'    => $attribute['attribute_id'],
-            //             'attribute_value' => $attribute['attribute_value']
-            //         ]);
-            //     }
-            // }
 
             if ($request->has('attributes')) {
                 $itinerary->attributes()->delete();

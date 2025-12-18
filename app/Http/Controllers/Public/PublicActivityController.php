@@ -26,7 +26,8 @@ class PublicActivityController extends Controller
             'earlyBirdDiscount', 
             'lastMinuteDiscount', 
             'promoCodes',
-            'availability'
+            'availability',
+            'mediaGallery.media',
         ])->get()->map(function ($activity) {
             return [
                 'id' => $activity->id,
@@ -85,6 +86,15 @@ class PublicActivityController extends Controller
                     'quantity_based_activity' => $activity->availability->quantity_based_activity,
                     'max_quantity' => $activity->availability->max_quantity,
                 ] : null,
+
+                'media_gallery' => $activity->mediaGallery->map(function ($media) {
+                    return [
+                        'id' => $media->media->id,
+                        'name' => $media->media->name,
+                        'alt_text' => $media->media->alt_text,
+                        'url' => $media->media->url,
+                    ];
+                })->toArray(),
             ];
         });
         
@@ -115,7 +125,8 @@ class PublicActivityController extends Controller
             'earlyBirdDiscount', 
             'lastMinuteDiscount', 
             'promoCodes',
-            'availability'
+            'availability',
+            'mediaGallery.media',
         ])
         ->where('featured_activity', true) 
         ->get()
@@ -174,6 +185,15 @@ class PublicActivityController extends Controller
                     'quantity_based_activity' => $activity->availability->quantity_based_activity,
                     'max_quantity' => $activity->availability->max_quantity,
                 ] : null,
+
+                'media_gallery' => $activity->mediaGallery->map(function ($media) {
+                    return [
+                        'id' => $media->media->id,
+                        'name' => $media->media->name,
+                        'alt_text' => $media->media->alt_text,
+                        'url' => $media->media->url,
+                    ];
+                })->toArray(),
             ];
         });
 
@@ -203,7 +223,8 @@ class PublicActivityController extends Controller
             'groupDiscounts', 
             'earlyBirdDiscount', 
             'lastMinuteDiscount', 
-            'promoCodes'
+            'promoCodes',
+            'mediaGallery.media',
         ])->where('slug', $activityslug)->first(); 
     
         if (!$activity) {
@@ -261,6 +282,15 @@ class PublicActivityController extends Controller
             'earlyBirdDiscount' => $activity->earlyBirdDiscount,
             'lastMinuteDiscount' => $activity->lastMinuteDiscount,
             'promoCodes' => $activity->promoCodes,
+
+            'media_gallery' => $activity->mediaGallery->map(function ($media) {
+                return [
+                    'id' => $media->media->id,
+                    'name' => $media->media->name,
+                    'alt_text' => $media->media->alt_text,
+                    'url' => $media->media->url,
+                ];
+            })->toArray(),
         ];
     
         // return response()->json($formattedActivity);
