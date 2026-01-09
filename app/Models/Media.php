@@ -35,9 +35,13 @@ class Media extends Model
         return $this->hasMany(PlaceMediaGallery::class, 'media_id');
     }
     
+    // public function blogs()
+    // {
+    //     return $this->hasMany(Blog::class, 'featured_image');
+    // }
     public function blogs()
     {
-        return $this->hasMany(Blog::class, 'featured_image');
+        return $this->belongsToMany(Blog::class, 'blog_media');
     }
 
     public function itineraryMedia()

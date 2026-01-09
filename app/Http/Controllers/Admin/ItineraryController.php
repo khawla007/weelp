@@ -42,7 +42,7 @@ class ItineraryController extends Controller
         $perPage        = 3; 
         $page           = $request->get('page', 1); 
 
-        $name           = $request->get('name'); // Search by activity name
+        $search           = $request->get('search'); // Search by activity name
         $categorySlug   = $request->get('category');
         $difficulty     = $request->get('difficulty_level');
         $duration       = $request->get('duration');
@@ -71,8 +71,8 @@ class ItineraryController extends Controller
                 'mediaGallery.media', 'addons.addon'
             ])
 
-            ->when($name, fn($query) =>
-                $query->where('itineraries.name', 'like', "%{$name}%")
+            ->when($search, fn($query) =>
+                $query->where('itineraries.name', 'like', "%{$search}%")
             )   
             
             ->when($categoryId, fn($query) => 

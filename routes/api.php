@@ -54,6 +54,7 @@ use App\Http\Controllers\Public\PublicShopController;
 use App\Http\Controllers\Public\PublicCategoryController;
 use App\Http\Controllers\Public\PublicTagController;
 use App\Http\Controllers\Public\PublicFilterController;
+use App\Http\Controllers\Public\PublicBlogController;
 
 Route::get('/test', function () {
     return response()->json(['message' => 'Route Working!']);
@@ -119,9 +120,11 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
 
     // Admin Side Category Routes
     Route::apiResource('/categories', CategoryController::class);
+    Route::get('/categorylist', [CategoryController::class, 'getCatList']);
 
     // Admin Side Acitivty Tag Routes
     Route::apiResource('/tags', TagController::class);
+    Route::get('/taglist', [TagController::class, 'getTagList']);
 
     Route::prefix('attributes')->group(function () {
         Route::get('/slug/{slug}', [AttributeController::class, 'getValuesBySlug']);
@@ -286,10 +289,11 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
 
     Route::prefix('blogs')->group(function () {
         Route::get('/', [BlogController::class, 'index']); // List all blogs
-        Route::get('{id}', [BlogController::class, 'show']); // Show a single blog
+        Route::get('/{id}', [BlogController::class, 'show']); // Show a single blog
         Route::post('/', [BlogController::class, 'store']); // Store a new blog
-        Route::put('{id}', [BlogController::class, 'update']); // Update an existing blog
-        Route::delete('{id}', [BlogController::class, 'destroy']); // Delete a blog
+        Route::put('/{id}', [BlogController::class, 'update']); // Update an existing blog
+        Route::delete('/{id}', [BlogController::class, 'destroy']); // Delete a blog
+        Route::post('/bulk-delete', [BlogController::class, 'bulkDestroy']);
     });
 
     Route::prefix('reviews')->group(function () {
@@ -391,3 +395,6 @@ Route::get('/filter', [PublicFilterController::class, 'filter']);
 
 // Shop Page all items API
 Route::get('/shop', [PublicShopController::class, 'index']);
+
+Route::get('blogs', [PublicBlogController::class, 'index']);
+Route::get('blogs/{slug}', [PublicBlogController::class, 'show']);

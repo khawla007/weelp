@@ -28,6 +28,19 @@ class CategoryController extends Controller
     }  
 
     /**
+     * Display a listing for all items
+    */
+    public function getCatList()
+    {
+        $categories = Category::all();
+
+        return response()->json([
+            'success' => true,
+            'data'    => $categories,
+        ]);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)

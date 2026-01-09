@@ -10,7 +10,7 @@ class Blog extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'slug', 'content', 'publish', 'featured_image', 'category_id', 'tag_id', 'excerpt', 'activity_id',
+        'name', 'slug', 'content', 'publish', 'excerpt',
     ];
 
     protected $casts = [
@@ -19,21 +19,16 @@ class Blog extends Model
 
     public function media()
     {
-        return $this->belongsTo(Media::class, 'featured_image');
+        return $this->belongsToMany(Media::class, 'blog_media');
     }
 
-    public function category()
+    public function categories()
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsToMany(Category::class, 'blog_category');
     }
 
-    public function tag()
+    public function tags()
     {
-        return $this->belongsTo(Tag::class);
-    }
-
-    public function activity()
-    {
-        return $this->belongsTo(Activity::class);
+        return $this->belongsToMany(Tag::class, 'blog_tag');
     }
 }

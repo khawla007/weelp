@@ -44,7 +44,7 @@ class PackageController extends Controller
         $perPage        = 3; 
         $page           = $request->get('page', 1); 
 
-        $name           = $request->get('name'); // Search by package name
+        $search         = $request->get('search'); // Search by package name
         $categorySlug   = $request->get('category');
         $difficulty     = $request->get('difficulty_level');
         $duration       = $request->get('duration');
@@ -73,8 +73,8 @@ class PackageController extends Controller
                 'mediaGallery.media', 'addons.addon'
             ])
 
-            ->when($name, fn($query) =>
-                $query->where('packages.name', 'like', "%{$name}%")
+            ->when($search, fn($query) =>
+                $query->where('packages.name', 'like', "%{$search}%")
             )   
 
             ->when($categoryId, fn($query) => 

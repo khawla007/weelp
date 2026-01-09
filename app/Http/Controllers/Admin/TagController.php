@@ -27,6 +27,16 @@ class TagController extends Controller
         ]);
     }    
 
+    public function getTagList()
+    {
+        $tags = Tag::all();
+
+        return response()->json([
+            'success' => true,
+            'data'    => $tags,
+        ]);
+    }
+
     /**
      * Store a newly created resource in storage.
      */

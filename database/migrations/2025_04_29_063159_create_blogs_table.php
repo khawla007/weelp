@@ -15,13 +15,13 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('slug')->unique();
-            $table->text('content'); 
+            $table->longText('content'); 
             $table->boolean('publish')->default(false);
-            $table->foreignId('featured_image')->constrained('media');
-            $table->foreignId('category_id')->constrained('categories');
-            $table->foreignId('tag_id')->constrained('tags');
+            // $table->foreignId('featured_image')->constrained('media');
+            // $table->foreignId('category_id')->constrained('categories');
+            // $table->foreignId('tag_id')->constrained('tags');
             $table->text('excerpt');
-            $table->foreignId('activity_id')->constrained('activities');
+            // $table->foreignId('activity_id')->constrained('activities');
             $table->timestamps();
         });
     }

@@ -24,8 +24,12 @@ class Tag extends Model
         return $this->belongsToMany(Itinerary::class, 'itinerary_tags');
     }
 
+    // public function blogs()
+    // {
+    //     return $this->hasMany(Blog::class);
+    // }
     public function blogs()
     {
-        return $this->hasMany(Blog::class);
+        return $this->belongsToMany(Blog::class, 'blog_tag');
     }
 }

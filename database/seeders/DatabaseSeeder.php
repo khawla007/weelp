@@ -36,6 +36,7 @@ class DatabaseSeeder extends Seeder
             ItinerarySeeder::class,
             PackageSeeder::class,
             ReviewSeeder::class,
+            BlogSeeder::class,
         ]);
     }
 }

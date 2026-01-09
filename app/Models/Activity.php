@@ -84,10 +84,10 @@ class Activity extends Model {
         return $this->hasManyThrough(Package::class, PackageActivityMapping::class, 'activity_id', 'id', 'id', 'package_id');
     }
 
-    public function blogs()
-    {
-        return $this->hasMany(Blog::class);
-    }
+    // public function blogs()
+    // {
+    //     return $this->hasMany(Blog::class);
+    // }
 
     public function orders()
     {

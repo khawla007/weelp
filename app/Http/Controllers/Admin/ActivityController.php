@@ -36,7 +36,7 @@ class ActivityController extends Controller
         $perPage        = 3; 
         $page           = $request->get('page', 1); 
         
-        $name           = $request->get('name'); // Search by activity name
+        $search         = $request->get('search'); // Search by activity name
         $categorySlug   = $request->get('category');
         $difficulty     = $request->get('difficulty_level');
         $duration       = $request->get('duration');
@@ -58,8 +58,8 @@ class ActivityController extends Controller
             ->join('activity_pricing', 'activity_pricing.activity_id', '=', 'activities.id') // Join with activity_pricing table
             ->with(['categories.category', 'tags.tag', 'locations.city', 'pricing', 'attributes', 'mediaGallery.media', 'addons.addon']) // Eager load relationships
 
-            ->when($name, fn($query) =>
-                $query->where('activities.name', 'like', "%{$name}%")
+            ->when($search, fn($query) =>
+                $query->where('activities.name', 'like', "%{$search}%")
             )
             
             ->when($categoryId, fn($query) => 
